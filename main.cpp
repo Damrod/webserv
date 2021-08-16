@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <arpa/inet.h>
 #include <cstring>
 #include <fcntl.h>
@@ -9,9 +10,11 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <vector>
 
 namespace {
-const uint16_t    kServerPort = 8080;
+const uint16_t    kServerPortStart = 9090;
+const uint16_t    kServerPortEnd = 9095;
 const std::string kHttpResponse = "HTTP/1.1 200 OK\r\n"
 								  "Server: hello_world\r\n"
 								  "Content-Length: 22\r\n"
@@ -47,25 +50,31 @@ int BindListeningSocket(uint32_t address, uint16_t port) {
 	return listen_sd;
 }
 
-void MonitorConnections(int listen_sd) {
+void MonitorConnections(const std::vector<int> &listen_sockets) {
 	std::map<int, std::string> connections_buffers;
 
 	fd_set                     master_set, read_set, write_set;
 	FD_ZERO(&master_set);
 	FD_ZERO(&write_set);
 
-	int max_sd = listen_sd;
-	FD_SET(listen_sd, &master_set);
+	int max_sd = -1;
+	for (std::size_t i = 0; i < listen_sockets.size(); ++i) {
+		FD_SET(listen_sockets[i], &master_set);
+		if (max_sd < listen_sockets[i])
+			max_sd = listen_sockets[i];
+	}
 
-	while (1) {
+	while (max_sd != -1) {
 		std::memcpy(&read_set, &master_set, sizeof(master_set));
 		int ready_connections =
 			select(max_sd + 1, &read_set, &write_set, NULL, NULL);
 		for (int i = 0; i <= max_sd && ready_connections > 0; ++i) {
 			if (FD_ISSET(i, &read_set)) {
 				--ready_connections;
-				if (i == listen_sd) {
-					int new_sd = accept(listen_sd, NULL, NULL);
+				std::vector<int>::const_iterator it =
+					std::find(listen_sockets.begin(), listen_sockets.end(), i);
+				if (it != listen_sockets.end()) {
+					int new_sd = accept(*it, NULL, NULL);
 					fcntl(new_sd, F_SETFL, O_NONBLOCK);
 					FD_SET(new_sd, &master_set);
 					FD_SET(new_sd, &write_set);
@@ -105,6 +114,17 @@ void MonitorConnections(int listen_sd) {
 }  // namespace
 
 int main() {
-	int listen_sd = BindListeningSocket(INADDR_LOOPBACK, kServerPort);
-	MonitorConnections(listen_sd);
+	std::vector<int> listen_sockets;
+
+	// Create servers with ports (kServerPortStart, kServerPortEnd]
+	for (uint16_t port = kServerPortStart; port != kServerPortEnd; ++port) {
+		int listen_sd = BindListeningSocket(INADDR_LOOPBACK, port);
+		listen_sockets.push_back(listen_sd);
+	}
+	MonitorConnections(listen_sockets);
+	// Close servers sockets
+	// Note: Currently the servers run in a loop and this will never execute
+	for (std::size_t i = 0; i < listen_sockets.size(); ++i) {
+		close(listen_sockets[i]);
+	}
 }
