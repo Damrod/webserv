@@ -20,6 +20,6 @@ jobs:
                 python -m pip install --upgrade pip
                 pip install cpplint
             - name: Setting cpplint config...
-              run: echo 'filter=-legal/copyright' > CPPLINT.cfg
+              run: echo 'filter=-whitespace/tab,-legal/copyright' > CPPLINT.cfg
             - name: Running cpplint...
               run: cpplint --recursive .
