@@ -125,3 +125,11 @@ tags
 ### macOS ###
 # General
 .DS_Store
+
+### Tags ###
+# Gtags
+gtags.files
+GTAGS
+GRTAGS
+GPATH
+GSYMS
