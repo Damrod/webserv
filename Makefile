@@ -31,18 +31,7 @@ include $(SRC_DIR)/target/generaterules.mk
 # take a look at what does a .d file look like to understand this directive
 -include $(DEPS)
 
-TEST0 := $(BLD_DIR)/utest_app
-
-$(TEST0) : $(OBJ_DIRS) $(OBJ)
-	make -C srcs/app/test
-
-.PHONY: run
-run:
-	$(BLD_DIR)/utest_app
-
-.PHONY: test
-test:
-	make $(TEST0)
+include $(SRC_DIR)/target/test.mk
 
 .PHONY: lint
 lint:
