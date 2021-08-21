@@ -1,18 +1,11 @@
--include $(SRC_DIR)/target/common.mk
-
 CXXFLAGS = -Wall -Werror -Wextra -std=c++11 # catch2 necesita c++11
 INC_DIR = $(SRC_DIR)/incs/test
-MKDIR = mkdir -p
 
 # if you create a new folder with source files, it should be in the srcs
 # folder, and you should put its name here:
 DIRS = app/test
 
-# this will recursively expand the above DIRS into full path name
-SRC_DIRS := $(foreach dir, $(DIRS), $(addprefix $(SRC_DIR)/, $(dir)))
-# this will replace the above srcs/ part of the path with bld/
-OBJ_DIRS := $(foreach dir, $(DIRS), $(addprefix $(BLD_DIR)/, $(dir)))
-
+include $(SRC_DIR)/target/common.mk
 SRCS := $(SRC_DIR)/app/test/utest_startup.cpp $(SRC_DIR)/app/startup.cpp
 
 NAME := $(BLD_DIR)/utest_app

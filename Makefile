@@ -1,12 +1,10 @@
--include $(SRC_DIR)/target/common.mk
-
 NAME = webserv
 export CXX = clang++
 CXXFLAGS = -Wall -Werror -Wextra -std=c++98
 LINT = cpplint
 LINTFLAGS = --exclude=$(BLD_DIR)
 RMF = rm -rf
-MKDIR = mkdir -p
+export MKDIR = mkdir -p
 export ERRIGNORE = 2>/dev/null
 
 PROJDIR := $(CURDIR)
@@ -19,10 +17,7 @@ INC_DIR = $(SRC_DIR)/incs
 # folder, and you should put its name here:
 DIRS = app
 
-# this will recursively expand the above DIRS into full path name
-SRC_DIRS := $(foreach dir, $(DIRS), $(addprefix $(SRC_DIR)/, $(dir)))
-# this will replace the above srcs/ part of the path with bld/
-OBJ_DIRS := $(foreach dir, $(DIRS), $(addprefix $(BLD_DIR)/, $(dir)))
+include $(SRC_DIR)/target/common.mk
 # this will glob all cpp files inside the SRC_DIRS
 SRCS := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.cpp))
 # this is here so that the macro generateRules can find its sources
