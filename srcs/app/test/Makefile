@@ -1,7 +1,7 @@
 define generateRules
 $(1)/%.o: %.cpp
 	@echo Building $$@
-	$(CXX) -c $(CXXFLAGS) -I $(INC_DIR) -o $$@ $$< -MMD
+	$(CXX) -c $(CXXFLAGS) -I $(INC_DIR)/test -o $$@ $$< -MMD
 endef
 
 define generateDirs

@@ -1,5 +1,5 @@
 #define CATCH_CONFIG_MAIN
-#include <catch.hpp>
+#include <catch2.hpp>
 
 int startup(const std::vector<std::string> &argv,
 			const std::vector<std::string> &env);
