@@ -14,7 +14,7 @@ NAME = webserv
 CXX = clang++
 CXXFLAGS = -Wall -Werror -Wextra -std=c++98
 LINT = cpplint
-LINTFLAGS = --recursive
+LINTFLAGS = --exclude=$(BLD_DIR)
 RMF = rm -rf
 MKDIR = mkdir -p
 ERRIGNORE = 2>/dev/null
@@ -78,7 +78,8 @@ test:
 
 .PHONY: lint
 lint:
-	$(LINT) $(LINTFLAGS) .
+	$(LINT) $(LINTFLAGS) $$(find . -name "*.hpp" -or -name "*.cpp" \
+	| grep -v "test")
 
 .PHONY: clean
 clean:
