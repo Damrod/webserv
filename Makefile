@@ -21,9 +21,9 @@ ERRIGNORE = 2>/dev/null
 
 PROJDIR := $(CURDIR)
 
-SRC_DIR := $(PROJDIR)/srcs
-BLD_DIR := $(PROJDIR)/bld
-INC_DIR = $(SRC_DIR)/incs
+export SRC_DIR := $(PROJDIR)/srcs
+export BLD_DIR := $(PROJDIR)/bld
+export INC_DIR = $(SRC_DIR)/incs
 
 # if you create a new folder with source files, it should be in the srcs
 # folder, and you should put its name here:
@@ -76,7 +76,7 @@ catch:
 
 TEST0 := $(BLD_DIR)/utest_app
 
-$(TEST0) :
+$(TEST0) : $(OBJ_DIRS) $(OBJ)
 	make -C srcs/app/test
 
 .PHONY: run

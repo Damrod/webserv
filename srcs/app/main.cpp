@@ -2,8 +2,12 @@
 
 int main(int argc, char *argv[], char *environ[])
 {
-	(void) argc;
-	(void) argv;
-	(void) environ;
-	return startup(argc, argv, environ);
+	std::vector<std::string> argvect;
+	std::vector<std::string> envect;
+
+	for (int i = 1; i < argc; i++)
+		argvect.push_back(argv[i]);
+	for (; *environ; ++environ)
+		argvect.push_back(*environ);
+	return startup(argvect, envect);
 }

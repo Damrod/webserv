@@ -11,18 +11,9 @@ $(1):
 endef
 
 CXX = clang++
-CXXFLAGS = -Wall -Werror -Wextra -std=c++11
-LINT = cpplint
-LINTFLAGS = --recursive
-RMF = rm -rf
+CXXFLAGS = -Wall -Werror -Wextra -std=c++11 # catch2 necesita c++11
 MKDIR = mkdir -p
 ERRIGNORE = 2>/dev/null
-
-PROJDIR := $(CURDIR)/../../..
-
-SRC_DIR := $(PROJDIR)/srcs
-BLD_DIR := $(PROJDIR)/bld
-INC_DIR = $(SRC_DIR)/incs
 
 # if you create a new folder with source files, it should be in the srcs
 # folder, and you should put its name here:
@@ -35,8 +26,6 @@ OBJ_DIRS := $(foreach dir, $(DIRS), $(addprefix $(BLD_DIR)/, $(dir)))
 
 SRCS := $(SRC_DIR)/app/test/utest_startup.cpp $(SRC_DIR)/app/startup.cpp
 
-# this is here so that the macro generateRules can find its sources
-VPATH := $(SRC_DIR)/app $(SRC_DIR)/app/test
 NAME := $(BLD_DIR)/utest_app
 # this assigns the .o file names replacing the srcs part of the $(SRCS)
 # path with bld and the .cpp part of the filename with .o
@@ -48,7 +37,6 @@ DEPS := $(patsubst %.o, %.d, $(OBJ))
 
 .PHONY: all
 all: $(NAME)
-	echo $(OBJ)
 
 # Generate rules to compile .o files
 
@@ -58,13 +46,7 @@ $(foreach targetdir, $(OBJ_DIRS), $(eval $(call generateRules, $(targetdir))))
 
 $(foreach targetdir, $(OBJ_DIRS), $(eval $(call generateDirs, $(targetdir))))
 
-# Aqui hay una chapuza porque no consigo que VPATH me funcione...
-/home/alvaro/webserv/srcs/app/test/../../../bld/app/startup.o :
-	clang++ -c -Wall -Werror -Wextra -std=c++11 -I /home/alvaro/webserv/srcs/incs -o /home/alvaro/webserv/srcs/app/test/../../../bld/app/startup.o ../startup.cpp -MMD
-
-
 $(NAME):  $(OBJ_DIRS) $(OBJ)
-	echo hello $(OBJ)
 	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ)
 
 # take a look at what does a .d file look like to understand this directive

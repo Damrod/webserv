@@ -1,7 +1,9 @@
-int startup(int argc, char argv[3][3], char environ[3][3])
+#include <webserv.hpp>
+
+int startup(const std::vector<std::string> &argv,
+			const std::vector<std::string> &env)
 {
-	(void) argc;
 	(void) argv;
-	(void) environ;
+	(void) env;
 	return 100;
 }
