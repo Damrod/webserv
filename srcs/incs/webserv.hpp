@@ -1,12 +1,13 @@
-#ifndef WEBSERV_HPP
-# define WEBSERV_HPP
+#ifndef SRCS_INCS_WEBSERV_HPP_
+#define SRCS_INCS_WEBSERV_HPP_
 
 #include <iostream>
 #include <vector>
+#include <string>
 
 int startup(const std::vector<std::string> &argv,
 			const std::vector<std::string> &env);
 
 class Webserv;
 
-#endif
+#endif   // SRCS_INCS_WEBSERV_HPP_
