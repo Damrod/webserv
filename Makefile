@@ -61,7 +61,31 @@ $(NAME):  $(OBJ_DIRS) $(OBJ)
 	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ)
 
 # take a look at what does a .d file look like to understand this directive
-include $(DEPS)
+-include $(DEPS)
+
+catchsrc:=$(shell mktemp -d)
+
+.PHONY: catch
+catch:
+	if ! test $$(find /usr/local/include/ -name catch3 | wc -c) -eq 0 ; then \
+	git clone https://github.com/catchorg/Catch2.git $(catchsrc)/Catch2 ; \
+	cd $(catchsrc)/Catch2 && \
+	cmake -Bbuild -H. -DBUILD_TESTING=OFF && \
+	sudo cmake --build build/ --target install ; \
+	fi
+
+TEST0 := $(BLD_DIR)/utest_app
+
+$(TEST0) :
+	make -C srcs/app/test
+
+.PHONY: run
+run:
+	$(BLD_DIR)/utest_app
+
+.PHONY: test
+test:
+	make $(TEST0)
 
 .PHONY: lint
 lint:
