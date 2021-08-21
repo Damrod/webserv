@@ -1,19 +1,8 @@
-define generateRules
-$(1)/%.o: %.cpp
-	@echo Building $$@
-	$(CXX) -c $(CXXFLAGS) -I $(INC_DIR)/test -o $$@ $$< -MMD
-endef
+-include $(SRC_DIR)/target/common.mk
 
-define generateDirs
-$(1):
-	@echo Creating dir $$@
-	$(MKDIR) $$@ $(ERRIGNORE)
-endef
-
-CXX = clang++
 CXXFLAGS = -Wall -Werror -Wextra -std=c++11 # catch2 necesita c++11
+INC_DIR = $(SRC_DIR)/incs/test
 MKDIR = mkdir -p
-ERRIGNORE = 2>/dev/null
 
 # if you create a new folder with source files, it should be in the srcs
 # folder, and you should put its name here:

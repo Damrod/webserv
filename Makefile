@@ -1,29 +1,19 @@
-define generateRules
-$(1)/%.o: %.cpp
-	@echo Building $$@
-	$(CXX) -c $(CXXFLAGS) -I $(INC_DIR) -o $$@ $$< -MMD
-endef
-
-define generateDirs
-$(1):
-	@echo Creating dir $$@
-	$(MKDIR) $$@ $(ERRIGNORE)
-endef
+-include $(SRC_DIR)/target/common.mk
 
 NAME = webserv
-CXX = clang++
+export CXX = clang++
 CXXFLAGS = -Wall -Werror -Wextra -std=c++98
 LINT = cpplint
 LINTFLAGS = --exclude=$(BLD_DIR)
 RMF = rm -rf
 MKDIR = mkdir -p
-ERRIGNORE = 2>/dev/null
+export ERRIGNORE = 2>/dev/null
 
 PROJDIR := $(CURDIR)
 
 export SRC_DIR := $(PROJDIR)/srcs
 export BLD_DIR := $(PROJDIR)/bld
-export INC_DIR = $(SRC_DIR)/incs
+INC_DIR = $(SRC_DIR)/incs
 
 # if you create a new folder with source files, it should be in the srcs
 # folder, and you should put its name here:
