@@ -1,21 +1,21 @@
-#include <algorithm>
 #include <arpa/inet.h>
-#include <cstring>
 #include <fcntl.h>
-#include <iostream>
-#include <map>
 #include <netinet/in.h>
 #include <stdint.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <algorithm>
+#include <cstring>
+#include <iostream>
+#include <map>
 #include <vector>
 
 namespace {
-const uint16_t    kServerPortStart = 9090;
-const uint16_t    kServerPortEnd = 9095;
-const std::string kHttpResponse = "HTTP/1.1 200 OK\r\n"
+const uint16_t    kServerPortStart = 8080;
+const uint16_t    kServerPortEnd = 8085;
+const char kHttpResponse[] = "HTTP/1.1 200 OK\r\n"
 								  "Server: hello_world\r\n"
 								  "Content-Length: 22\r\n"
 								  "Content-Type: text/html\r\n"
@@ -84,7 +84,7 @@ void MonitorConnections(const std::vector<int> &listen_sockets) {
 				} else {
 					char buff[4096];
 					int  nbytes = recv(i, buff, sizeof(buff), 0);
-					if (nbytes == 0) {
+					if (nbytes <= 0) {
 						close(i);
 						FD_CLR(i, &master_set);
 						max_sd = SetMaxSocket(i, max_sd, &master_set);
@@ -95,12 +95,12 @@ void MonitorConnections(const std::vector<int> &listen_sockets) {
 			} else if (FD_ISSET(i, &write_set)) {
 				--ready_connections;
 				int nbytes = send(i, connections_buffers[i].c_str(),
-					(int)connections_buffers[i].size(), 0);
+					static_cast<int>(connections_buffers[i].size()), 0);
 				if (nbytes > 0 &&
-					nbytes <= (int)connections_buffers[i].size()) {
+					nbytes <= static_cast<int>(connections_buffers[i].size())) {
 					connections_buffers[i].erase(0, nbytes);
 				}
-				if (nbytes < 0 || connections_buffers[i].empty()) {
+				if (nbytes <= 0 || connections_buffers[i].empty()) {
 					close(i);
 					FD_CLR(i, &master_set);
 					FD_CLR(i, &write_set);
