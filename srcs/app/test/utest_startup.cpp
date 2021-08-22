@@ -12,7 +12,7 @@ TEST_CASE("Hello") {
 		WHEN("we pass them to the function to test") {
 			int a = startup(argv, env);
 			THEN("The function returns whatever ") {
-				REQUIRE(a == 10);
+				REQUIRE(a == 100);
 			}
 		}
 	}
