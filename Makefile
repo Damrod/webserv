@@ -1,33 +1,37 @@
 NAME = webserv
-CXX = clang++
+export CXX = clang++
 CXXFLAGS = -Wall -Werror -Wextra -std=c++98
 LINT = cpplint
-LINTFLAGS = --recursive
+LINTFLAGS = --recursive --exclude=srcs/incs/test/catch2.hpp
 RMF = rm -rf
+export MKDIR = mkdir -p
+export ERRIGNORE = 2>/dev/null
 
-INC_DIR = include
-SRC_DIR = src
-OBJ_DIR = obj
+PROJDIR := $(CURDIR)
 
-_OBJ = main.o
-OBJ := $(patsubst %, $(OBJ_DIR)/%, $(_OBJ))
+export SRC_DIR := $(PROJDIR)/srcs
+export BLD_DIR := $(PROJDIR)/bld
+INC_DIR = $(SRC_DIR)/incs
 
-_DEPS =
-DEPS := $(patsubst %, $(INC_DIR)/%, $(_DEPS))
+# if you create a new folder with source files, it should be in the srcs
+# folder, and you should put its name here:
+DIRS = app
+
+include $(SRC_DIR)/target/common.mk
+# this will glob all cpp files inside the SRC_DIRS
+SRCS := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.cpp))
+# this is here so that the macro generateRules can find its sources
+VPATH := $(SRC_DIRS)
 
 .PHONY: all
 all: $(NAME)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(DEPS)
-	$(CXX) $(CXXFLAGS) -I$(INC_DIR) -c -o $@ $<
+include $(SRC_DIR)/target/generaterules.mk
 
-$(OBJ): | $(OBJ_DIR)
+# take a look at what does a .d file look like to understand this directive
+-include $(DEPS)
 
-$(OBJ_DIR):
-	mkdir $(OBJ_DIR)
-
-$(NAME): $(OBJ)
-	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ)
+include $(SRC_DIR)/target/test.mk
 
 .PHONY: lint
 lint:
@@ -35,7 +39,7 @@ lint:
 
 .PHONY: clean
 clean:
-	$(RMF) $(OBJ_DIR)
+	$(RMF) $(BLD_DIR)
 
 .PHONY: fclean
 fclean: clean
