@@ -1,0 +1,7 @@
+#ifndef SRCS_INCS_HTTPREQUEST_HPP_
+#define SRCS_INCS_HTTPREQUEST_HPP_
+
+class HttpRequest {
+};
+
+#endif  // SRCS_INCS_HTTPREQUEST_HPP_
