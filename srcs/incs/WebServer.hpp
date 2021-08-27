@@ -31,7 +31,7 @@ class WebServer {
 		bool	PopulateServers_();
 		void	AddListeningSocketsToMasterSet_();
 		void	SetMaxSocket_(int curr_sd);
-		std::vector<Server>::iterator	FindListeningSocket(int sd);
+		std::vector<Server>::iterator	FindListeningServer(int sd);
 		void	AcceptNewConnection_(std::vector<Server>::iterator server_it);
 		std::vector<Server>::iterator	FindConnectionServer(int sd);
 		void	ReadRequest_(int sd);

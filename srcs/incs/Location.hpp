@@ -1,15 +1,13 @@
 #ifndef SRCS_INCS_LOCATION_HPP_
 #define SRCS_INCS_LOCATION_HPP_
 #include <string>
-#include <ServerSettings.hpp>
-
-struct ServerSettings;
+#include <CommonSettings.hpp>
 
 struct	Location {
-	std::string	root;
-	/* More server settings */
+	CommonSettings	common;
+	/* More location settings */
 
-	explicit Location(const ServerSettings &servers_settings);
+	explicit Location(const CommonSettings &common);
 };
 
 #endif  // SRCS_INCS_LOCATION_HPP_

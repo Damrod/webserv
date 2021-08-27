@@ -3,16 +3,14 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include <CommonSettings.hpp>
 #include <Location.hpp>
-
-struct Location;
 
 struct ServerSettings {
 	uint32_t					listen_address;
 	uint16_t					listen_port;
 	std::vector<std::string>	server_name;
-	std::string					root;
-	/* More server settings */
+	CommonSettings				common;
 
 	// A server can have multiple locations
 	std::vector<Location>		locations;

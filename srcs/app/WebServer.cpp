@@ -26,19 +26,19 @@ void	WebServer::Run() {
 		std::memcpy(&read_set_, &master_set_, sizeof(master_set_));
 		int ready_connections =
 			select(max_sd_ + 1, &read_set_, &write_set_, NULL, NULL);
-		for (int i = 0; i <= max_sd_ && ready_connections > 0; ++i) {
-			if (FD_ISSET(i, &read_set_)) {
+		for (int sd = 0; sd <= max_sd_ && ready_connections > 0; ++sd) {
+			if (FD_ISSET(sd, &read_set_)) {
 				--ready_connections;
 				std::vector<Server>::iterator
-					server_it = FindListeningSocket(i);
+					server_it = FindListeningServer(sd);
 				if (server_it != servers_.end()) {
 					AcceptNewConnection_(server_it);
 				} else {
-					ReadRequest_(i);
+					ReadRequest_(sd);
 				}
-			} else if (FD_ISSET(i, &write_set_)) {
+			} else if (FD_ISSET(sd, &write_set_)) {
 				--ready_connections;
-				SendResponse_(i);
+				SendResponse_(sd);
 			}
 		}
 	}
@@ -60,10 +60,10 @@ bool	WebServer::PopulateServers_() {
 }
 
 void	WebServer::AddListeningSocketsToMasterSet_() {
-	std::vector<Server>::const_iterator	it = servers_.begin();
+	std::vector<Server>::const_iterator	server_it = servers_.begin();
 
-	for (; it != servers_.end(); ++it) {
-		int listen_sd = it->GetListeningSocket();
+	for (; server_it != servers_.end(); ++server_it) {
+		int listen_sd = server_it->GetListeningSocket();
 		FD_SET(listen_sd, &master_set_);
 		if (max_sd_ < listen_sd)
 			max_sd_ = listen_sd;
@@ -79,12 +79,12 @@ void	WebServer::SetMaxSocket_(int curr_sd) {
 }
 
 std::vector<Server>::iterator
-WebServer::FindListeningSocket(int sd) {
-	std::vector<Server>::iterator	it = servers_.begin();
+WebServer::FindListeningServer(int sd) {
+	std::vector<Server>::iterator	server_it = servers_.begin();
 
-	for(; it != servers_.end(); ++it) {
-		if (it->GetListeningSocket() == sd)
-			return it;
+	for(; server_it != servers_.end(); ++server_it) {
+		if (server_it->GetListeningSocket() == sd)
+			return server_it;
 	}
 	return servers_.end();
 }
