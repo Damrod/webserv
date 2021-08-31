@@ -1,12 +1,11 @@
-CXXFLAGS = -Wall -Werror -Wextra -std=c++11 # catch2 necesita c++11
-INC_DIR = $(SRC_DIR)/incs/test
+CXXFLAGS = -Wall -Werror -Wextra -std=c++11 -g3 # catch2 necesita c++11
+INC_DIR = $(SRC_DIR)/incs $(SRC_DIR)/incs/test
 
 # if you create a new folder with source files, it should be in the srcs
 # folder, and you should put its name here:
-DIRS = app/test
+DIRS = app/test app/http app/test/http
 
 include $(SRC_DIR)/target/common.mk
-SRCS := $(SRC_DIR)/app/test/utest_startup.cpp $(SRC_DIR)/app/startup.cpp
 
 NAME := $(BLD_DIR)/utest_app
 
