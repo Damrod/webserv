@@ -3,7 +3,7 @@
 #include <catch2.hpp>
 
 TEST_CASE("ValidHttpGetRequestWithoutBody", "[http]") {
-	std::string raw_request =
+	const std::string raw_request =
 		"GET /hello.txt HTTP/1.1\r\n"
      	"Host: www.example.com\r\n"
 	 	"Accept-Language: en, mi\r\n"
@@ -21,7 +21,7 @@ TEST_CASE("ValidHttpGetRequestWithoutBody", "[http]") {
 }
 
 TEST_CASE("ValidHttpPostRequestWithBody", "[http]") {
-	std::string raw_request =
+	const std::string raw_request =
 		"POST /bin/login HTTP/1.1\r\n"
 		"Host: 127.0.0.1:8000\r\n"
 		"Accept: image/gif, image/jpeg, */*\r\n"

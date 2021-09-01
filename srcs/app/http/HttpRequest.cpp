@@ -27,7 +27,7 @@ std::string	HttpRequest::GetHttpVersion() const {
 }
 
 std::string	HttpRequest::GetHeaderValue(const std::string &header_name) const {
-	std::string					header_name_lc = ToLowerString(header_name);
+	const std::string			header_name_lc = ToLowerString(header_name);
 	HeadersMap::const_iterator	map_it = headers_.find(header_name_lc);
 	if (map_it != headers_.end())
 		return map_it->second;
@@ -39,7 +39,7 @@ std::string HttpRequest::GetBody() const {
 }
 
 bool	HttpRequest::HasHeader(const std::string &header_name) const {
-	std::string					header_name_lc = ToLowerString(header_name);
+	const std::string			header_name_lc = ToLowerString(header_name);
 	HeadersMap::const_iterator	map_it = headers_.find(header_name_lc);
 	return map_it != headers_.end();
 }
@@ -111,7 +111,7 @@ bool	HttpRequest::IsValidHttpVersion_(const std::string &http_version) const {
 
 bool	HttpRequest::ParseHeaders_(const std::string &raw_request) {
 	while (offset_ < raw_request.length()) {
-		std::size_t header_end = raw_request.find(kCRLF_, offset_);
+		const std::size_t header_end = raw_request.find(kCRLF_, offset_);
 		if (header_end == std::string::npos)
 			return false;
 		if (header_end - offset_ == 0)
@@ -165,7 +165,7 @@ void	HttpRequest::AddHeader_(
 
 // https://datatracker.ietf.org/doc/html/rfc7230#section-3.2.6
 bool	HttpRequest::IsValidHeaderName_(const std::string &name) const {
-	std::string valid_chars = "!#$%&'*+-.^_`|~"
+	const std::string valid_chars = "!#$%&'*+-.^_`|~"
 								"0123456789"
 								"abcdefghijklmnopqrstuvwxyz"
 								"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
