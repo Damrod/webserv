@@ -2,14 +2,16 @@
 #define SRCS_INCS_HTTPREQUEST_HPP_
 #include <map>
 #include <string>
+#include <StringUtils.hpp>
 
 class HttpRequest {
 	private:
-		// Map containing pairs of header_name:header_value
-		typedef	std::map<std::string, std::string> HeadersMap;
+		typedef std::string							HeaderName;
+		typedef std::string							HeaderValue;
+		typedef	std::map<HeaderName, HeaderValue>	HeadersMap;
 
-		static const char	CRLF[];
-		static const char	WSP[];
+		static const char	kCRLF_[];
+		static const char	kWhitespace_[];
 
 		std::string	method_;
 		std::string	uri_;
@@ -28,20 +30,21 @@ class HttpRequest {
 		bool		HasHeader(const std::string &header_name) const;
 
 	private:
-		bool		ParseRequestLine(const std::string &raw_request);
-		bool		ParseMethod(const std::string &raw_request);
-		bool		ParseUri(const std::string &raw_request);
-		bool		ParseHttpVersion(const std::string &uri);
-		bool		ParseHeaders(const std::string &raw_request);
-		bool		ParseBody(const std::string &raw_request);
-		bool		IsValidMethod(const std::string &method) const;
-		bool		IsValidUri(const std::string &uri) const;
-		bool		IsValidHttpVersion(const std::string &http_version) const;
-		bool		IsValidHeaderName(const std::string &header_name) const;
-		bool		IsValidHeaderValue(const std::string &header_value) const;
-		std::string	TrimWhitespace(const std::string &header_value) const;
-		std::string	ToLowerCaseString(const std::string &str) const;
-		bool		ContainOnlyAsciiCharacters(const std::string &str) const;
+		bool		ParseRequestLine_(const std::string &raw_request);
+		bool		ParseMethod_(const std::string &raw_request);
+		bool		ParseUri_(const std::string &raw_request);
+		bool		ParseHttpVersion_(const std::string &uri);
+		bool		ParseHeaders_(const std::string &raw_request);
+		HeaderName	ParseHeaderName_(const std::string &raw_request);
+		HeaderValue	ParseHeaderValue_(const std::string &raw_request);
+		void		AddHeader_(const HeaderName &name, const HeaderValue &val);
+		bool		ParseBody_(const std::string &raw_request);
+		bool		IsValidMethod_(const std::string &method) const;
+		bool		IsValidUri_(const std::string &uri) const;
+		bool		IsValidHttpVersion_(const std::string &http_version) const;
+		bool		IsValidHeaderName_(const std::string &header_name) const;
+		bool		IsValidHeaderValue_(const std::string &header_value) const;
+		bool		ContainOnlyVisibleChars_(const std::string &str) const;
 };
 
 #endif  // SRCS_INCS_HTTPREQUEST_HPP_

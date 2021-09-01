@@ -14,6 +14,7 @@ TEST_CASE("ValidHttpGetRequestWithoutBody", "[http]") {
 	REQUIRE("GET" == request.GetMethod());
 	REQUIRE("/hello.txt" == request.GetUri());
 	REQUIRE("HTTP/1.1" == request.GetHttpVersion());
+	REQUIRE(!request.HasHeader("X-Custom-Header"));
 	REQUIRE("www.example.com" == request.GetHeaderValue("Host"));
 	REQUIRE("en, mi" == request.GetHeaderValue("Accept-Language"));
 	REQUIRE("" == request.GetBody());
@@ -40,6 +41,7 @@ TEST_CASE("ValidHttpPostRequestWithBody", "[http]") {
 	REQUIRE("POST" == request.GetMethod());
 	REQUIRE("/bin/login" == request.GetUri());
 	REQUIRE("HTTP/1.1" == request.GetHttpVersion());
+	REQUIRE(request.HasHeader("Host"));
 	REQUIRE("image/gif, image/jpeg, */*" == request.GetHeaderValue("Accept"));
 	REQUIRE("en-us" == request.GetHeaderValue("Accept-Language"));
 	REQUIRE("gzip, deflate" == request.GetHeaderValue("Accept-Encoding"));
