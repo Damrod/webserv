@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cctype>
 
-std::string	TrimString(const std::string &str, const std::string trim_chars) {
+std::string	TrimString(const std::string &str, const std::string &trim_chars) {
 	const std::size_t	start_position = str.find_first_not_of(trim_chars);
 
 	if (start_position == std::string::npos)

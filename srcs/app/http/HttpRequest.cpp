@@ -1,9 +1,15 @@
 #include <HttpRequest.hpp>
+#include <stdexcept>
 
 const char HttpRequest::kCRLF_[] = "\r\n";
 const char HttpRequest::kWhitespace_[] = " \t";
 
-bool	HttpRequest::ParseRawString(const std::string &raw_request) {
+HttpRequest::HttpRequest(const std::string &raw_request) {
+	if (!ParseRawString_(raw_request))
+		throw std::invalid_argument("[HttpRequest] Bad Request");
+}
+
+bool	HttpRequest::ParseRawString_(const std::string &raw_request) {
 	offset_ = 0;
 	if (!ParseRequestLine_(raw_request))
 		return false;
@@ -64,9 +70,7 @@ bool	HttpRequest::ParseMethod_(const std::string &raw_request) {
 }
 
 bool	HttpRequest::IsValidMethod_(const std::string &method) const {
-	const std::string	valid_http_methods[] = {"GET", "HEAD", "POST", "PUT",
-												"DELETE", "CONNECT", "OPTIONS",
-												"TRACE"};
+	const std::string	valid_http_methods[] = {"GET", "POST", "DELETE"};
 	const std::size_t	len =
 					sizeof(valid_http_methods) / sizeof(valid_http_methods[0]);
 	for (std::size_t i = 0; i < len; ++i) {
@@ -116,10 +120,10 @@ bool	HttpRequest::ParseHeaders_(const std::string &raw_request) {
 			return false;
 		if (header_end - offset_ == 0)
 			break;
-		HeaderName name = ParseHeaderName_(raw_request);
+		std::string name = ParseHeaderName_(raw_request);
 		if (name.empty())
 			return false;
-		HeaderValue value = ParseHeaderValue_(raw_request);
+		std::string value = ParseHeaderValue_(raw_request);
 		if (value.empty())
 			return false;
 		AddHeader_(name, value);
@@ -129,14 +133,13 @@ bool	HttpRequest::ParseHeaders_(const std::string &raw_request) {
 	return HasHeader("Host");
 }
 
-HttpRequest::HeaderName
-HttpRequest::ParseHeaderName_(const std::string &raw_request) {
+std::string HttpRequest::ParseHeaderName_(const std::string &raw_request) {
 	const std::size_t name_start = offset_;
 
 	offset_ = raw_request.find(':', name_start);
 	if (offset_ == std::string::npos)
 		return "";
-	HeaderName	name = raw_request.substr(name_start, offset_ - name_start);
+	std::string	name = raw_request.substr(name_start, offset_ - name_start);
 	if (!IsValidHeaderName_(name))
 		return "";
 	name = ToLowerString(name);
@@ -144,14 +147,13 @@ HttpRequest::ParseHeaderName_(const std::string &raw_request) {
 	return name;
 }
 
-HttpRequest::HeaderValue
-HttpRequest::ParseHeaderValue_(const std::string &raw_request) {
+std::string HttpRequest::ParseHeaderValue_(const std::string &raw_request) {
 	const std::size_t	value_start = offset_;
 
 	offset_ = raw_request.find(kCRLF_, offset_);
 	if (offset_ == std::string::npos)
 		return "";
-	HeaderValue value = raw_request.substr(value_start, offset_ - value_start);
+	std::string value = raw_request.substr(value_start, offset_ - value_start);
 	value = TrimString(value, kWhitespace_);
 	if (!IsValidHeaderValue_(value))
 		return "";
@@ -159,7 +161,7 @@ HttpRequest::ParseHeaderValue_(const std::string &raw_request) {
 }
 
 void	HttpRequest::AddHeader_(
-		const HeaderName &name, const HeaderValue &value) {
+		const std::string &name, const std::string &value) {
 	headers_.insert(std::make_pair(name, value));
 }
 

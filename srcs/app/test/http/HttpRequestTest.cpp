@@ -9,8 +9,7 @@ TEST_CASE("ValidHttpGetRequestWithoutBody", "[http]") {
 	 	"Accept-Language: en, mi\r\n"
 	 	"\r\n";
 
-	HttpRequest	request;
-	REQUIRE(request.ParseRawString(raw_request));
+	HttpRequest	request(raw_request);
 	REQUIRE("GET" == request.GetMethod());
 	REQUIRE("/hello.txt" == request.GetUri());
 	REQUIRE("HTTP/1.1" == request.GetHttpVersion());
@@ -36,8 +35,7 @@ TEST_CASE("ValidHttpPostRequestWithBody", "[http]") {
 		"\r\n"
 		"User=Peter+Lee&pw=123456&action=login";
 
-	HttpRequest	request;
-	REQUIRE(request.ParseRawString(raw_request));
+	HttpRequest	request(raw_request);
 	REQUIRE("POST" == request.GetMethod());
 	REQUIRE("/bin/login" == request.GetUri());
 	REQUIRE("HTTP/1.1" == request.GetHttpVersion());
@@ -47,4 +45,11 @@ TEST_CASE("ValidHttpPostRequestWithBody", "[http]") {
 	REQUIRE("gzip, deflate" == request.GetHeaderValue("Accept-Encoding"));
 	REQUIRE("37" == request.GetHeaderValue("Content-Length"));
 	REQUIRE("User=Peter+Lee&pw=123456&action=login" == request.GetBody());
+}
+
+TEST_CASE("InvalidHttpRequestNoHostThrowException", "[http]") {
+	const std::string raw_request =
+		"GET /hello.txt HTTP/1.1\r\n"
+		"\r\n";
+	REQUIRE_THROWS(HttpRequest(raw_request));
 }

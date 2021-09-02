@@ -8,4 +8,5 @@ run: test
 	$(BLD_DIR)/utest_app
 
 .PHONY: test
-test: $(TEST0)
+test:
+	make $(TEST0)
