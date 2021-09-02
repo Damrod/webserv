@@ -16,4 +16,4 @@ $(foreach targetdir, $(OBJ_DIRS), $(eval $(call generateDirs, $(targetdir))))
 
 # Here I just changed the name of the OBJ_DIR since we now have several
 $(NAME):  $(OBJ_DIRS) $(OBJ)
-	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ)
+	$(CXX) $(CXXFLAGS) $(INC_PARAMS) -o $(NAME) $(OBJ)

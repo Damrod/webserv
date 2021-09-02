@@ -1,6 +1,6 @@
 NAME = webserv
 export CXX = clang++
-CXXFLAGS = -Wall -Werror -Wextra -std=c++98
+CXXFLAGS = -Wall -Werror -Wextra -std=c++98 -g3
 LINT = cpplint
 LINTFLAGS = --recursive --exclude=srcs/incs/test/catch2.hpp
 RMF = rm -rf
@@ -15,13 +15,9 @@ INC_DIR = $(SRC_DIR)/incs
 
 # if you create a new folder with source files, it should be in the srcs
 # folder, and you should put its name here:
-DIRS = app
+DIRS = app app/http app/utils
 
 include $(SRC_DIR)/target/common.mk
-# this will glob all cpp files inside the SRC_DIRS
-SRCS := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.cpp))
-# this is here so that the macro generateRules can find its sources
-VPATH := $(SRC_DIRS)
 
 .PHONY: all
 all: $(NAME)
