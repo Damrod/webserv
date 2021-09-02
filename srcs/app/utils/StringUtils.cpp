@@ -11,9 +11,7 @@ std::string	TrimString(const std::string &str, const std::string &trim_chars) {
 	return str.substr(start_position, end_position - start_position);
 }
 
-std::string	ToLowerString(const std::string &str) {
-	std::string lowercase_str = str;
-	std::transform(lowercase_str.begin(), lowercase_str.end(),
-			lowercase_str.begin(), ::tolower);
-	return lowercase_str;
+std::string	ToLowerString(std::string str) {
+	std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+	return str;
 }
