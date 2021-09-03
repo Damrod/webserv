@@ -2,11 +2,11 @@
 #define SRCS_INCS_SERVER_HPP_
 #include <map>
 #include <Connection.hpp>
-#include <ServerSettings.hpp>
+#include <ServerConfig.hpp>
 
 class Server {
 	private:
-		ServerSettings			settings_;
+		ServerConfig			settings_;
 		// Listening socket of this server
 		int						listen_sd_;
 
@@ -15,7 +15,7 @@ class Server {
 		std::map<int, Connection>	connections_;
 
 	public:
-		explicit Server(const ServerSettings &settings);
+		explicit Server(const ServerConfig &settings);
 		bool	BindListeningSocket();
 		void	AddConnection(int sd);
 		void	RemoveConnection(int sd);

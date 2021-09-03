@@ -1,21 +1,21 @@
-#ifndef SRCS_INCS_SERVERSETTINGS_HPP_
-#define SRCS_INCS_SERVERSETTINGS_HPP_
+#ifndef SRCS_INCS_SERVERCONFIG_HPP_
+#define SRCS_INCS_SERVERCONFIG_HPP_
 #include <stdint.h>
 #include <string>
 #include <vector>
-#include <CommonSettings.hpp>
+#include <CommonConfig.hpp>
 #include <Location.hpp>
 
-struct ServerSettings {
+struct ServerConfig {
 	uint32_t					listen_address;
 	uint16_t					listen_port;
 	std::vector<std::string>	server_name;
-	CommonSettings				common;
+	CommonConfig				common;
 
 	// A server can have multiple locations
 	std::vector<Location>		locations;
 
-	ServerSettings();
+	ServerConfig();
 };
 
 #endif  // SRCS_INCS_SERVERSETTINGS_HPP_

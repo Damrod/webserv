@@ -1,15 +1,15 @@
-#ifndef SRCS_INCS_COMMONSETTINGS_HPP_
-#define SRCS_INCS_COMMONSETTINGS_HPP_
+#ifndef SRCS_INCS_COMMONCONFIG_HPP_
+#define SRCS_INCS_COMMONCONFIG_HPP_
 #include <stdint.h>
 #include <string>
 
-struct CommonSettings {
+struct CommonConfig {
 	std::string	root;
 	uint32_t	client_max_body_size;
 	bool		autoindex;
 	std::string	index;
 
-	CommonSettings();
+	CommonConfig();
 };
 
 #endif  // SRCS_INCS_COMMONSETTINGS_HPP_

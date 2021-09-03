@@ -2,15 +2,15 @@
 #define SRCS_INCS_CONFIG_HPP_
 #include <queue>
 #include <string>
-#include <ServerSettings.hpp>
+#include <ServerConfig.hpp>
 
 class Config {
 	private:
-		std::queue<ServerSettings>	servers_settings_;
+		std::queue<ServerConfig>	servers_settings_;
 
 	public:
 		bool	LoadFile(const std::string &pathname);
-		std::queue<ServerSettings>	GetServersSettings() const;
+		std::queue<ServerConfig>	GetServersSettings() const;
 };
 
 #endif  // SRCS_INCS_CONFIG_HPP_

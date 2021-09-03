@@ -1,13 +1,13 @@
 #ifndef SRCS_INCS_LOCATION_HPP_
 #define SRCS_INCS_LOCATION_HPP_
 #include <string>
-#include <CommonSettings.hpp>
+#include <CommonConfig.hpp>
 
 struct	Location {
-	CommonSettings	common;
+	CommonConfig	common;
 	/* More location settings */
 
-	explicit Location(const CommonSettings &common);
+	explicit Location(const CommonConfig &common);
 };
 
 #endif  // SRCS_INCS_LOCATION_HPP_

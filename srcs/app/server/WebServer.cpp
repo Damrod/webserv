@@ -1,7 +1,7 @@
 #include <WebServer.hpp>
 #include <cstring>
 #include <queue>
-#include <ServerSettings.hpp>
+#include <ServerConfig.hpp>
 
 WebServer::WebServer() {
 	FD_ZERO(&master_set_);
@@ -45,7 +45,7 @@ void	WebServer::Run() {
 }
 
 bool	WebServer::PopulateServers_() {
-	std::queue<ServerSettings>	servers_settings;
+	std::queue<ServerConfig>	servers_settings;
 
 	servers_settings = config_.GetServersSettings();
 	while (!servers_settings.empty()) {

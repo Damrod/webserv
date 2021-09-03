@@ -6,8 +6,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <cstring>
+#include <iostream>
 
-Server::Server(const ServerSettings &settings)
+Server::Server(const ServerConfig &settings)
 	: settings_(settings), listen_sd_(-1) {
 }
 
@@ -52,6 +53,7 @@ bool	Server::ReadRequest(int sd) {
 	std::map<int, Connection>::iterator it = connections_.find(sd);
 	if (it == connections_.end())
 		return false;
+	std::cout << it->second.ReadRequest() << std::endl;
 	return it->second.ReadRequest();
 }
 
