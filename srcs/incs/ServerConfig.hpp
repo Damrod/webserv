@@ -18,4 +18,4 @@ struct ServerConfig {
 	ServerConfig();
 };
 
-#endif  // SRCS_INCS_SERVERSETTINGS_HPP_
+#endif  // SRCS_INCS_SERVERCONFIG_HPP_

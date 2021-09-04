@@ -12,4 +12,4 @@ struct CommonConfig {
 	CommonConfig();
 };
 
-#endif  // SRCS_INCS_COMMONSETTINGS_HPP_
+#endif  // SRCS_INCS_COMMONCONFIG_HPP_
