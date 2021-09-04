@@ -134,3 +134,6 @@ GTAGS
 GRTAGS
 GPATH
 GSYMS
+
+### Local doc files ###
+NOTES.md
