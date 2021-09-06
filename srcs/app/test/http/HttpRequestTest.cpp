@@ -11,7 +11,7 @@ TEST_CASE("ValidHttpGetRequestWithoutBody", "[http]") {
 
 	HttpRequest	request(raw_request);
 	REQUIRE("GET" == request.GetMethod());
-	REQUIRE("/hello.txt" == request.GetUri());
+	REQUIRE("/hello.txt" == request.GetRequestTarget());
 	REQUIRE("HTTP/1.1" == request.GetHttpVersion());
 	REQUIRE(!request.HasHeader("X-Custom-Header"));
 	REQUIRE("www.example.com" == request.GetHeaderValue("Host"));
@@ -37,7 +37,7 @@ TEST_CASE("ValidHttpPostRequestWithBody", "[http]") {
 
 	HttpRequest	request(raw_request);
 	REQUIRE("POST" == request.GetMethod());
-	REQUIRE("/bin/login" == request.GetUri());
+	REQUIRE("/bin/login" == request.GetRequestTarget());
 	REQUIRE("HTTP/1.1" == request.GetHttpVersion());
 	REQUIRE(request.HasHeader("Host"));
 	REQUIRE("image/gif, image/jpeg, */*" == request.GetHeaderValue("Accept"));
@@ -50,6 +50,14 @@ TEST_CASE("ValidHttpPostRequestWithBody", "[http]") {
 TEST_CASE("InvalidHttpRequestNoHostThrowException", "[http]") {
 	const std::string raw_request =
 		"GET /hello.txt HTTP/1.1\r\n"
+		"\r\n";
+	REQUIRE_THROWS(HttpRequest(raw_request));
+}
+
+TEST_CASE("InvalidHttpRequestRelativeRequestTarget", "[http]") {
+	const std::string raw_request =
+		"GET hello.txt HTTP/1.1\r\n"
+		"Host: 127.0.0.1:8000\r\n"
 		"\r\n";
 	REQUIRE_THROWS(HttpRequest(raw_request));
 }

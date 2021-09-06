@@ -24,8 +24,8 @@ std::string	HttpRequest::GetMethod() const {
 	return method_;
 }
 
-std::string	HttpRequest::GetUri() const {
-	return uri_;
+std::string	HttpRequest::GetRequestTarget() const {
+	return request_target_;
 }
 
 std::string	HttpRequest::GetHttpVersion() const {
@@ -51,7 +51,7 @@ bool	HttpRequest::HasHeader(const std::string &header_name) const {
 bool	HttpRequest::ParseRequestLine_(const std::string &raw_request) {
 	if (!ParseMethod_(raw_request))
 		return false;
-	if (!ParseUri_(raw_request))
+	if (!ParseRequestTarget_(raw_request))
 		return false;
 	if (!ParseHttpVersion_(raw_request))
 		return false;
@@ -78,21 +78,20 @@ bool	HttpRequest::IsValidMethod_(const std::string &method) const {
 	return false;
 }
 
-bool	HttpRequest::ParseUri_(const std::string &raw_request) {
-	const std::size_t	uri_start = offset_;
+bool	HttpRequest::ParseRequestTarget_(const std::string &raw_request) {
+	const std::size_t	request_target_start = offset_;
 
-	offset_ = raw_request.find(' ', uri_start);
+	offset_ = raw_request.find(' ', request_target_start);
 	if (offset_ == std::string::npos)
 		return false;
-	uri_ = raw_request.substr(uri_start, offset_ - uri_start);
+	request_target_ = raw_request.substr(
+			request_target_start, offset_ - request_target_start);
 	++offset_;
-	return IsValidUri_(uri_);
+	return IsValidRequestTarget_(request_target_);
 }
 
-bool	HttpRequest::IsValidUri_(const std::string &uri) const {
-	// TODO(gbudau) Look into how to validate URI
-	(void)uri;
-	return true;
+bool	HttpRequest::IsValidRequestTarget_(const std::string &target) const {
+	return !target.empty() && target[0] == '/';
 }
 
 bool	HttpRequest::ParseHttpVersion_(const std::string &raw_request) {
