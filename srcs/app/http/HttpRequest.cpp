@@ -45,9 +45,7 @@ std::string HttpRequest::GetBody() const {
 }
 
 bool	HttpRequest::HasHeader(const std::string &header_name) const {
-	const std::string			header_name_lc = ToLowerString(header_name);
-	HeadersMap::const_iterator	map_it = headers_.find(header_name_lc);
-	return map_it != headers_.end();
+	return headers_.count(ToLowerString(header_name)) > 0;
 }
 
 bool	HttpRequest::ParseRequestLine_(const std::string &raw_request) {
