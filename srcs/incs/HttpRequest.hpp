@@ -18,6 +18,10 @@ class HttpRequest {
 		std::string	http_version_;
 		HeadersMap	headers_;
 		std::string	body_;
+
+		// Variable used by the Parse* methods
+		// This is an index into the raw_request string
+		// that keeps track of the start/end of the fields/delimiters.
 		std::size_t	offset_;
 
 	public:
