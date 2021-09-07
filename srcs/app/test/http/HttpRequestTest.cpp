@@ -54,10 +54,50 @@ TEST_CASE("InvalidHttpRequestNoHostThrowException", "[http]") {
 	REQUIRE_THROWS(HttpRequest(raw_request));
 }
 
+TEST_CASE("InvalidHttpRequestHeaderWithoutDelimiter", "[http]") {
+	const std::string raw_request =
+		"GET /hello.txt HTTP/1.1\r\n"
+		"Host 127.0.0.1:8000\r\n"
+		"\r\n";
+	REQUIRE_THROWS(HttpRequest(raw_request));
+}
+
 TEST_CASE("InvalidHttpRequestRelativeRequestTarget", "[http]") {
 	const std::string raw_request =
 		"GET hello.txt HTTP/1.1\r\n"
 		"Host: 127.0.0.1:8000\r\n"
 		"\r\n";
+	REQUIRE_THROWS(HttpRequest(raw_request));
+}
+
+TEST_CASE("InvalidHttpRequestContentLengthWithoutBody", "[http]") {
+	const std::string	raw_request =
+		"GET /hello.txt HTTP/1.1\r\n"
+		"Host: localhost\r\n"
+		"Content-Length: 42\r\n"
+		"\r\n";
+
+	REQUIRE_THROWS(HttpRequest(raw_request));
+}
+
+TEST_CASE("InvalidHttpRequestZeroContentLengthWithoutBody", "[http]") {
+	const std::string	raw_request =
+		"GET /hello.txt HTTP/1.1\r\n"
+		"Host: localhost\r\n"
+		"Content-Length: 0\r\n"
+		"\r\n";
+
+	HttpRequest	request(raw_request);
+	REQUIRE("0" == request.GetHeaderValue("Content-Length"));
+}
+
+TEST_CASE("InvalidHttpRequestContentLengthInvalidCharacters", "[http]") {
+	const std::string	raw_request =
+		"GET /hello.txt HTTP/1.1\r\n"
+		"Host: localhost\r\n"
+		"Content-Length: 37abc\r\n"
+		"\r\n"
+		"User=Peter+Lee&pw=123456&action=login";
+
 	REQUIRE_THROWS(HttpRequest(raw_request));
 }

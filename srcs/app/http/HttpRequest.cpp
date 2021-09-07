@@ -1,5 +1,7 @@
 #include <HttpRequest.hpp>
 #include <stdexcept>
+#include <cerrno>
+#include <cstdlib>
 
 const char HttpRequest::kCRLF_[] = "\r\n";
 const char HttpRequest::kWhitespace_[] = " \t";
@@ -187,8 +189,11 @@ bool	HttpRequest::ContainOnlyVisibleChars_(const std::string &str) const {
 
 bool	HttpRequest::ParseBody_(const std::string &raw_request) {
 	body_ = raw_request.substr(offset_);
-	// TODO(gbudau) Review the Content-Length header definition
-	// TODO(gbudau) Look into what we have to do if
-	// the size of the body is different than the Content-Length
-	return true;
+	if (body_.empty() && !HasHeader("Content-Length"))
+		return true;
+	errno = 0;
+	char *endptr;
+	std::size_t content_length = std::strtoul(
+			GetHeaderValue("Content-Length").c_str(), &endptr, 10);
+	return !errno && *endptr == '\0' && content_length == body_.size();
 }
