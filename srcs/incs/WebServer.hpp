@@ -6,18 +6,22 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <string>
-#include <vector>
+#include <map>
 #include <Config.hpp>
 #include <Server.hpp>
 
 class WebServer {
 	private:
-		Config	config_;
-		std::vector<Server>	servers_;
-		fd_set	master_set_;
-		fd_set	read_set_;
-		fd_set	write_set_;
-		int		max_sd_;
+		typedef	int							Socket;
+		typedef std::map<Socket, Server>	ServersMap;
+		typedef ServersMap::iterator		servers_iterator;
+
+		Config		config_;
+		ServersMap	servers_;
+		fd_set		master_set_;
+		fd_set		read_set_;
+		fd_set		write_set_;
+		int			max_sd_;
 
 	public:
 		WebServer();
@@ -31,11 +35,13 @@ class WebServer {
 		bool	PopulateServers_();
 		void	AddListeningSocketsToMasterSet_();
 		void	SetMaxSocket_(int curr_sd);
-		std::vector<Server>::iterator	FindListeningServer(int sd);
-		void	AcceptNewConnection_(std::vector<Server>::iterator server_it);
-		std::vector<Server>::iterator	FindConnectionServer(int sd);
+		void	AcceptNewConnection_(int sd);
 		void	ReadRequest_(int sd);
 		void	SendResponse_(int sd);
+		bool	IsListeningSocket(int sd) const;
+
+		ServersMap::iterator	FindListeningServer(int sd);
+		ServersMap::iterator	FindConnectionServer(int sd);
 };
 
 #endif  // SRCS_INCS_WEBSERVER_HPP_
