@@ -3,8 +3,9 @@
 #include <cerrno>
 #include <cstdlib>
 
-const char HttpRequest::kCRLF_[] = "\r\n";
-const char HttpRequest::kWhitespace_[] = " \t";
+const char			HttpRequest::kCRLF_[] = "\r\n";
+const char			HttpRequest::kWhitespace_[] = " \t";
+const std::size_t	HttpRequest::kPortMax = 65535;
 
 HttpRequest::HttpRequest(const std::string &raw_request) {
 	if (!ParseRawString_(raw_request))
@@ -16,6 +17,8 @@ bool	HttpRequest::ParseRawString_(const std::string &raw_request) {
 	if (!ParseRequestLine_(raw_request))
 		return false;
 	if (!ParseHeaders_(raw_request))
+		return false;
+	if (!ParseHost_())
 		return false;
 	if (!ParseBody_(raw_request))
 		return false;
@@ -40,6 +43,14 @@ std::string	HttpRequest::GetHeaderValue(const std::string &header_name) const {
 	if (map_it != headers_.end())
 		return map_it->second;
 	return "";
+}
+
+std::string	HttpRequest::GetHost() const {
+	return host_;
+}
+
+std::size_t	HttpRequest::GetPort() const {
+	return port_;
 }
 
 std::string HttpRequest::GetBody() const {
@@ -129,7 +140,7 @@ bool	HttpRequest::ParseHeaders_(const std::string &raw_request) {
 		offset_ += 2;
 	}
 	offset_ += 2;
-	return HasHeader("Host");
+	return true;
 }
 
 std::string HttpRequest::ParseHeaderName_(const std::string &raw_request) {
@@ -185,6 +196,28 @@ bool	HttpRequest::ContainOnlyVisibleChars_(const std::string &str) const {
 			return false;
 	}
 	return true;
+}
+
+// Parse the Host header into a host and optional port number
+// Host = uri-host [ ":" port ]
+bool	HttpRequest::ParseHost_() {
+	std::string host = GetHeaderValue("Host");
+	if (host.empty())
+		return false;
+	std::size_t port_delimiter = host.find(':');
+	if (port_delimiter == std::string::npos) {
+		host_ = host;
+		port_ = 80;
+		return true;
+	}
+	host_ = host.substr(0, port_delimiter);
+	std::string port_str = host.substr(port_delimiter + 1);
+	if (host_.empty() || port_str.empty())
+		return false;
+	errno = 0;
+	char *endptr;
+	port_ = std::strtoul(port_str.c_str(), &endptr, 10);
+	return !errno && *endptr == '\0' && port_ <= kPortMax;
 }
 
 bool	HttpRequest::ParseBody_(const std::string &raw_request) {

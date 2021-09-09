@@ -80,7 +80,7 @@ TEST_CASE("InvalidHttpRequestContentLengthWithoutBody", "[http]") {
 	REQUIRE_THROWS(HttpRequest(raw_request));
 }
 
-TEST_CASE("InvalidHttpRequestZeroContentLengthWithoutBody", "[http]") {
+TEST_CASE("ValidHttpRequestZeroContentLengthWithoutBody", "[http]") {
 	const std::string	raw_request =
 		"GET /hello.txt HTTP/1.1\r\n"
 		"Host: localhost\r\n"
@@ -98,6 +98,37 @@ TEST_CASE("InvalidHttpRequestContentLengthInvalidCharacters", "[http]") {
 		"Content-Length: 37abc\r\n"
 		"\r\n"
 		"User=Peter+Lee&pw=123456&action=login";
+
+	REQUIRE_THROWS(HttpRequest(raw_request));
+}
+
+TEST_CASE("ValidHttpRequestHostWithPort", "[http]") {
+	const std::string	raw_request =
+		"GET /hello.txt HTTP/1.1\r\n"
+		"Host: localhost:8080\r\n"
+		"\r\n";
+
+	HttpRequest	request(raw_request);
+	REQUIRE("localhost" == request.GetHost());
+	REQUIRE(8080 == request.GetPort());
+}
+
+TEST_CASE("ValidHttpRequestHostWithoutPort", "[http]") {
+	const std::string	raw_request =
+		"GET /hello.txt HTTP/1.1\r\n"
+		"Host: localhost\r\n"
+		"\r\n";
+
+	HttpRequest	request(raw_request);
+	REQUIRE("localhost" == request.GetHost());
+	REQUIRE(80 == request.GetPort());
+}
+
+TEST_CASE("InvalidHttpRequestInvalidHostAndPort", "[http]") {
+	const std::string	raw_request =
+		"GET /hello.txt HTTP/1.1\r\n"
+		"Host: :\r\n"
+		"\r\n";
 
 	REQUIRE_THROWS(HttpRequest(raw_request));
 }

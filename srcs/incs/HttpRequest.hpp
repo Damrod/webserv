@@ -10,13 +10,16 @@ class HttpRequest {
 		typedef std::string							HeaderValue;
 		typedef	std::map<HeaderName, HeaderValue>	HeadersMap;
 
-		static const char	kCRLF_[];
-		static const char	kWhitespace_[];
+		static const char			kCRLF_[];
+		static const char			kWhitespace_[];
+		static const std::size_t	kPortMax;
 
 		std::string	method_;
 		std::string	request_target_;
 		std::string	http_version_;
 		HeadersMap	headers_;
+		std::string	host_;
+		std::size_t	port_;
 		std::string	body_;
 
 		// Variable used by the Parse* methods
@@ -30,6 +33,8 @@ class HttpRequest {
 		std::string	GetRequestTarget() const;
 		std::string	GetHttpVersion() const;
 		std::string	GetHeaderValue(const std::string &header_name) const;
+		std::string	GetHost() const;
+		std::size_t	GetPort() const;
 		std::string	GetBody() const;
 		bool		HasHeader(const std::string &header_name) const;
 
@@ -43,6 +48,7 @@ class HttpRequest {
 		std::string	ParseHeaderName_(const std::string &raw_request);
 		std::string	ParseHeaderValue_(const std::string &raw_request);
 		void		AddHeader_(const std::string &name, const std::string &val);
+		bool		ParseHost_();
 		bool		ParseBody_(const std::string &raw_request);
 		bool		IsValidMethod_(const std::string &method) const;
 		bool		IsValidRequestTarget_(const std::string &target) const;
