@@ -1,3 +1,4 @@
+#include <map>
 #include <string>
 #include <HttpRequest.hpp>
 #include <catch2.hpp>
@@ -131,4 +132,25 @@ TEST_CASE("InvalidHttpRequestInvalidHostAndPort", "[http]") {
 		"\r\n";
 
 	REQUIRE_THROWS(HttpRequest(raw_request));
+}
+
+TEST_CASE("ValidHttpRequestWithQuery", "[http]") {
+	const std::string	raw_request =
+		"GET /test/demo_form.php?name1=value1&name2=value2;name3=value3 HTTP/1.1\r\n"
+		"Host: www.example.com\r\n"
+		"\r\n";
+
+	HttpRequest	request(raw_request);
+	REQUIRE("/test/demo_form.php" == request.GetPath());
+	REQUIRE("value1" == request.GetQueryValue("name1"));
+	REQUIRE("value2" == request.GetQueryValue("name2"));
+	REQUIRE("value3" == request.GetQueryValue("name3"));
+	REQUIRE(request.HasQuery("name1"));
+	REQUIRE(!request.HasQuery("name42"));
+
+	std::map<std::string, std::string>	query_map;
+	query_map.insert(std::make_pair("name1", "value1"));
+	query_map.insert(std::make_pair("name2", "value2"));
+	query_map.insert(std::make_pair("name3", "value3"));
+	REQUIRE(query_map == request.GetQueries());
 }

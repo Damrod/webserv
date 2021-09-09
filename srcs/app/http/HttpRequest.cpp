@@ -33,6 +33,25 @@ std::string	HttpRequest::GetRequestTarget() const {
 	return request_target_;
 }
 
+std::string	HttpRequest::GetPath() const {
+	return path_;
+}
+
+std::map<std::string, std::string>	HttpRequest::GetQueries() const {
+	return queries_;
+}
+
+std::string	HttpRequest::GetQueryValue(const std::string &query_name) const {
+	QueriesMap::const_iterator	query_it = queries_.find(query_name);
+	if (query_it != queries_.end())
+		return query_it->second;
+	return "";
+}
+
+bool	HttpRequest::HasQuery(const std::string &query_name) const {
+	return queries_.count(query_name) > 0;
+}
+
 std::string	HttpRequest::GetHttpVersion() const {
 	return http_version_;
 }
@@ -100,11 +119,49 @@ bool	HttpRequest::ParseRequestTarget_(const std::string &raw_request) {
 	request_target_ = raw_request.substr(
 			request_target_start, offset_ - request_target_start);
 	++offset_;
-	return IsValidRequestTarget_(request_target_);
+	const std::size_t	query_delimiter = request_target_.find('?');
+	if (query_delimiter == std::string::npos) {
+		path_ = request_target_;
+		return IsValidPath_(path_);
+	}
+	path_ = request_target_.substr(0, query_delimiter);
+	std::string query_string = request_target_.substr(query_delimiter + 1);
+	return IsValidPath_(path_) && ParseQueryString_(query_string);
 }
 
-bool	HttpRequest::IsValidRequestTarget_(const std::string &target) const {
-	return !target.empty() && target[0] == '/';
+bool	HttpRequest::ParseQueryString_(const std::string &query_string) {
+	std::size_t	position = 0;
+
+	while (position < query_string.size()) {
+		const std::size_t	next_delimiter =
+									query_string.find_first_of("&;", position);
+		std::string	query;
+		if (next_delimiter == std::string::npos)
+			query = query_string.substr(position);
+		else
+			query = query_string.substr(position, next_delimiter - position);
+		const std::size_t	pair_delimiter = query.find('=');
+		const std::string	name = query.substr(0, pair_delimiter);
+		if (name.empty())
+			return false;
+		std::string			value;
+		if (pair_delimiter != std::string::npos)
+			value = query.substr(pair_delimiter + 1);
+		AddQuery_(name, value);
+		if (next_delimiter == std::string::npos)
+			break;
+		position = next_delimiter + 1;
+	}
+	return true;
+}
+
+void	HttpRequest::AddQuery_(
+					const std::string &name, const std::string &value) {
+	queries_.insert(make_pair(name, value));
+}
+
+bool	HttpRequest::IsValidPath_(const std::string &path) const {
+	return !path.empty() && path[0] == '/';
 }
 
 bool	HttpRequest::ParseHttpVersion_(const std::string &raw_request) {
