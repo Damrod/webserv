@@ -1,4 +1,5 @@
 #include <HttpRequest.hpp>
+#include <ostream>
 #include <stdexcept>
 #include <cerrno>
 #include <cstdlib>
@@ -54,6 +55,10 @@ bool	HttpRequest::HasQuery(const std::string &query_name) const {
 
 std::string	HttpRequest::GetHttpVersion() const {
 	return http_version_;
+}
+
+std::map<std::string, std::string>	HttpRequest::GetHeaders() const {
+	return headers_;
 }
 
 std::string	HttpRequest::GetHeaderValue(const std::string &header_name) const {
@@ -286,4 +291,32 @@ bool	HttpRequest::ParseBody_(const std::string &raw_request) {
 	std::size_t content_length = std::strtoul(
 			GetHeaderValue("Content-Length").c_str(), &endptr, 10);
 	return !errno && *endptr == '\0' && content_length == body_.size();
+}
+
+std::ostream&	operator<<(std::ostream &os, const HttpRequest &request) {
+	os << "Method: " << request.GetMethod() << '\n' <<
+		"Request target: " << request.GetRequestTarget() << '\n' <<
+		"Path: " << request.GetPath() << '\n' <<
+		"Queries: ";
+	typedef std::map<std::string, std::string> QueriesMap;
+	QueriesMap	queries = request.GetQueries();
+	QueriesMap::const_iterator	query_it = queries.begin();
+	QueriesMap::const_iterator	query_ite = queries.end();
+	while (query_it != query_ite) {
+		os << query_it->first << '=' << query_it->second << ' ';
+		++query_it;
+	}
+	os << '\n' << "Http version: " << request.GetHttpVersion() << '\n';
+	os << "\n Request headers:\n";
+	typedef std::map<std::string, std::string> HeadersMap;
+	HeadersMap	headers = request.GetHeaders();
+	HeadersMap::const_iterator	header_it = headers.begin();
+	HeadersMap::const_iterator	header_ite = headers.end();
+	while (header_it != header_ite) {
+		os << header_it->first << ": " << header_it->second << '\n';
+		++header_it;
+	}
+	os << "\n Request body:\n";
+	os << request.GetBody() << '\n';
+	return os;
 }

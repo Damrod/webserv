@@ -41,6 +41,7 @@ class HttpRequest {
 		std::string	GetQueryValue(const std::string &query_name) const;
 		bool		HasQuery(const std::string &query_name) const;
 		std::string	GetHttpVersion() const;
+		HeadersMap	GetHeaders() const;
 		std::string	GetHeaderValue(const std::string &header_name) const;
 		std::string	GetHost() const;
 		std::size_t	GetPort() const;
@@ -68,5 +69,7 @@ class HttpRequest {
 		bool		IsValidHeaderValue_(const std::string &header_value) const;
 		bool		ContainOnlyVisibleChars_(const std::string &str) const;
 };
+
+std::ostream&	operator<<(std::ostream &os, const HttpRequest &request);
 
 #endif  // SRCS_INCS_HTTPREQUEST_HPP_
