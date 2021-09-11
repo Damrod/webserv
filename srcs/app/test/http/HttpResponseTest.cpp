@@ -15,6 +15,7 @@ TEST_CASE("ValidHttpResponseWithoutHeadersAndBody", "[http]") {
 	REQUIRE("HTTP/1.1" == response.GetHttpVersion());
 	REQUIRE(200 == response.GetStatusCode());
 	REQUIRE("OK" == response.GetReasonPhrase());
+	REQUIRE(str == response.CreateResponseString());
 }
 
 TEST_CASE("ValidHttpResponseWithoutBody", "[http]") {
