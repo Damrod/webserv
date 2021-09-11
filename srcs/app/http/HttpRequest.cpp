@@ -273,8 +273,16 @@ bool	HttpRequest::ParseHost_() {
 		return true;
 	}
 	host_ = host.substr(0, port_delimiter);
+	if (host_.empty())
+		return false;
 	std::string port_str = host.substr(port_delimiter + 1);
-	if (host_.empty() || port_str.empty())
+	return ParsePort_(port_str);
+}
+
+bool	HttpRequest::ParsePort_(const std::string &port_str) {
+	const std::string valid_chars = "0123456789";
+	if (port_str.empty() ||
+			port_str.find_first_not_of(valid_chars) != std::string::npos)
 		return false;
 	errno = 0;
 	char *endptr;

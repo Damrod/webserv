@@ -61,6 +61,7 @@ class HttpRequest {
 		std::string	ParseHeaderValue_(const std::string &raw_request);
 		void		AddHeader_(const std::string &name, const std::string &val);
 		bool		ParseHost_();
+		bool		ParsePort_(const std::string &port_str);
 		bool		ParseBody_(const std::string &raw_request);
 		bool		IsValidMethod_(const std::string &method) const;
 		bool		IsValidPath_(const std::string &path) const;

@@ -134,6 +134,15 @@ TEST_CASE("InvalidHttpRequestInvalidHostAndPort", "[http]") {
 	REQUIRE_THROWS(HttpRequest(raw_request));
 }
 
+TEST_CASE("InvalidHttpRequestNegativePort", "[http]") {
+	const std::string	raw_request =
+		"GET /hello.txt HTTP/1.1\r\n"
+		"Host: www.example.com:-18446744073709551615\r\n"
+		"\r\n";
+
+	REQUIRE_THROWS(HttpRequest(raw_request));
+}
+
 TEST_CASE("ValidHttpRequestWithQuery", "[http]") {
 	const std::string	raw_request =
 		"GET /test/demo_form.php?name1=value1&name2=value2;name3=value3 HTTP/1.1\r\n"
