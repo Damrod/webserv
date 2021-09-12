@@ -103,7 +103,7 @@ WebServer::FindConnectionServer(int sd) {
 	ServersMap::iterator	server_it = servers_.begin();
 
 	for(; server_it!= servers_.end(); ++server_it) {
-		if (server_it->second.HaveConnection(sd))
+		if (server_it->second.HasConnection(sd))
 			return server_it;
 	}
 	return servers_.end();
