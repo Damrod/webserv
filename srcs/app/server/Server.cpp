@@ -35,7 +35,7 @@ bool	Server::BindListeningSocket() {
 void	Server::AddConnection(int sd) {
 	std::cout << '[' << listen_sd_ << ']' <<
 		" new connection on socket number: " << sd << '\n';
-	connections_.insert(std::make_pair(sd, Connection(sd)));
+	connections_.insert(std::make_pair(sd, Connection(settings_, sd)));
 }
 
 void	Server::RemoveConnection(int sd) {

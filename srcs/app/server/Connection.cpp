@@ -1,15 +1,11 @@
 #include <Connection.hpp>
 #include <iostream>
+#include <exception>
+#include <HttpRequestHandler.hpp>
 
-Connection::Connection(int socket) : socket_(socket) {
-	// Temporary, until we implement HttpRequest and HttpResponse
-	example_response_ = "HTTP/1.1 200 OK\r\n"
-								  "Server: hello_world\r\n"
-								  "Content-Length: 24\r\n"
-								  "Connection: keep-alive\r\n"
-								  "Content-Type: text/html\r\n"
-								  "\r\n"
-								  "<h1>Hello, World!!!</h1>";
+Connection::Connection(const ServerConfig &server_config, int socket)
+	: server_config_(server_config), socket_(socket),
+		ready_for_response_(false), raw_request_(""), raw_response_("") {
 }
 
 bool	Connection::ReadRequest() {
@@ -28,19 +24,11 @@ bool	Connection::ReadRequest() {
 bool	Connection::SendResponse() {
 	if (!ready_for_response_)
 		return true;
-	if (raw_response_.empty())
-		// TODO(any):
-		//    Create an HttpRequest using the raw_request
-		//    Create the raw_response depending on the request method
-		//    and the server config
-		//
-		// TODO(any):
-		//    The Connection needs a pointer to the server config,
-		//    we can pass it as a parameter of the constructor
-		//
-		// Temporary solution, until we implement the CreateHttpResponse() function
-		raw_response_ = example_response_;
-
+	if (raw_response_.empty()) {
+		HttpRequestHandler	handler(server_config_, raw_request_);
+		raw_request_.clear();
+		raw_response_ = handler.GetRawResponse();
+	}
 	int nbytes = send(socket_, raw_response_.c_str(), raw_response_.size(), 0);
 	if (nbytes <= 0)
 		return false;
