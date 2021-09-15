@@ -85,6 +85,9 @@ void	HttpResponse::AddHeader(const std::string &name,
 
 void	HttpResponse::SetBody(const std::string &body) {
 	body_ = body;
+	std::stringstream	ss;
+	ss << body.size();
+	headers_["content-length"] = ss.str();
 }
 
 std::string	HttpResponse::GetHttpVersion() const {
