@@ -1,8 +1,12 @@
 #include <HttpRequest.hpp>
+#include <ostream>
 #include <stdexcept>
+#include <cerrno>
+#include <cstdlib>
 
-const char HttpRequest::kCRLF_[] = "\r\n";
-const char HttpRequest::kWhitespace_[] = " \t";
+const char			HttpRequest::kCRLF_[] = "\r\n";
+const char			HttpRequest::kWhitespace_[] = " \t";
+const std::size_t	HttpRequest::kPortMax = 65535;
 
 HttpRequest::HttpRequest(const std::string &raw_request) {
 	if (!ParseRawString_(raw_request))
@@ -15,6 +19,8 @@ bool	HttpRequest::ParseRawString_(const std::string &raw_request) {
 		return false;
 	if (!ParseHeaders_(raw_request))
 		return false;
+	if (!ParseHost_())
+		return false;
 	if (!ParseBody_(raw_request))
 		return false;
 	return true;
@@ -24,12 +30,35 @@ std::string	HttpRequest::GetMethod() const {
 	return method_;
 }
 
-std::string	HttpRequest::GetUri() const {
-	return uri_;
+std::string	HttpRequest::GetRequestTarget() const {
+	return request_target_;
+}
+
+std::string	HttpRequest::GetPath() const {
+	return path_;
+}
+
+std::map<std::string, std::string>	HttpRequest::GetQueries() const {
+	return queries_;
+}
+
+std::string	HttpRequest::GetQueryValue(const std::string &query_name) const {
+	QueriesMap::const_iterator	query_it = queries_.find(query_name);
+	if (query_it != queries_.end())
+		return query_it->second;
+	return "";
+}
+
+bool	HttpRequest::HasQuery(const std::string &query_name) const {
+	return queries_.count(query_name) > 0;
 }
 
 std::string	HttpRequest::GetHttpVersion() const {
 	return http_version_;
+}
+
+std::map<std::string, std::string>	HttpRequest::GetHeaders() const {
+	return headers_;
 }
 
 std::string	HttpRequest::GetHeaderValue(const std::string &header_name) const {
@@ -40,20 +69,26 @@ std::string	HttpRequest::GetHeaderValue(const std::string &header_name) const {
 	return "";
 }
 
+std::string	HttpRequest::GetHost() const {
+	return host_;
+}
+
+std::size_t	HttpRequest::GetPort() const {
+	return port_;
+}
+
 std::string HttpRequest::GetBody() const {
 	return body_;
 }
 
 bool	HttpRequest::HasHeader(const std::string &header_name) const {
-	const std::string			header_name_lc = ToLowerString(header_name);
-	HeadersMap::const_iterator	map_it = headers_.find(header_name_lc);
-	return map_it != headers_.end();
+	return headers_.count(ToLowerString(header_name)) > 0;
 }
 
 bool	HttpRequest::ParseRequestLine_(const std::string &raw_request) {
 	if (!ParseMethod_(raw_request))
 		return false;
-	if (!ParseUri_(raw_request))
+	if (!ParseRequestTarget_(raw_request))
 		return false;
 	if (!ParseHttpVersion_(raw_request))
 		return false;
@@ -80,21 +115,58 @@ bool	HttpRequest::IsValidMethod_(const std::string &method) const {
 	return false;
 }
 
-bool	HttpRequest::ParseUri_(const std::string &raw_request) {
-	const std::size_t	uri_start = offset_;
+bool	HttpRequest::ParseRequestTarget_(const std::string &raw_request) {
+	const std::size_t	request_target_start = offset_;
 
-	offset_ = raw_request.find(' ', uri_start);
+	offset_ = raw_request.find(' ', request_target_start);
 	if (offset_ == std::string::npos)
 		return false;
-	uri_ = raw_request.substr(uri_start, offset_ - uri_start);
+	request_target_ = raw_request.substr(
+			request_target_start, offset_ - request_target_start);
 	++offset_;
-	return IsValidUri_(uri_);
+	const std::size_t	query_delimiter = request_target_.find('?');
+	if (query_delimiter == std::string::npos) {
+		path_ = request_target_;
+		return IsValidPath_(path_);
+	}
+	path_ = request_target_.substr(0, query_delimiter);
+	std::string query_string = request_target_.substr(query_delimiter + 1);
+	return IsValidPath_(path_) && ParseQueryString_(query_string);
 }
 
-bool	HttpRequest::IsValidUri_(const std::string &uri) const {
-	// TODO(gbudau) Look into how to validate URI
-	(void)uri;
+bool	HttpRequest::ParseQueryString_(const std::string &query_string) {
+	std::size_t	position = 0;
+
+	while (position < query_string.size()) {
+		const std::size_t	next_delimiter =
+									query_string.find_first_of("&;", position);
+		std::string	query;
+		if (next_delimiter == std::string::npos)
+			query = query_string.substr(position);
+		else
+			query = query_string.substr(position, next_delimiter - position);
+		const std::size_t	pair_delimiter = query.find('=');
+		const std::string	name = query.substr(0, pair_delimiter);
+		if (name.empty())
+			return false;
+		std::string			value;
+		if (pair_delimiter != std::string::npos)
+			value = query.substr(pair_delimiter + 1);
+		AddQuery_(name, value);
+		if (next_delimiter == std::string::npos)
+			break;
+		position = next_delimiter + 1;
+	}
 	return true;
+}
+
+void	HttpRequest::AddQuery_(
+					const std::string &name, const std::string &value) {
+	queries_.insert(make_pair(name, value));
+}
+
+bool	HttpRequest::IsValidPath_(const std::string &path) const {
+	return !path.empty() && path[0] == '/';
 }
 
 bool	HttpRequest::ParseHttpVersion_(const std::string &raw_request) {
@@ -130,7 +202,7 @@ bool	HttpRequest::ParseHeaders_(const std::string &raw_request) {
 		offset_ += 2;
 	}
 	offset_ += 2;
-	return HasHeader("Host");
+	return true;
 }
 
 std::string HttpRequest::ParseHeaderName_(const std::string &raw_request) {
@@ -188,10 +260,71 @@ bool	HttpRequest::ContainOnlyVisibleChars_(const std::string &str) const {
 	return true;
 }
 
+// Parse the Host header into a host and optional port number
+// Host = uri-host [ ":" port ]
+bool	HttpRequest::ParseHost_() {
+	std::string host = GetHeaderValue("Host");
+	if (host.empty())
+		return false;
+	std::size_t port_delimiter = host.find(':');
+	if (port_delimiter == std::string::npos) {
+		host_ = host;
+		port_ = 80;
+		return true;
+	}
+	host_ = host.substr(0, port_delimiter);
+	if (host_.empty())
+		return false;
+	std::string port_str = host.substr(port_delimiter + 1);
+	return ParsePort_(port_str);
+}
+
+bool	HttpRequest::ParsePort_(const std::string &port_str) {
+	const std::string valid_chars = "0123456789";
+	if (port_str.empty() ||
+			port_str.find_first_not_of(valid_chars) != std::string::npos)
+		return false;
+	errno = 0;
+	char *endptr;
+	port_ = std::strtoul(port_str.c_str(), &endptr, 10);
+	return !errno && *endptr == '\0' && port_ <= kPortMax;
+}
+
 bool	HttpRequest::ParseBody_(const std::string &raw_request) {
 	body_ = raw_request.substr(offset_);
-	// TODO(gbudau) Review the Content-Length header definition
-	// TODO(gbudau) Look into what we have to do if
-	// the size of the body is different than the Content-Length
-	return true;
+	if (body_.empty() && !HasHeader("Content-Length"))
+		return true;
+	errno = 0;
+	char *endptr;
+	std::size_t content_length = std::strtoul(
+			GetHeaderValue("Content-Length").c_str(), &endptr, 10);
+	return !errno && *endptr == '\0' && content_length == body_.size();
+}
+
+std::ostream&	operator<<(std::ostream &os, const HttpRequest &request) {
+	os << "Method: " << request.GetMethod() << '\n' <<
+		"Request target: " << request.GetRequestTarget() << '\n' <<
+		"Path: " << request.GetPath() << '\n' <<
+		"Queries: ";
+	typedef std::map<std::string, std::string> QueriesMap;
+	QueriesMap	queries = request.GetQueries();
+	QueriesMap::const_iterator	query_it = queries.begin();
+	QueriesMap::const_iterator	query_ite = queries.end();
+	while (query_it != query_ite) {
+		os << query_it->first << '=' << query_it->second << ' ';
+		++query_it;
+	}
+	os << '\n' << "Http version: " << request.GetHttpVersion() << '\n';
+	os << "\n Request headers:\n";
+	typedef std::map<std::string, std::string> HeadersMap;
+	HeadersMap	headers = request.GetHeaders();
+	HeadersMap::const_iterator	header_it = headers.begin();
+	HeadersMap::const_iterator	header_ite = headers.end();
+	while (header_it != header_ite) {
+		os << header_it->first << ": " << header_it->second << '\n';
+		++header_it;
+	}
+	os << "\n Request body:\n";
+	os << request.GetBody() << '\n';
+	return os;
 }
