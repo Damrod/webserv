@@ -17,6 +17,7 @@ class Connection {
 		const ServerConfig	&server_config_;
 		const int			socket_;
 		bool				ready_for_response_;
+		bool				keep_alive_;
 		std::string			raw_request_;
 		std::string			raw_response_;
 };
