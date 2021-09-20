@@ -1,6 +1,8 @@
 #include <WebServer.hpp>
+#include <cerrno>
 #include <cstring>
 #include <queue>
+#include <stdexcept>
 #include <ServerConfig.hpp>
 
 WebServer::WebServer() {
@@ -10,14 +12,9 @@ WebServer::WebServer() {
 	max_sd_ = -1;
 }
 
-bool	WebServer::Init(const std::string &pathname) {
-	// Load the config file
-	if (!config_.LoadFile(pathname))
-		return false;
-	// Populate the servers
-	if (!PopulateServers_())
-		return false;
-	return true;
+void	WebServer::Init(const std::string &pathname) {
+	config_.LoadFile(pathname);
+	PopulateServers_();
 }
 
 void	WebServer::Run() {
@@ -26,6 +23,8 @@ void	WebServer::Run() {
 		std::memcpy(&read_set_, &master_set_, sizeof(master_set_));
 		int ready_connections =
 			select(max_sd_ + 1, &read_set_, &write_set_, NULL, NULL);
+		if (ready_connections <= 0)
+			throw std::runtime_error(std::strerror(errno));
 		for (int sd = 0; sd <= max_sd_ && ready_connections > 0; ++sd) {
 			if (FD_ISSET(sd, &read_set_)) {
 				--ready_connections;
@@ -44,7 +43,7 @@ void	WebServer::Run() {
 	}
 }
 
-bool	WebServer::PopulateServers_() {
+void	WebServer::PopulateServers_() {
 	std::queue<ServerConfig>	servers_settings;
 
 	servers_settings = config_.GetServersSettings();
@@ -52,11 +51,9 @@ bool	WebServer::PopulateServers_() {
 		Server	server(servers_settings.front());
 		servers_settings.pop();
 
-		if (!server.BindListeningSocket())
-			return false;
+		server.BindListeningSocket();
 		servers_.push_back(server);
 	}
-	return true;
 }
 
 void	WebServer::AddListeningSocketsToMasterSet_() {
@@ -94,8 +91,11 @@ WebServer::FindListeningServer(int sd) {
 void	WebServer::AcceptNewConnection_(
 		std::vector<Server>::iterator server_it) {
 	int new_sd = accept(server_it->GetListeningSocket(), NULL, NULL);
+	if (new_sd < 0)
+		throw std::runtime_error(std::strerror(errno));
 
-	fcntl(new_sd, F_SETFL, O_NONBLOCK);
+	if (fcntl(new_sd, F_SETFL, O_NONBLOCK) < 0)
+		throw std::runtime_error(std::strerror(errno));
 	FD_SET(new_sd, &master_set_);
 	FD_SET(new_sd, &write_set_);
 	server_it->AddConnection(new_sd);

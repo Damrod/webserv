@@ -5,17 +5,21 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <cerrno>
 #include <cstring>
 #include <iostream>
+#include <stdexcept>
 
 Server::Server(const ServerConfig &settings)
 	: settings_(settings), listen_sd_(-1) {
 }
 
-bool	Server::BindListeningSocket() {
-	// TODO(any) Error checking
+void	Server::BindListeningSocket() {
 	listen_sd_ = socket(AF_INET, SOCK_STREAM, 0);
-	fcntl(listen_sd_, F_SETFL, O_NONBLOCK);
+	if (listen_sd_ < 0)
+		throw std::runtime_error(std::strerror(errno));
+	if (fcntl(listen_sd_, F_SETFL, O_NONBLOCK) < 0)
+		throw std::runtime_error(std::strerror(errno));
 
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;  // IPv4
@@ -24,12 +28,14 @@ bool	Server::BindListeningSocket() {
 	std::memset(addr.sin_zero, 0, sizeof(addr.sin_zero));
 
 	int on = 1;
-	setsockopt(listen_sd_, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+	if (setsockopt(listen_sd_, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
+		throw std::runtime_error(std::strerror(errno));
 
-	bind(listen_sd_, (struct sockaddr *)&addr, sizeof(addr));
+	if (bind(listen_sd_, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+		throw std::runtime_error(std::strerror(errno));
 
-	listen(listen_sd_, SOMAXCONN);  // 128
-	return true;
+	if (listen(listen_sd_, SOMAXCONN) < 0)
+		throw std::runtime_error(std::strerror(errno));
 }
 
 void	Server::AddConnection(int sd) {

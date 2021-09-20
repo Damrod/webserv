@@ -16,7 +16,7 @@ class Server {
 
 	public:
 		explicit Server(const ServerConfig &settings);
-		bool	BindListeningSocket();
+		void	BindListeningSocket();
 		void	AddConnection(int sd);
 		void	RemoveConnection(int sd);
 		int		GetListeningSocket() const;
