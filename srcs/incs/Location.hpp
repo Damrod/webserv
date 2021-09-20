@@ -5,11 +5,12 @@
 #include <CommonConfig.hpp>
 
 struct	Location {
+	std::string				path;
 	CommonConfig			common;
 	typedef std::string		HttpMethod;
 	std::vector<HttpMethod>	limit_except;
 
-	explicit Location(const CommonConfig &common);
+	Location(const std::string &path, const CommonConfig &common);
 };
 
 #endif  // SRCS_INCS_LOCATION_HPP_
