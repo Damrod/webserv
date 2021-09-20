@@ -29,12 +29,12 @@ void	WebServer::Run() {
 		for (int sd = 0; sd <= max_sd_ && ready_connections > 0; ++sd) {
 			if (FD_ISSET(sd, &read_set_)) {
 				--ready_connections;
-				if (IsListeningSocket(sd)) {
+				if (IsListeningSocket_(sd)) {
 					AcceptNewConnection_(sd);
 				} else {
 					ReadRequest_(sd);
 				}
-			} else if (FD_ISSET(sd, &write_set_) && !IsListeningSocket(sd)) {
+			} else if (FD_ISSET(sd, &write_set_) && !IsListeningSocket_(sd)) {
 				--ready_connections;
 				SendResponse_(sd);
 			}
@@ -60,7 +60,7 @@ bool	WebServer::PopulateServers_() {
 }
 
 void	WebServer::AddListeningSocketsToMasterSet_() {
-	ServersMap::iterator	server_it = servers_.begin();
+	ServersMap_::iterator	server_it = servers_.begin();
 
 	for (; server_it != servers_.end(); ++server_it) {
 		int listen_sd = server_it->second.GetListeningSocket();
@@ -79,7 +79,7 @@ void	WebServer::SetMaxSocket_(int curr_sd) {
 }
 
 std::map<int, Server>::iterator
-WebServer::FindListeningServer(int sd) {
+WebServer::FindListeningServer_(int sd) {
 	return servers_.find(sd);
 }
 
@@ -87,7 +87,7 @@ WebServer::FindListeningServer(int sd) {
 // Add it to the server connections
 // And to the master_set_
 void	WebServer::AcceptNewConnection_(int sd) {
-	ServersMap::iterator	server_it = FindListeningServer(sd);
+	ServersMap_::iterator	server_it = FindListeningServer_(sd);
 	Server *server_ptr = &server_it->second;
 
 	int new_sd = accept(server_ptr->GetListeningSocket(), NULL, NULL);
@@ -99,8 +99,8 @@ void	WebServer::AcceptNewConnection_(int sd) {
 }
 
 std::map<int, Server>::iterator
-WebServer::FindConnectionServer(int sd) {
-	ServersMap::iterator	server_it = servers_.begin();
+WebServer::FindConnectionServer_(int sd) {
+	ServersMap_::iterator	server_it = servers_.begin();
 
 	for(; server_it!= servers_.end(); ++server_it) {
 		if (server_it->second.HasConnection(sd))
@@ -113,7 +113,7 @@ WebServer::FindConnectionServer(int sd) {
 // Find which server has this connection
 // And append the data to the connection HttpRequest
 void	WebServer::ReadRequest_(int sd) {
-	ServersMap::iterator server_it = FindConnectionServer(sd);
+	ServersMap_::iterator server_it = FindConnectionServer_(sd);
 	Server *server_ptr = &server_it->second;
 
 	if (!server_ptr->ReadRequest(sd)) {
@@ -124,7 +124,7 @@ void	WebServer::ReadRequest_(int sd) {
 }
 
 void	WebServer::SendResponse_(int sd) {
-	ServersMap::iterator server_it = FindConnectionServer(sd);
+	ServersMap_::iterator server_it = FindConnectionServer_(sd);
 	Server	*server_ptr = &server_it->second;
 
 	if (!server_ptr->SendResponse(sd)) {
@@ -134,6 +134,6 @@ void	WebServer::SendResponse_(int sd) {
 	}
 }
 
-bool	WebServer::IsListeningSocket(int sd) const {
+bool	WebServer::IsListeningSocket_(int sd) const {
 	return servers_.count(sd) > 0;
 }

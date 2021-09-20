@@ -12,12 +12,11 @@
 
 class WebServer {
 	private:
-		typedef	int							Socket;
-		typedef std::map<Socket, Server>	ServersMap;
-		typedef ServersMap::iterator		servers_iterator;
+		typedef	int							Socket_;
+		typedef std::map<Socket_, Server>	ServersMap_;
 
 		Config		config_;
-		ServersMap	servers_;
+		ServersMap_	servers_;
 		fd_set		master_set_;
 		fd_set		read_set_;
 		fd_set		write_set_;
@@ -38,10 +37,10 @@ class WebServer {
 		void	AcceptNewConnection_(int sd);
 		void	ReadRequest_(int sd);
 		void	SendResponse_(int sd);
-		bool	IsListeningSocket(int sd) const;
+		bool	IsListeningSocket_(int sd) const;
 
-		ServersMap::iterator	FindListeningServer(int sd);
-		ServersMap::iterator	FindConnectionServer(int sd);
+		ServersMap_::iterator	FindListeningServer_(int sd);
+		ServersMap_::iterator	FindConnectionServer_(int sd);
 };
 
 #endif  // SRCS_INCS_WEBSERVER_HPP_
