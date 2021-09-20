@@ -6,8 +6,8 @@
 
 HttpRequestHandler::HttpRequestHandler(const ServerConfig &server_config,
 										const std::string &raw_request)
-	:  server_config_(server_config), raw_request_(raw_request),
-		raw_response_(""), keep_alive_(true) {
+	: server_config_(server_config), raw_request_(raw_request),
+		keep_alive_(true) {
 	HandleRequest_();
 	(void)server_config_;
 }
