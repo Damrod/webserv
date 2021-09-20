@@ -3,8 +3,7 @@
 
 Connection::Connection(const ServerConfig &server_config, int socket)
 	: server_config_(server_config), socket_(socket),
-		ready_for_response_(false), keep_alive_(true),
-		raw_request_(""), raw_response_("") {
+		ready_for_response_(false), keep_alive_(true) {
 }
 
 bool	Connection::ReadRequest() {
