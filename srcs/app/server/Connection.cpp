@@ -1,4 +1,5 @@
 #include <Connection.hpp>
+#include <IRequestHandler.hpp>
 #include <HttpRequestHandler.hpp>
 
 Connection::Connection(const ServerConfig &server_config, int socket)
@@ -21,10 +22,12 @@ bool	Connection::SendResponse() {
 	if (!ready_for_response_)
 		return true;
 	if (raw_response_.empty()) {
-		HttpRequestHandler	handler(server_config_, raw_request_);
+		IRequestHandler *handler =
+			new HttpRequestHandler(server_config_, raw_request_);
 		raw_request_.clear();
-		raw_response_ = handler.GetRawResponse();
-		keep_alive_ = handler.GetKeepAlive();
+		raw_response_ = handler->GetRawResponse();
+		keep_alive_ = handler->GetKeepAlive();
+		delete handler;
 	}
 	int nbytes = send(socket_, raw_response_.c_str(), raw_response_.size(), 0);
 	if (nbytes <= 0)

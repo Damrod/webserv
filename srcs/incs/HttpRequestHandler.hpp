@@ -3,9 +3,10 @@
 #include <string>
 #include <HttpRequest.hpp>
 #include <HttpResponse.hpp>
+#include <IRequestHandler.hpp>
 #include <ServerConfig.hpp>
 
-class HttpRequestHandler {
+class HttpRequestHandler : public IRequestHandler {
 	public:
 		HttpRequestHandler(const ServerConfig &server_config,
 							const std::string &raw_request);
