@@ -1,0 +1,23 @@
+name: Compile C++ code on macOS and Linux with clang++ and g++
+
+on:
+  push:
+    branches: [$default-branch]
+  pull_request:
+    types: [assigned, opened, synchronize, reopened]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-10.15, ubuntu-18.04]
+    steps:
+      - name: Check out Github repository
+        uses: actions/checkout@v2
+
+      - name: Compile with clang++ and g++
+        run: |
+            CXX=clang++ make
+            make fclean
+            CXX=g++ make

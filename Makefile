@@ -1,5 +1,6 @@
 NAME = webserv
-export CXX = clang++
+CXX ?= clang++
+export CXX
 CXXFLAGS = -Wall -Werror -Wextra -std=c++98 -g3
 LINT = cpplint
 LINTFLAGS = --recursive --exclude=srcs/incs/test/catch2.hpp
