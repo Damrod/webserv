@@ -1,8 +1,6 @@
 #include <parser/Lexer.hpp>
 
-Lexer::~Lexer(void) {
-	delete tokens_;
-}
+Lexer::~Lexer(void) {}
 
 static void addStringLit(std::list<Token> *tokens, std::string *filebuff,
 				  size_t *tokenend, size_t *line) {
@@ -44,44 +42,42 @@ static void addPunct(std::list<Token> *tokens, char type,
 	*tokenend = 1;
 }
 
-std::list<Token> *Lexer::lexer(const std::string &fileBuff) {
+void Lexer::lex(const std::string &fileBuff) {
 	std::string filebuff = "{" + fileBuff + "}";  // add global scope
-	std::list<Token> *tokens = new std::list<Token>;
 	size_t line = 1;
 	size_t tokenend = 0;
 	std::string token;
 
 	while (filebuff[0]) {
 		filebuff = filebuff.substr(tokenend);
-		for (; filebuff[0] && whitespace.find(filebuff[0], 0) != whitespace.npos
+		for (; filebuff[0] && kWhitespace_.find(filebuff[0], 0) != kWhitespace_.npos
 			 ; filebuff = filebuff.substr(1)) {
 			if (filebuff[0] == '\n')
 				line++;
 		}
 		if (filebuff[0] == '"' || filebuff[0] == '\'') {
-			addStringLit(tokens, &filebuff, &tokenend, &line);
+			addStringLit(&tokens_, &filebuff, &tokenend, &line);
 			continue;
 		}
-		if (validtokens.find(filebuff[0], 0) != validtokens.npos) {
-			addPunct(tokens, filebuff[0], &tokenend, line);
+		if (kValidtokens_.find(filebuff[0], 0) != kValidtokens_.npos) {
+			addPunct(&tokens_, filebuff[0], &tokenend, line);
 			continue;
 		}
-		tokenend = filebuff.find_first_of(validtokens + whitespace, 0);
+		tokenend = filebuff.find_first_of(kValidtokens_ + kWhitespace_, 0);
 		if (tokenend == filebuff.npos)
 			tokenend = filebuff.size();
 		if ((token = filebuff.substr(0, tokenend)) != "")
-			tokens->push_back(Token(token, Token::Type::T_SYMBOL, line));
+			tokens_.push_back(Token(token, Token::Type::T_SYMBOL, line));
 	}
-	return tokens;
 }
 
-std::list<Token> *Lexer::GetTokens(void) const {
+std::list<Token> Lexer::GetTokens(void) const {
 	return tokens_;
 }
 
 Lexer::Lexer(const std::string &filebuff)
-	: validtokens("{};"),
-	  whitespace(" \t\f\n\r\t\v\n"),
-	  tokens_(NULL) {
-	tokens_ = lexer(filebuff);
+	: kValidtokens_("{};"),
+	  kWhitespace_(" \t\f\n\r\t\v\n"),
+	  tokens_() {
+	lex(filebuff);
 }
