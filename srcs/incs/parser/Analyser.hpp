@@ -24,7 +24,7 @@ class Analyser {
 		virtual const char *what() const throw();
 	private:
 		size_t		line_;
-		std::string error_;
+		std::string	lineerr_;
 	};
 
  protected:
