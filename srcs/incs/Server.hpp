@@ -20,7 +20,7 @@ class Server {
 		void	AddConnection(int sd);
 		void	RemoveConnection(int sd);
 		int		GetListeningSocket() const;
-		bool	HaveConnection(int sd);
+		bool	HasConnection(int sd);
 		bool	ReadRequest(int sd);
 		bool	SendResponse(int sd);
 };
