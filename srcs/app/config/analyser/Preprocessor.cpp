@@ -42,6 +42,6 @@ std::string Preprocessor::preprocess(std::ifstream &file) {
 	return filebuff;
 }
 
-std::string &Preprocessor::GetFileBuffer(void) {
+std::string Preprocessor::GetFileBuffer(void) {
 	return filebuff_;
 }
