@@ -86,6 +86,19 @@ void	HttpRequestHandler::DefaultErrorPage_(std::size_t error_code) {
 	raw_response_ = response.CreateResponseString();
 }
 
+/*
+<html>
+<head><title>Index of /</title></head>
+<body>
+<h1>Index of /</h1><hr><pre><a href="../">../</a>
+<a href="web1/">web1/</a>                                              22-Sep-2021 09:34                   -
+<a href="web2/">web2/</a>                                              22-Sep-2021 11:19                   -
+</pre><hr></body>
+</html>
+*/
+void	HttpRequestHandler::DirectoryListing() {
+}
+
 void	HttpRequestHandler::RequestError_(std::size_t error_code) {
 	// TODO(any) Respond with the error page
 	//           if its defined in server configuration
