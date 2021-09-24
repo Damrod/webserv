@@ -1,4 +1,9 @@
 #include <HttpRequestHandler.hpp>
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <cerrno>
 #include <ctime>
 #include <exception>
 #include <sstream>
@@ -86,17 +91,52 @@ void	HttpRequestHandler::DefaultErrorPage_(std::size_t error_code) {
 	raw_response_ = response.CreateResponseString();
 }
 
-/*
-<html>
-<head><title>Index of /</title></head>
-<body>
-<h1>Index of /</h1><hr><pre><a href="../">../</a>
-<a href="web1/">web1/</a>                                              22-Sep-2021 09:34                   -
-<a href="web2/">web2/</a>                                              22-Sep-2021 11:19                   -
-</pre><hr></body>
-</html>
-*/
-void	HttpRequestHandler::DirectoryListing() {
+void	HttpRequestHandler::PathError_() {
+	if (errno == ENOENT || errno == ENOTDIR)
+		RequestError_(404);
+	else if (errno == EACCES)
+		RequestError_(403);
+	else
+		RequestError_(500);
+}
+
+void	HttpRequestHandler::ListDirectory_(const std::string &full_real_path,
+											const std::string &request_path) {
+	DIR	*dir = opendir(full_real_path.c_str());
+	if (dir == NULL) {
+		PathError_();
+		return;
+	}
+	std::stringstream	ss;
+	ss << "<html>\n" <<
+		"<head><title>Index of " << request_path << "</title></head>\n" <<
+		"<body>\n" <<
+		"<h1>Index of " << request_path <<
+		"</h1><hr><pre><a href=\"../\">../</a>\n";
+	struct dirent		*entry;
+	while ((entry = readdir(dir)) != NULL) {
+		std::string dir_name = entry->d_name;
+		if (dir_name == "." || dir_name == ".." || dir_name.rfind(".", 0) == 0)
+			continue;
+		const std::string full_dir_path = full_real_path + "/" + dir_name;
+		struct stat	s;
+		if (stat(full_dir_path.c_str(), &s) == 0) {
+			if ((s.st_mode & S_IFMT) == S_IFDIR)
+				dir_name.append("/");
+		} else {
+			PathError_();
+			return;
+		}
+		ss << "<a href=\"" << dir_name << "\">" << dir_name << "</a>\n";
+	}
+	closedir(dir);
+	ss << "</pre><hr></body>\n" <<
+		"</html>\n";
+	HttpResponse	response(200);
+	response.AddHeader("Content-Type", "text/html");
+	response.SetBody(ss.str());
+	AddCommonHeaders_(&response);
+	raw_response_ = response.CreateResponseString();
 }
 
 void	HttpRequestHandler::RequestError_(std::size_t error_code) {
@@ -109,13 +149,10 @@ void	HttpRequestHandler::RequestError_(std::size_t error_code) {
 void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
 	// TODO(any) Implement GET
 	(void)request;
-	HttpResponse	response(200);
-	std::string		body = "Responding to a GET request\n";
-
-	response.AddHeader("Content-Type", "text/plain");
-	response.SetBody(body);
-	AddCommonHeaders_(&response);
-	raw_response_ = response.CreateResponseString();
+	if (server_config_.common.root.rfind("/", 0) != 0)
+		ListDirectory_("./" + server_config_.common.root, request.GetPath());
+	else
+		ListDirectory_(server_config_.common.root, request.GetPath());
 }
 
 void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
