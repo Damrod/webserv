@@ -4,6 +4,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <cerrno>
+#include <climits>
+#include <cstdlib>
 #include <ctime>
 #include <exception>
 #include <sstream>
@@ -98,6 +100,14 @@ void	HttpRequestHandler::PathError_() {
 		RequestError_(403);
 	else
 		RequestError_(500);
+}
+
+std::string	HttpRequestHandler::RealPath_(const std::string &path) {
+	char	buffer[PATH_MAX];
+	char	*error = realpath(path.c_str(), buffer);
+	if (error == NULL)
+		return "";
+	return buffer;
 }
 
 void	HttpRequestHandler::ListDirectory_(const std::string &full_real_path,

@@ -31,6 +31,7 @@ class HttpRequestHandler : public IRequestHandler {
 		void				ListDirectory_(const std::string &full_real_path,
 											const std::string &request_path);
 		void				PathError_();
+		std::string			RealPath_(const std::string &path);
 };
 
 #endif  // SRCS_INCS_HTTPREQUESTHANDLER_HPP_
