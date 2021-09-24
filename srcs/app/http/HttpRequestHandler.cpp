@@ -47,7 +47,7 @@ void		HttpRequestHandler::HandleRequest_() {
 	delete request;
 }
 
-std::string	HttpRequestHandler::CurrentDate_() {
+std::string	HttpRequestHandler::CurrentDate_() const {
 	char		buffer[100];
 	std::time_t	date = std::time(NULL);
 	std::strftime(buffer,
