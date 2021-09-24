@@ -158,11 +158,15 @@ void	HttpRequestHandler::RequestError_(std::size_t error_code) {
 
 void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
 	// TODO(any) Implement GET
-	(void)request;
-	if (server_config_.common.root.rfind("/", 0) != 0)
-		ListDirectory_("./" + server_config_.common.root, request.GetPath());
+	//           Find best matching location if any
+	//           Concatenate root + request.path
+
+	// Temporary, testing ListDirectory_
+	const std::string real_path = RealPath_(server_config_.common.root);
+	if (real_path.empty())
+		PathError_();
 	else
-		ListDirectory_(server_config_.common.root, request.GetPath());
+		ListDirectory_(real_path, request.GetPath());
 }
 
 void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
