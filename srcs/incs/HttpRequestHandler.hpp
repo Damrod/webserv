@@ -28,7 +28,7 @@ class HttpRequestHandler : public IRequestHandler {
 		void				DoGet_(const HttpRequest &request);
 		void				DoPost_(const HttpRequest &request);
 		void				DoDelete_(const HttpRequest &request);
-		void				ListDirectory_(const std::string &full_real_path,
+		void				ListDirectory_(const std::string &full_path,
 											const std::string &request_path);
 		void				PathError_();
 };

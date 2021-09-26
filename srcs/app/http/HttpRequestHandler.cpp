@@ -102,9 +102,9 @@ void	HttpRequestHandler::PathError_() {
 		RequestError_(500);
 }
 
-void	HttpRequestHandler::ListDirectory_(const std::string &full_real_path,
+void	HttpRequestHandler::ListDirectory_(const std::string &full_path,
 											const std::string &request_path) {
-	DIR	*dir = opendir(full_real_path.c_str());
+	DIR	*dir = opendir(full_path.c_str());
 	if (dir == NULL) {
 		PathError_();
 		return;
@@ -117,19 +117,19 @@ void	HttpRequestHandler::ListDirectory_(const std::string &full_real_path,
 		"</h1><hr><pre><a href=\"../\">../</a>\n";
 	struct dirent		*entry;
 	while ((entry = readdir(dir)) != NULL) {
-		std::string dir_name = entry->d_name;
-		if (dir_name == "." || dir_name == ".." || dir_name.rfind(".", 0) == 0)
+		std::string name = entry->d_name;
+		if (name == "." || name == ".." || name.rfind(".", 0) == 0)
 			continue;
-		const std::string full_dir_path = full_real_path + "/" + dir_name;
+		const std::string full_path_name = full_path + "/" + name;
 		struct stat	s;
-		if (stat(full_dir_path.c_str(), &s) == 0) {
+		if (stat(full_path_name.c_str(), &s) == 0) {
 			if ((s.st_mode & S_IFMT) == S_IFDIR)
-				dir_name.append("/");
+				name.append("/");
 		} else {
 			PathError_();
 			return;
 		}
-		ss << "<a href=\"" << dir_name << "\">" << dir_name << "</a>\n";
+		ss << "<a href=\"" << name << "\">" << name << "</a>\n";
 	}
 	closedir(dir);
 	ss << "</pre><hr></body>\n" <<
