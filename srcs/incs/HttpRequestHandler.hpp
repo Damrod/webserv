@@ -21,17 +21,21 @@ class HttpRequestHandler : public IRequestHandler {
 
 		void				HandleRequest_();
 		const Location		*FindLocation_(const std::string &request_path);
-		void				RequestError_(std::size_t error_code);
+		void				RequestError_(const std::size_t error_code,
+											const Location *location);
 		void				DefaultErrorPage_(const std::size_t error_code);
 		std::string			CurrentDate_() const;
 		void				AddCommonHeaders_(HttpResponse *response);
 		void				SetKeepAlive_(const HttpRequest &request);
-		void				DoGet_(const HttpRequest &request);
-		void				DoPost_(const HttpRequest &request);
-		void				DoDelete_(const HttpRequest &request);
-		void				ListDirectory_(const std::string &full_path,
-											const std::string &request_path);
-		void				PathError_();
+		void				DoGet_(const HttpRequest &request,
+									const Location *location);
+		void				DoPost_(const HttpRequest &request,
+									const Location *location);
+		void				DoDelete_(const HttpRequest &request,
+										const Location *location);
+		void				ListDirectory_(const std::string &request_path,
+											const Location *location);
+		void				PathError_(const Location *location);
 };
 
 #endif  // SRCS_INCS_HTTPREQUESTHANDLER_HPP_
