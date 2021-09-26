@@ -102,14 +102,6 @@ void	HttpRequestHandler::PathError_() {
 		RequestError_(500);
 }
 
-std::string	HttpRequestHandler::RealPath_(const std::string &path) {
-	char	buffer[PATH_MAX];
-	char	*error = realpath(path.c_str(), buffer);
-	if (error == NULL)
-		return "";
-	return buffer;
-}
-
 void	HttpRequestHandler::ListDirectory_(const std::string &full_real_path,
 											const std::string &request_path) {
 	DIR	*dir = opendir(full_real_path.c_str());
@@ -162,11 +154,7 @@ void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
 	//           Concatenate root + request.path
 
 	// Temporary, testing ListDirectory_
-	const std::string real_path = RealPath_(server_config_.common.root);
-	if (real_path.empty())
-		PathError_();
-	else
-		ListDirectory_(real_path, request.GetPath());
+	ListDirectory_(server_config_.common.root, request.GetPath());
 }
 
 void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
