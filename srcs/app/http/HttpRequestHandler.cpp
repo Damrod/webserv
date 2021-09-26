@@ -33,6 +33,23 @@ void		HttpRequestHandler::SetKeepAlive_(const HttpRequest &request) {
 		keep_alive_ = false;
 }
 
+const Location*
+HttpRequestHandler::FindLocation_(const std::string &request_path) {
+	const std::vector<Location>	&locations = server_config_.locations;
+	if (locations.empty())
+		return NULL;
+	ssize_t	best_match_idx = -1;
+	for (std::size_t i = 0; i < locations.size(); ++i) {
+		if (request_path.rfind(locations[i].path, 0) != 0)
+			continue;
+		if (best_match_idx == -1 ||
+			locations[best_match_idx].path.size() < locations[i].path.size()) {
+			best_match_idx = i;
+		}
+	}
+	return best_match_idx == -1 ? NULL : &locations[best_match_idx];
+}
+
 void		HttpRequestHandler::HandleRequest_() {
 	HttpRequest	*request = NULL;
 	try {
