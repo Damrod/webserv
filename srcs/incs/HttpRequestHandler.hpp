@@ -22,7 +22,7 @@ class HttpRequestHandler : public IRequestHandler {
 		void				HandleRequest_();
 		const Location		*FindLocation_(const std::string &request_path);
 		void				RequestError_(std::size_t error_code);
-		void				DefaultErrorPage_(std::size_t error_code);
+		void				DefaultErrorPage_(const std::size_t error_code);
 		std::string			CurrentDate_() const;
 		void				AddCommonHeaders_(HttpResponse *response);
 		void				SetKeepAlive_(const HttpRequest &request);

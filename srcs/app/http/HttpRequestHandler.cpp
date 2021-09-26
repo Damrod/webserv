@@ -4,8 +4,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <cerrno>
-#include <climits>
-#include <cstdlib>
 #include <ctime>
 #include <exception>
 #include <sstream>
@@ -16,7 +14,6 @@ HttpRequestHandler::HttpRequestHandler(const ServerConfig &server_config,
 	: server_config_(server_config), raw_request_(raw_request),
 		keep_alive_(true) {
 	HandleRequest_();
-	(void)server_config_;
 }
 
 std::string	HttpRequestHandler::GetRawResponse() const {
@@ -72,8 +69,8 @@ void		HttpRequestHandler::HandleRequest_() {
 }
 
 std::string	HttpRequestHandler::CurrentDate_() const {
-	char		buffer[100];
-	std::time_t	date = std::time(NULL);
+	char				buffer[100];
+	const std::time_t	date = std::time(NULL);
 	std::strftime(buffer,
 				sizeof(buffer),
 				"%a, %d %b %Y %H:%M:%S %Z",
@@ -90,14 +87,12 @@ void	HttpRequestHandler::AddCommonHeaders_(HttpResponse *response) {
 	response->AddHeader("Date", CurrentDate_());
 }
 
-void	HttpRequestHandler::DefaultErrorPage_(std::size_t error_code) {
+void	HttpRequestHandler::DefaultErrorPage_(const std::size_t error_code) {
 	HttpResponse		response(error_code);
-	std::size_t			status_code = response.GetStatusCode();
-	std::string			reason_phrase = response.GetReasonPhrase();
 	std::stringstream	ss;
-	ss << status_code << " " << reason_phrase;
-	std::string			error_message = ss.str();
-	std::string			body = "<html>\n"
+	ss << response.GetStatusCode() << " " << response.GetReasonPhrase();
+	const std::string	error_message = ss.str();
+	const std::string	body = "<html>\n"
 						"<head><title>" + error_message + "</title></head>\n"
 						"<body>\n"
 						"<center><h1>" + error_message + "</h1></center>\n"
