@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <cerrno>
 #include <ctime>
+#include <algorithm>
 #include <exception>
 #include <sstream>
 #include <stdexcept>
@@ -256,4 +257,17 @@ void	HttpRequestHandler::DoDelete_(const Location *location,
 	response.SetBody(body);
 	AddCommonHeaders_(&response);
 	raw_response_ = response.CreateResponseString();
+}
+
+bool	HttpRequestHandler::IsValidPath_(const std::string &path) const {
+	struct stat statbuf;
+	return stat(path.c_str(), &statbuf) == 0;
+}
+
+bool	HttpRequestHandler::IsDirectory_(const std::string &path) const {
+	struct stat statbuf;
+	if (stat(path.c_str(), &statbuf) == 0 &&
+			(statbuf.st_mode & S_IFMT) == S_IFDIR)
+		return true;
+	return false;
 }
