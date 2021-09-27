@@ -30,6 +30,7 @@ class HttpRequestHandler : public IRequestHandler {
 		void				SetKeepAlive_(const HttpRequest &request);
 		bool				HasAcceptedFormat(const Location *location,
 												const HttpRequest &request);
+		bool				PathExtension_(const std::string &path) const;
 		void				DoGet_(const Location *location,
 									const HttpRequest &request);
 		void				DoPost_(const Location *location,
