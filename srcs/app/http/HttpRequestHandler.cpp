@@ -7,6 +7,7 @@
 #include <ctime>
 #include <algorithm>
 #include <exception>
+#include <fstream>
 #include <sstream>
 #include <stdexcept>
 #include <StringUtils.hpp>
@@ -225,10 +226,34 @@ std::string	HttpRequestHandler::PathExtension_(const std::string &path) const {
 
 void	HttpRequestHandler::DoGet_(const Location *location,
 									const HttpRequest &request) {
-	// TODO(any) Implement GET
-
-	// Temporary, testing ListDirectory_
-	ListDirectory_(location, request.GetPath());
+	if (!HasAcceptedFormat(request)) {
+		return;
+	}
+	const std::string full_path = GetFullPath_(location, request.GetPath());
+	if (!IsValidPath_(full_path)) {
+		PathError_(location);
+		return;
+	}
+	if (IsDirectory_(full_path)) {
+		// TODO(any) Check if autoindex is off and the index file
+		//           doesn't exist, in this case list the directory
+		//           else append the index file and respond with its content
+		ListDirectory_(location, request.GetPath());
+	} else {
+		// TODO(any) Extract this part to a function
+		std::ifstream ifs(full_path.c_str(),
+							std::ios::in | std::ios::binary | std::ios::ate);
+		if (ifs) {
+			std::istreambuf_iterator<char> eos;
+			raw_response_ = std::string(std::istreambuf_iterator<char>(ifs), eos);
+			HttpResponse response(200);
+			AddCommonHeaders_(&response);
+			// TODO(any) Set Content-Type based on the file extension
+			response.SetBody(body);
+		} else {
+			RequestError_(location, 404);
+		}
+	}
 }
 
 void	HttpRequestHandler::DoPost_(const Location *location,
