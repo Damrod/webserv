@@ -137,9 +137,9 @@ void	HttpRequestHandler::AddDirectoryContent_(std::stringstream *ss,
 		if (name == "." || name == ".." || name.rfind(".", 0) == 0)
 			continue;
 		const std::string full_path_name = full_path + "/" + name;
-		struct stat s;
-		if (stat(full_path_name.c_str(), &s) == 0) {
-			if ((s.st_mode & S_IFMT) == S_IFDIR)
+		struct stat statbuf;
+		if (stat(full_path_name.c_str(), &statbuf) == 0) {
+			if ((statbuf.st_mode & S_IFMT) == S_IFDIR)
 				name.append("/");
 		} else {
 			closedir(dir);
