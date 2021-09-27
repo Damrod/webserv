@@ -186,17 +186,18 @@ void	HttpRequestHandler::RequestError_(const Location *location,
 	DefaultErrorPage_(error_code);
 }
 
-bool	HasAcceptedFormat(const Location *location,
-							const HttpRequest &request) {
-	if (location && !location.limit_except.empty()) {
-		if (std::find(location.limit_except.begin(),
-					location.limit_except.end(),
-					request.GetMethod()) == location.limit_except.end()) {
+bool	HttpRequestHandler::HasAcceptedFormat_(const Location *location,
+												const HttpRequest &request) {
+	if (location && !location->limit_except.empty()) {
+		if (std::find(location->limit_except.begin(),
+					location->limit_except.end(),
+					request.GetMethod()) == location->limit_except.end()) {
 			RequestError_(location, 405);
 			return false;
 		}
 	}
-	CommonConfig &cfg = location ? location.common : server_config_.common;
+	const CommonConfig &cfg =
+							location ? location->common : server_config_.common;
 	if (request.GetBody().size() > cfg.client_max_body_size) {
 		RequestError_(location, 413);
 		return false;
@@ -226,7 +227,7 @@ std::string	HttpRequestHandler::PathExtension_(const std::string &path) const {
 
 void	HttpRequestHandler::DoGet_(const Location *location,
 									const HttpRequest &request) {
-	if (!HasAcceptedFormat(request)) {
+	if (!HasAcceptedFormat_(location, request)) {
 		return;
 	}
 	const std::string full_path = GetFullPath_(location, request.GetPath());
