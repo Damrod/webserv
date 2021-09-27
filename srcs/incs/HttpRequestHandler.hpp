@@ -36,6 +36,8 @@ class HttpRequestHandler : public IRequestHandler {
 										const Location *location);
 		void				ListDirectory_(const std::string &request_path,
 											const Location *location);
+		std::string			GetFullPath_(const Location *location,
+										const std::string &request_path) const;
 		void				PathError_(const Location *location);
 };
 

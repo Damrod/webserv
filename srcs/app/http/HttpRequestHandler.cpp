@@ -115,11 +115,16 @@ void	HttpRequestHandler::PathError_(const Location *location) {
 		RequestError_(500, location);
 }
 
+std::string	HttpRequestHandler::GetFullPath_(const Location *location,
+										const std::string &request_path) const {
+	if (!location)
+		return server_config_.common.root + request_path;
+	return location->common.root + request_path;
+}
+
 void	HttpRequestHandler::ListDirectory_(const std::string &request_path,
 											const Location *location) {
-	const std::string	full_path = location ?
-						location->common.root + request_path :
-						server_config_.common.root + request_path;
+	const std::string	full_path = GetFullPath_(location, request_path);
 	DIR	*dir = opendir(full_path.c_str());
 	if (dir == NULL) {
 		PathError_(location);
