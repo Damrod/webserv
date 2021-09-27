@@ -28,6 +28,8 @@ class HttpRequestHandler : public IRequestHandler {
 		std::string			CurrentDate_() const;
 		void				AddCommonHeaders_(HttpResponse *response);
 		void				SetKeepAlive_(const HttpRequest &request);
+		bool				HasAcceptedFormat(const Location *location,
+												const HttpRequest &request);
 		void				DoGet_(const Location *location,
 									const HttpRequest &request);
 		void				DoPost_(const Location *location,
