@@ -20,7 +20,8 @@ class HttpRequestHandler : public IRequestHandler {
 		bool				keep_alive_;
 
 		void				HandleRequest_();
-		const Location		*FindLocation_(const std::string &request_path);
+		const Location		*FindLocation_(
+										const std::string &request_path) const;
 		void				RequestError_(const std::size_t error_code,
 											const Location *location);
 		void				DefaultErrorPage_(const std::size_t error_code);

@@ -31,7 +31,7 @@ void		HttpRequestHandler::SetKeepAlive_(const HttpRequest &request) {
 }
 
 const Location*
-HttpRequestHandler::FindLocation_(const std::string &request_path) {
+HttpRequestHandler::FindLocation_(const std::string &request_path) const {
 	const std::vector<Location>	&locations = server_config_.locations;
 	if (locations.empty())
 		return NULL;
