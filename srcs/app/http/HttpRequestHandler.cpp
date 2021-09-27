@@ -246,11 +246,14 @@ void	HttpRequestHandler::DoGet_(const Location *location,
 							std::ios::in | std::ios::binary | std::ios::ate);
 		if (ifs) {
 			std::istreambuf_iterator<char> eos;
-			raw_response_ = std::string(std::istreambuf_iterator<char>(ifs), eos);
+			const std::string body =
+						std::string(std::istreambuf_iterator<char>(ifs), eos);
 			HttpResponse response(200);
 			AddCommonHeaders_(&response);
 			// TODO(any) Set Content-Type based on the file extension
+			response.AddHeader("Content-Type", "text/plain");
 			response.SetBody(body);
+			raw_response_ = response.CreateResponseString();
 		} else {
 			RequestError_(location, 404);
 		}
