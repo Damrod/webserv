@@ -53,19 +53,19 @@ void		HttpRequestHandler::HandleRequest_() {
 		request = new HttpRequest(raw_request_);
 	}
 	catch (const std::exception &e) {
-		RequestError_(400, NULL);
+		RequestError_(NULL, 400);
 		return;
 	}
 	SetKeepAlive_(*request);
 	const Location *location = FindLocation_(request->GetPath());
 	if (request->GetMethod() == "GET")
-		DoGet_(*request, location);
+		DoGet_(location, *request);
 	else if (request->GetMethod() == "POST")
-		DoPost_(*request, location);
+		DoPost_(location, *request);
 	else if (request->GetMethod() == "DELETE")
-		DoDelete_(*request, location);
+		DoDelete_(location, *request);
 	else
-		RequestError_(501, location);
+		RequestError_(location, 501);
 	delete request;
 }
 
@@ -108,11 +108,11 @@ void	HttpRequestHandler::DefaultErrorPage_(const std::size_t error_code) {
 
 void	HttpRequestHandler::PathError_(const Location *location) {
 	if (errno == ENOENT || errno == ENOTDIR)
-		RequestError_(404, location);
+		RequestError_(location, 404);
 	else if (errno == EACCES)
-		RequestError_(403, location);
+		RequestError_(location, 403);
 	else
-		RequestError_(500, location);
+		RequestError_(location, 500);
 }
 
 std::string	HttpRequestHandler::GetFullPath_(const Location *location,
@@ -122,8 +122,8 @@ std::string	HttpRequestHandler::GetFullPath_(const Location *location,
 	return location->common.root + request_path;
 }
 
-void	HttpRequestHandler::ListDirectory_(const std::string &request_path,
-											const Location *location) {
+void	HttpRequestHandler::ListDirectory_(const Location *location,
+											const std::string &request_path) {
 	const std::string	full_path = GetFullPath_(location, request_path);
 	DIR	*dir = opendir(full_path.c_str());
 	if (dir == NULL) {
@@ -162,8 +162,8 @@ void	HttpRequestHandler::ListDirectory_(const std::string &request_path,
 	raw_response_ = response.CreateResponseString();
 }
 
-void	HttpRequestHandler::RequestError_(const std::size_t error_code,
-											const Location *location) {
+void	HttpRequestHandler::RequestError_(const Location *location,
+											const std::size_t error_code) {
 	// TODO(any) Respond with the error page
 	//           if its defined in server configuration
 	//           and the page exist
@@ -171,16 +171,16 @@ void	HttpRequestHandler::RequestError_(const std::size_t error_code,
 	DefaultErrorPage_(error_code);
 }
 
-void	HttpRequestHandler::DoGet_(const HttpRequest &request,
-									const Location *location) {
+void	HttpRequestHandler::DoGet_(const Location *location,
+									const HttpRequest &request) {
 	// TODO(any) Implement GET
 
 	// Temporary, testing ListDirectory_
-	ListDirectory_(request.GetPath(), location);
+	ListDirectory_(location, request.GetPath());
 }
 
-void	HttpRequestHandler::DoPost_(const HttpRequest &request,
-									const Location *location) {
+void	HttpRequestHandler::DoPost_(const Location *location,
+									const HttpRequest &request) {
 	// TODO(any) Implement POST
 	(void)request;
 	(void)location;
@@ -193,8 +193,8 @@ void	HttpRequestHandler::DoPost_(const HttpRequest &request,
 	raw_response_ = response.CreateResponseString();
 }
 
-void	HttpRequestHandler::DoDelete_(const HttpRequest &request,
-										const Location *location) {
+void	HttpRequestHandler::DoDelete_(const Location *location,
+										const HttpRequest &request) {
 	// TODO(any) Implement DELETE
 	(void)request;
 	(void)location;
