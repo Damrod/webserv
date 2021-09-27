@@ -7,6 +7,7 @@
 #include <ctime>
 #include <exception>
 #include <sstream>
+#include <stdexcept>
 #include <StringUtils.hpp>
 
 HttpRequestHandler::HttpRequestHandler(const ServerConfig &server_config,
@@ -122,37 +123,49 @@ std::string	HttpRequestHandler::GetFullPath_(const Location *location,
 	return location->common.root + request_path;
 }
 
-void	HttpRequestHandler::ListDirectory_(const Location *location,
-											const std::string &request_path) {
-	const std::string	full_path = GetFullPath_(location, request_path);
-	DIR	*dir = opendir(full_path.c_str());
+void	HttpRequestHandler::AddDirectoryContent_(std::stringstream *ss,
+											const Location *location,
+											const std::string &full_path) {
+	DIR *dir = opendir(full_path.c_str());
 	if (dir == NULL) {
 		PathError_(location);
-		return;
+		throw std::invalid_argument("invalid directory");
 	}
-	std::stringstream	ss;
-	ss << "<html>\n" <<
-		"<head><title>Index of " << request_path << "</title></head>\n" <<
-		"<body>\n" <<
-		"<h1>Index of " << request_path <<
-		"</h1><hr><pre><a href=\"../\">../</a>\n";
-	struct dirent		*entry;
+	struct dirent *entry;
 	while ((entry = readdir(dir)) != NULL) {
 		std::string name = entry->d_name;
 		if (name == "." || name == ".." || name.rfind(".", 0) == 0)
 			continue;
 		const std::string full_path_name = full_path + "/" + name;
-		struct stat	s;
+		struct stat s;
 		if (stat(full_path_name.c_str(), &s) == 0) {
 			if ((s.st_mode & S_IFMT) == S_IFDIR)
 				name.append("/");
 		} else {
+			closedir(dir);
 			PathError_(location);
-			return;
+			throw std::runtime_error("stat error");
 		}
-		ss << "<a href=\"" << name << "\">" << name << "</a>\n";
+		*ss << "<a href=\"" << name << "\">" << name << "</a>\n";
 	}
 	closedir(dir);
+}
+
+void	HttpRequestHandler::ListDirectory_(const Location *location,
+											const std::string &request_path) {
+	std::stringstream ss;
+	ss << "<html>\n" <<
+		"<head><title>Index of " << request_path << "</title></head>\n" <<
+		"<body>\n" <<
+		"<h1>Index of " << request_path <<
+		"</h1><hr><pre><a href=\"../\">../</a>\n";
+	try {
+		const std::string full_path = GetFullPath_(location, request_path);
+		AddDirectoryContent_(&ss, location, full_path);
+	}
+	catch (const std::exception &) {
+		return;
+	}
 	ss << "</pre><hr></body>\n" <<
 		"</html>\n";
 	HttpResponse	response(200);
