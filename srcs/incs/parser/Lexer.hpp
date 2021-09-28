@@ -18,14 +18,12 @@ class Lexer : public Analyser {
  public:
 	explicit Lexer(const std::string &filebuff);
 	virtual ~Lexer(void);
-	void lex(const std::string &fileBuff);
 	std::list<Token> GetTokens(void) const;
  private:
+	void lex(const std::string &fileBuff);
 	const std::string		kValidtokens_;
 	const std::string		kWhitespace_;
 	std::list<Token>		tokens_;
 };
-
-std::ostream &operator<<(std::ostream &o, Lexer const &i);
 
 #endif  // SRCS_INCS_PARSER_LEXER_HPP_

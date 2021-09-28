@@ -13,10 +13,8 @@ static void addStringLit(std::list<Token> *tokens, std::string *filebuff,
 							Token::Type::T_STR_IMMEDIATE_T0);
 	*filebuff = filebuff->substr(1);
 	*tokenend = filebuff->find(cmp, 0);
-	if (*tokenend == filebuff->npos) {
-		delete tokens;
+	if (*tokenend == filebuff->npos)
 		throw Analyser::SyntaxError("Unterminated quote in line", *line);
-	}
 	token = filebuff->substr(0, *tokenend);
 	tokens->push_back(Token(token, type, *line));
 	*line += std::count(token.begin(), token.end(), '\n');
