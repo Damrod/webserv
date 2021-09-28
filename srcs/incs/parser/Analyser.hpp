@@ -15,11 +15,7 @@ class Analyser {
 	Analyser	&operator=(Analyser const &rhs);
 	class SyntaxError : public std::exception {
 	public:
-#ifdef __PLATFORM_LINUX
-		virtual ~SyntaxError(void) _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW;
-#elif __PLATFORM_MACOS
-		virtual ~SyntaxError(void) _NOEXCEPT;
-#endif
+		virtual ~SyntaxError(void) throw();
 		explicit SyntaxError(const std::string &error, size_t line);
 		virtual const char *what() const throw();
 	private:
