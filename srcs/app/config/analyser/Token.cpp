@@ -38,7 +38,7 @@ t_parsing_state Token::State::GetParsingStateTypeEnum
 	return K_NONE;
 }
 
-const char *Token::State::keyword_to_str[19] = {
+const char *Token::State::keyword_to_str[20] = {
 	"",
 	"EXIT",
 	"INIT",
@@ -52,6 +52,8 @@ const char *Token::State::keyword_to_str[19] = {
 	"autoindex",
 	"index",
 	"upload_store",
+	"return_status",
+	"return_url",
 	"cgi_assign",
 	"location",
 	"limit_except",
