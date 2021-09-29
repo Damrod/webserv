@@ -64,7 +64,7 @@ class Parser: public Analyser {
 		t_parsing_state (*apply)(const Data &data);
 		std::string errormess;
 	};
-	static const s_trans transitions[14];
+	static const s_trans transitions[13];
 };
 
 #endif  // SRCS_INCS_PARSER_PARSER_HPP_

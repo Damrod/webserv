@@ -122,8 +122,6 @@ t_parsing_state Parser::StHandler::ServerNameHandler(const Data &data) {
 t_parsing_state Parser::StHandler::LocationHandler(const Data &data) {
 	data.AddLocation(data.current_.getRawData());
 	data.ctx_->push(Token::State::K_LOCATION);
-	//  this should be in the Location ctor
-	//  we should have getters/setters for all needed access to data
 	data.parser_->itc_++;
 	return ParserMainLoop(data.parser_);
 }
@@ -131,11 +129,10 @@ t_parsing_state Parser::StHandler::LocationHandler(const Data &data) {
 t_parsing_state Parser::StHandler::ServerHandler(const Data &data) {
 	data.AddServer();
 	data.ctx_->push(Token::State::K_SERVER);
-	//  we should have getters/setters for all needed access to data
 	return ParserMainLoop(data.parser_);
 }
 
-const struct Parser::s_trans Parser::transitions[14] = {
+const struct Parser::s_trans Parser::transitions[13] = {
 	{ .state = Token::State::K_INIT,
 	  .evt = ParsingEvents::OPEN,
 	  .apply = StHandler::InitHandler,
@@ -149,13 +146,9 @@ const struct Parser::s_trans Parser::transitions[14] = {
 	  .apply = StHandler::ExpKwHandlerClose,
 	  .errormess = ""},
 	{ .state = Token::State::K_EXP_KW,
-	  .evt = ParsingEvents::EV_NONE,
+	  .evt = ParsingEvents::KEYWORD,
 	  .apply = StHandler::ExpKwHandlerKw,
 	  .errormess = ""},
-	{ .state = Token::State::K_EXP_KW,
-	  .evt = ParsingEvents::EV_NONE,  // repe
-	  .apply = StHandler::SyntaxFailer,
-	  .errormess = "expected keyword in line "},
 	{ .state = Token::State::K_EXP_SEMIC,
 	  .evt = ParsingEvents::SEMIC,
 	  .apply = StHandler::SemicHandler,
