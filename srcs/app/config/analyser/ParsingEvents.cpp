@@ -24,7 +24,7 @@ t_Ev ParsingEvents::GetEvent(const Token &token) {
 	t_token_type type = token.getType();
 	if (type == Token::Type::T_SCOPE_CLOSE)
 		return CLOSE;
-	else if (type == Token::Type::T_END)
+	else if (type == Token::Type::T_SEMICOLON)
 		return SEMIC;
 	else if (type == Token::Type::T_SCOPE_OPEN)
 		return OPEN;
