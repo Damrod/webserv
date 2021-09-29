@@ -23,8 +23,11 @@ class HttpRequestHandler : public IRequestHandler {
 		const Location		*FindLocation_(
 										const std::string &request_path) const;
 		void				RequestError_(const Location *location,
-											const std::size_t error_code);
-		void				DefaultErrorPage_(const std::size_t error_code);
+												const std::size_t error_code);
+		std::string			DefaultResponseBody_(
+											const std::string &message) const;
+		void				DefaultStatusResponse_(
+												const std::size_t status_code);
 		std::string			CurrentDate_() const;
 		void				AddCommonHeaders_(HttpResponse *response);
 		void				SetKeepAlive_(const HttpRequest &request);

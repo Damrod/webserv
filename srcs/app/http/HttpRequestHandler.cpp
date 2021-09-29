@@ -91,19 +91,24 @@ void	HttpRequestHandler::AddCommonHeaders_(HttpResponse *response) {
 	response->AddHeader("Date", CurrentDate_());
 }
 
-void	HttpRequestHandler::DefaultErrorPage_(const std::size_t error_code) {
-	HttpResponse		response(error_code);
-	std::stringstream	ss;
-	ss << response.GetStatusCode() << " " << response.GetReasonPhrase();
-	const std::string	error_message = ss.str();
+std::string
+HttpRequestHandler::DefaultResponseBody_(const std::string &message) const {
 	const std::string	body = "<html>\n"
-						"<head><title>" + error_message + "</title></head>\n"
+						"<head><title>" + message + "</title></head>\n"
 						"<body>\n"
-						"<center><h1>" + error_message + "</h1></center>\n"
+						"<center><h1>" + message + "</h1></center>\n"
 						"<hr><center>webserv</center>\n"
 						"</body>\n"
 						"</html>\n";
-	response.SetBody(body);
+	return body;
+}
+
+void
+HttpRequestHandler::DefaultStatusResponse_(const std::size_t status_code) {
+	HttpResponse		response(status_code);
+	std::stringstream	ss;
+	ss << response.GetStatusCode() << " " << response.GetReasonPhrase();
+	response.SetBody(DefaultResponseBody_(ss.str()));
 	response.AddHeader("Content-Type", "text/html");
 	AddCommonHeaders_(&response);
 	raw_response_ = response.CreateResponseString();
