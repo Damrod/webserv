@@ -236,6 +236,10 @@ std::string	HttpRequestHandler::PathExtension_(const std::string &path) const {
 	return "";
 }
 
+std::string	HttpRequestHandler::GetMimeType_(const std::string &path) const {
+	return kMimeTypes_.GetMimeType(PathExtension_(path));
+}
+
 void	HttpRequestHandler::DoGet_(const Location *location,
 									const HttpRequest &request) {
 	if (!HasAcceptedFormat_(location, request)) {

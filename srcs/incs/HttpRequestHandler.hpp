@@ -4,6 +4,7 @@
 #include <HttpRequest.hpp>
 #include <HttpResponse.hpp>
 #include <IRequestHandler.hpp>
+#include <MimeTypes.hpp>
 #include <ServerConfig.hpp>
 
 class HttpRequestHandler : public IRequestHandler {
@@ -52,6 +53,9 @@ class HttpRequestHandler : public IRequestHandler {
 		bool				IsValidPath_(const std::string &path) const;
 		bool				IsDirectory_(const std::string &path) const;
 		bool				IsRegularFile_(const std::string &path) const;
+		std::string			GetMimeType_(const std::string &file_path) const;
+
+		static const MimeTypes	kMimeTypes_;
 };
 
 #endif  // SRCS_INCS_HTTPREQUESTHANDLER_HPP_
