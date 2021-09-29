@@ -261,7 +261,8 @@ void	HttpRequestHandler::MovedPermanently_(const HttpRequest &request,
 	ss << "http://" << request.GetHost() << ":" << request.GetPort() <<
 		request.GetPath() << "/";
 	response.AddHeader("Location", ss.str());
-	// TODO(any) Set Content-Length to the size of the file
+	const std::string body = DefaultResponseBody_("301 Moved Permanently");
+	response.SetBody(body);
 	raw_response_ = response.CreateResponseString();
 }
 
