@@ -37,7 +37,6 @@ void Lexer::addPunct(char type, size_t *tokenend) {
 
 void Lexer::lex(const std::string &fileBuff) {
 	std::string filebuff = "{" + fileBuff + "}";  // add global scope
-	size_t line = 1;
 	size_t tokenend = 0;
 	std::string token;
 
@@ -46,7 +45,7 @@ void Lexer::lex(const std::string &fileBuff) {
 		for (; filebuff[0] && kWhitespace_.find(filebuff[0], 0) != kWhitespace_.npos
 			 ; filebuff = filebuff.substr(1)) {
 			if (filebuff[0] == '\n')
-				line++;
+				line_++;
 		}
 		if (filebuff[0] == '"' || filebuff[0] == '\'') {
 			addStringLit(&filebuff, &tokenend);
@@ -60,7 +59,7 @@ void Lexer::lex(const std::string &fileBuff) {
 		if (tokenend == filebuff.npos)
 			tokenend = filebuff.size();
 		if ((token = filebuff.substr(0, tokenend)) != "")
-			tokens_.push_back(Token(token, Token::Type::T_WORD, line));
+			tokens_.push_back(Token(token, Token::Type::T_WORD, line_));
 	}
 }
 
@@ -72,5 +71,6 @@ Lexer::Lexer(const std::string &filebuff)
 	: kValidtokens_("{};"),
 	  kWhitespace_(" \t\f\n\r\t\v\n"),
 	  tokens_() {
+	line_ = 1;
 	lex(filebuff);
 }
