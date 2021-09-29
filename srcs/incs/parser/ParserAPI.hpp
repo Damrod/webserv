@@ -9,7 +9,8 @@
 struct ServerConfig;
 
 template <typename T>
-std::string toStrIndented(uint8_t level, const std::string &key, const T &value) {
+std::string toStrIndented(uint8_t level, const std::string &key,
+const T &value) {
 	std::ostringstream str;
 	for (size_t i = 0; i < level; ++i)
 		str << "\t";

@@ -15,6 +15,7 @@
 class Parser: public Analyser {
  public:
 	Parser(const std::list<Token> &token, ParserAPI *config);
+
  private:
 	void parse(void);
 	class Data {
