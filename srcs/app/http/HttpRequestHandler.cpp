@@ -188,7 +188,14 @@ void	HttpRequestHandler::RequestError_(const Location *location,
 	//           if its defined in server configuration
 	//           and the page exist
 	(void)location;
-	DefaultErrorPage_(error_code);
+	DefaultStatusResponse_(error_code);
+}
+
+const CommonConfig &
+HttpRequestHandler::GetCommonConfig(const Location *location) const {
+	if (location)
+		return location->common;
+	return server_config_.common;
 }
 
 bool	HttpRequestHandler::HasAcceptedFormat_(const Location *location,
@@ -201,8 +208,7 @@ bool	HttpRequestHandler::HasAcceptedFormat_(const Location *location,
 			return false;
 		}
 	}
-	const CommonConfig &cfg =
-							location ? location->common : server_config_.common;
+	const CommonConfig &cfg = GetCommonConfig(location);
 	if (request.GetBody().size() > cfg.client_max_body_size) {
 		RequestError_(location, 413);
 		return false;

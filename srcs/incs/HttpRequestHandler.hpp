@@ -31,6 +31,7 @@ class HttpRequestHandler : public IRequestHandler {
 		std::string			CurrentDate_() const;
 		void				AddCommonHeaders_(HttpResponse *response);
 		void				SetKeepAlive_(const HttpRequest &request);
+		const CommonConfig	&GetCommonConfig(const Location *location) const;
 		bool				HasAcceptedFormat_(const Location *location,
 												const HttpRequest &request);
 		std::string			PathExtension_(const std::string &path) const;
