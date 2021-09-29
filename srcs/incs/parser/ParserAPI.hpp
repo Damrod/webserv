@@ -26,13 +26,13 @@ std::map<T, U>map, const std::string &key, const std::string &value) {
 	for (size_t i = 0; i < level; ++i)
 		o << "\t";
 	o << title << " : \n";
-	for(typename std::map<T, U>::const_iterator iterr_pages = map.begin();
-		iterr_pages != map.end();
-		++iterr_pages) {
+	for(typename std::map<T, U>::const_iterator iter = map.begin();
+		iter != map.end();
+		++iter) {
 		for (size_t i = 0; i < static_cast<size_t>(level + 1); ++i)
 			o << "\t";
-		o << key << ": " << iterr_pages->first << ", "<< value << ":"
-		  << iterr_pages->second << "\n";
+		o << key << ": " << iter->first << ", "<< value << ":"
+		  << iter->second << "\n";
 	}
 	return o.str();
 }
