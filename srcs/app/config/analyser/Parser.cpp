@@ -110,7 +110,7 @@ t_parsing_state Parser::StHandler::ServerNameHandler(const Data &data) {
 		args = 0;
 		return Token::State::K_EXP_KW;
 	}
-	if (event != ParsingEvents::URL)
+	if (event != ParsingEvents::WORD)
 		throw Analyser::SyntaxError("Invalid type of argument in line", LINE);
 	else
 		data.AddServerName(data.current_.getRawData());
@@ -165,7 +165,7 @@ const struct Parser::s_trans Parser::transitions[14] = {
 	  .apply = StHandler::SyntaxFailer,
 	  .errormess = "expected ; in line "},
 	{ .state = Token::State::K_AUTOINDEX,
-	  .evt = ParsingEvents::ON_OFF,
+	  .evt = ParsingEvents::WORD,
 	  .apply = StHandler::AutoindexHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_AUTOINDEX,
@@ -177,7 +177,7 @@ const struct Parser::s_trans Parser::transitions[14] = {
 	  .apply = StHandler::ServerNameHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_LOCATION,
-	  .evt = ParsingEvents::URI,
+	  .evt = ParsingEvents::WORD,
 	  .apply = StHandler::LocationHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_LOCATION,
