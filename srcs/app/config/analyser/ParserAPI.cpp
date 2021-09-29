@@ -104,12 +104,6 @@ void ParserAPI::AddLocation(const std::string &path, t_parsing_state ctx_) {
 	servers_settings_->back().locations.push_back(location);
 }
 
-static std::stringstream &Indent(std::stringstream &o, uint8_t level) {
-	for (size_t i = 0; i < level; ++i)
-		o << "\t";
-	return o;
-}
-
 static std::string printCommon(const CommonConfig &common, uint8_t lvl) {
 	std::stringstream o;
 	o << toStrIndented(lvl, "root", common.root);
@@ -120,27 +114,10 @@ static std::string printCommon(const CommonConfig &common, uint8_t lvl) {
 	o << toStrIndented(lvl, "upload_store", common.upload_store);
 	o << toStrIndented(lvl, "return_status", common.return_status);
 	o << toStrIndented(lvl, "return_url", common.return_url);
-	Indent(o, lvl);
-	o << "error_pages map : " << "\n";
-	for(CommonConfig::ErrorPagesMap::const_iterator
-			iterr_pages = common.error_pages.begin();
-		iterr_pages != common.error_pages.end();
-		++iterr_pages) {
-		Indent(o, lvl + 1);
-		o << "error code: " << iterr_pages->first << ", error URI:"
-		  << iterr_pages->second << "\n";
-	}
-	Indent(o, lvl);
-	o << "cgi_assign map : " << "\n";
-	for(CommonConfig::CgiAssignMap::const_iterator
-			itcgi_ass = common.cgi_assign.begin();
-		itcgi_ass != common.cgi_assign.end();
-		++itcgi_ass) {
-		Indent(o, lvl + 1);
-		o << "file extension: " << itcgi_ass->first <<
-			", binary handler path:"
-		  << itcgi_ass->second << "\n";
-	}
+	o << MapToStrIndented(lvl, "error_pages map", common.error_pages,
+	"error code", "error URI");
+	o << MapToStrIndented(lvl, "cgi_assign map", common.cgi_assign,
+	"file extension", "binary handler path");
 	return o.str();
 }
 

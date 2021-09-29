@@ -2,6 +2,7 @@
 #define SRCS_INCS_PARSER_PARSERAPI_HPP_
 
 #include <sstream>
+#include <map>
 #include <string>
 #include <vector>
 #include <parser/Token.hpp>
@@ -16,6 +17,24 @@ const T &value) {
 		str << "\t";
 	str << key << " : " << value << std::endl;
 	return str.str();
+}
+
+template <typename T, typename U>
+std::string MapToStrIndented(uint8_t level, const std::string &title,
+std::map<T, U>map, const std::string &key, const std::string &value) {
+	std::stringstream o;
+	for (size_t i = 0; i < level; ++i)
+		o << "\t";
+	o << title << " : \n";
+	for(typename std::map<T, U>::const_iterator iterr_pages = map.begin();
+		iterr_pages != map.end();
+		++iterr_pages) {
+		for (size_t i = 0; i < static_cast<size_t>(level + 1); ++i)
+			o << "\t";
+		o << key << ": " << iterr_pages->first << ", "<< value << ":"
+		  << iterr_pages->second << "\n";
+	}
+	return o.str();
 }
 
 class ParserAPI {
