@@ -21,10 +21,9 @@ class Lexer : public Analyser {
 	std::list<Token> GetTokens(void) const;
  private:
 	void lex(const std::string &fileBuff);
-	void addPunct(std::list<Token> *tokens, char type,
-					 size_t *tokenend, size_t line);
-	void addStringLit(std::list<Token> *tokens, std::string *filebuff,
-				  size_t *tokenend, size_t *line);
+	void addPunct(char type, size_t *tokenend);
+	void addStringLit(std::string *filebuff,
+				  size_t *tokenend);
 	const std::string		kValidtokens_;
 	const std::string		kWhitespace_;
 	std::list<Token>		tokens_;

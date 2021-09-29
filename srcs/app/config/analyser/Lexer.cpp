@@ -2,8 +2,7 @@
 
 Lexer::~Lexer(void) {}
 
-void Lexer::addStringLit(std::list<Token> *tokens, std::string *filebuff,
-				  size_t *tokenend, size_t *line) {
+void Lexer::addStringLit(std::string *filebuff, size_t *tokenend) {
 	std::string token;
 	char cmp;
 	t_token_type type;
@@ -14,15 +13,14 @@ void Lexer::addStringLit(std::list<Token> *tokens, std::string *filebuff,
 	*filebuff = filebuff->substr(1);
 	*tokenend = filebuff->find(cmp, 0);
 	if (*tokenend == filebuff->npos)
-		throw Analyser::SyntaxError("Unterminated quote in line", *line);
+		throw Analyser::SyntaxError("Unterminated quote in line", line_);
 	token = filebuff->substr(0, *tokenend);
-	tokens->push_back(Token(token, type, *line));
-	*line += std::count(token.begin(), token.end(), '\n');
+	tokens_.push_back(Token(token, type, line_));
+	line_ += std::count(token.begin(), token.end(), '\n');
 	(*tokenend)++;
 }
 
-void Lexer::addPunct(std::list<Token> *tokens, char type,
-					 size_t *tokenend, size_t line) {
+void Lexer::addPunct(char type, size_t *tokenend) {
 	char			tmp[2];
 	t_token_type	ttype;
 
@@ -33,10 +31,10 @@ void Lexer::addPunct(std::list<Token> *tokens, char type,
 	else if (type == '}')
 		ttype = Token::Type::T_SCOPE_CLOSE;
 	else
-		throw Analyser::SyntaxError("Unexpected token near line", line);
+		throw Analyser::SyntaxError("Unexpected token near line", line_);
 	tmp[0] = type;
 	tmp[1] = '\0';
-	tokens->push_back(Token(tmp, ttype, line));
+	tokens_.push_back(Token(tmp, ttype, line_));
 	*tokenend = 1;
 }
 
@@ -54,11 +52,11 @@ void Lexer::lex(const std::string &fileBuff) {
 				line++;
 		}
 		if (filebuff[0] == '"' || filebuff[0] == '\'') {
-			addStringLit(&tokens_, &filebuff, &tokenend, &line);
+			addStringLit(&filebuff, &tokenend);
 			continue;
 		}
 		if (kValidtokens_.find(filebuff[0], 0) != kValidtokens_.npos) {
-			addPunct(&tokens_, filebuff[0], &tokenend, line);
+			addPunct(filebuff[0], &tokenend);
 			continue;
 		}
 		tokenend = filebuff.find_first_of(kValidtokens_ + kWhitespace_, 0);
