@@ -69,7 +69,7 @@ std::list<Token> Lexer::GetTokens(void) const {
 
 Lexer::Lexer(const std::string &filebuff)
 	: kValidtokens_("{};"),
-	  kWhitespace_(" \t\f\n\r\t\v\n"),
+	  kWhitespace_(" \f\n\r\t\v"),
 	  tokens_() {
 	line_ = 1;
 	lex(filebuff);
