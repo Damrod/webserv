@@ -236,6 +236,22 @@ std::string	HttpRequestHandler::PathExtension_(const std::string &path) const {
 	return "";
 }
 
+void	HttpRequestHandler::ServeFile_(const Location *location,
+												const std::string &file_path) {
+	std::ifstream ifs(file_path.c_str(), std::ios::in | std::ios::binary);
+	if (!ifs) {
+		RequestError_(location, 404);
+		return;
+	}
+	const std::string body = std::string(std::istreambuf_iterator<char>(ifs),
+											std::istreambuf_iterator<char>());
+	HttpResponse response(200);
+	AddCommonHeaders_(&response);
+	response.AddHeader("Content-Type", GetMimeType_(file_path));
+	response.SetBody(body);
+	raw_response_ = response.CreateResponseString();
+}
+
 std::string	HttpRequestHandler::GetMimeType_(const std::string &path) const {
 	return kMimeTypes_.GetMimeType(PathExtension_(path));
 }
@@ -255,23 +271,11 @@ void	HttpRequestHandler::DoGet_(const Location *location,
 		//           doesn't exist, in this case list the directory
 		//           else append the index file and respond with its content
 		ListDirectory_(location, request.GetPath());
-	} else {
-		// TODO(any) Extract this part to a function
-		std::ifstream ifs(full_path.c_str(),
-							std::ios::in | std::ios::binary | std::ios::ate);
-		if (ifs) {
-			std::istreambuf_iterator<char> eos;
-			const std::string body =
-						std::string(std::istreambuf_iterator<char>(ifs), eos);
-			HttpResponse response(200);
-			AddCommonHeaders_(&response);
-			// TODO(any) Set Content-Type based on the file extension
-			response.AddHeader("Content-Type", "text/plain");
-			response.SetBody(body);
-			raw_response_ = response.CreateResponseString();
 		} else {
 			RequestError_(location, 404);
 		}
+	} else {
+		ServeFile_(location, full_path);
 	}
 }
 
