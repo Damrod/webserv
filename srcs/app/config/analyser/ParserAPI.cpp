@@ -112,21 +112,14 @@ static std::stringstream &Indent(std::stringstream &o, uint8_t level) {
 
 static std::string printCommon(const CommonConfig &common, uint8_t lvl) {
 	std::stringstream o;
-	Indent(o, lvl);
-	o << "root : " << common.root << "\n";
-	Indent(o, lvl);
-	o << "client_max_body_size : "
-		  << common.client_max_body_size << "\n";
-	Indent(o, lvl);
-	o << "autoindex : " << common.autoindex << "\n";
-	Indent(o, lvl);
-	o << "index : " << common.index << "\n";
-	Indent(o, lvl);
-	o << "upload_store : " << common.upload_store << "\n";
-	Indent(o, lvl);
-	o << "return_status : " << common.return_status << "\n";
-	Indent(o, lvl);
-	o << "return_url : " << common.return_url << "\n";
+	o << toStrIndented(lvl, "root", common.root);
+	o << toStrIndented(lvl, "client_max_body_size",
+					   common.client_max_body_size);
+	o << toStrIndented(lvl, "autoindex", common.autoindex);
+	o << toStrIndented(lvl, "index", common.index);
+	o << toStrIndented(lvl, "upload_store", common.upload_store);
+	o << toStrIndented(lvl, "return_status", common.return_status);
+	o << toStrIndented(lvl, "return_url", common.return_url);
 	Indent(o, lvl);
 	o << "error_pages map : " << "\n";
 	for(CommonConfig::ErrorPagesMap::const_iterator
@@ -149,35 +142,6 @@ static std::string printCommon(const CommonConfig &common, uint8_t lvl) {
 		  << itcgi_ass->second << "\n";
 	}
 	return o.str();
-}
-
-std::ostream &operator<<(std::ostream &o, ParserAPI &c) {
-	std::vector<ServerConfig>::iterator it =
-		c.GetServersSettings().begin();
-	for(size_t j = 0; it != c.GetServersSettings().end(); ++it, ++j) {
-		o << "server " << j << ":\n";
-		o << "\tlisten_address : " << it->listen_address << "\n";
-		o << "\tlisten_port : " << it->listen_port << "\n";
-		o << "\tserver_names :" << "\n";
-		std::vector<std::string>::iterator itn = it->server_name.begin();
-		for(size_t i = 0; itn != it->server_name.end(); ++itn, ++i) {
-			o << "\t\tserver_name " << i << ": " << *itn << "\n";
-		}
-		o << printCommon(it->common, 1);
-		o << "\tlocations :" << "\n";
-		std::vector<Location>::iterator itl = it->locations.begin();
-		for(size_t i = 0; itl != it->locations.end(); ++itl, ++i) {
-			o << "\tpath " << i << ": "<< itl->path << "\n";
-			o << "\t\tlimit except : \n";
-			std::vector<Location::HttpMethod>::const_iterator itle =
-				itl->limit_except.begin();
-			for (size_t k = 0; itle != itl->limit_except.end();
-				 ++itle, ++k)
-				o << k << "\t\t\t" << *itle << "\n";
-			o << printCommon(itl->common, 2);
-		}
-	}
-	return o;
 }
 
 std::ostream &operator<<(std::ostream &o,
