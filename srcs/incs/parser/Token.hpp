@@ -12,7 +12,7 @@ class Token {
 	class Type {
 	public:
 		enum e_id {
-			T_UNKNOWN = -1,  // {
+			T_UNKNOWN = -1,  // Unknown, invalid
 			T_SCOPE_OPEN,  // {
 			T_SCOPE_CLOSE,  // }
 			T_SYMBOL,  // any valid keyword
@@ -32,31 +32,33 @@ class Token {
 	public:
 		enum e_id {
 			K_NONE = -1,
-			K_EXIT = 0,
-			K_INIT  = 1,
-			K_SERVER  = 2,
-			K_LISTEN = 3,		  // S pero no Loc
-			K_SERVER_NAME = 4,	  // S pero no Loc
-			K_ROOT = 5,
-			K_CLIENT_MAX_BODY_SIZE = 6,
-			K_ERROR_PAGE = 7,
-			K_RETURN = 8,
-			K_AUTOINDEX = 9,
-			K_INDEX = 10,
-			K_UPLOAD_STORE = 11,
-			K_CGI_ASSIGN = 12,  // dependiendo de la extension del path
-			K_LOCATION = 13,    // ejecuta la peticion con un binario distinto
-			K_LIMIT_EXCEPT = 14,  // Solo location
-			K_EXP_SEMIC = 15,
-			K_EXP_KW = 16,
-			K_LAST_INVALID_STATE  = 17
+			K_EXIT,
+			K_INIT,
+			K_SERVER,
+			K_LISTEN,		  // S pero no Loc
+			K_SERVER_NAME,	  // S pero no Loc
+			K_ROOT,
+			K_CLIENT_MAX_BODY_SIZE,
+			K_ERROR_PAGE,
+			K_RETURN,
+			K_AUTOINDEX,
+			K_INDEX,
+			K_UPLOAD_STORE,
+			K_RETURN_STATUS,
+			K_RETURN_URL,
+			K_CGI_ASSIGN,  // dependiendo de la extension del path
+			K_LOCATION,    // ejecuta la peticion con un binario distinto
+			K_LIMIT_EXCEPT,  // Solo location
+			K_EXP_SEMIC,
+			K_EXP_KW,
+			K_LAST_INVALID_STATE
 		};
 		static std::string GetParsingStateTypeStr(enum e_id type);
 		static enum e_id GetParsingStateTypeEnum(const std::string &data,
 												 Type::e_id ttype);
 
 	private:
-		static const char *keyword_to_str[19];
+		static const char *keyword_to_str[20];
 	};
 	explicit Token(const std::string &data, Type::e_id type, size_t line);
 	Type::e_id getType(void) const;
