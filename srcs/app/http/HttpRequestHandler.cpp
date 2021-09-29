@@ -252,6 +252,19 @@ void	HttpRequestHandler::ServeFile_(const Location *location,
 	raw_response_ = response.CreateResponseString();
 }
 
+void	HttpRequestHandler::MovedPermanently_(const HttpRequest &request,
+												const std::string &index_path) {
+	HttpResponse response(301);
+	AddCommonHeaders_(&response);
+	response.AddHeader("Content-Type", GetMimeType_(index_path));
+	std::stringstream ss;
+	ss << "http://" << request.GetHost() << ":" << request.GetPort() <<
+		request.GetPath() << "/";
+	response.AddHeader("Location", ss.str());
+	// TODO(any) Set Content-Length to the size of the file
+	raw_response_ = response.CreateResponseString();
+}
+
 std::string	HttpRequestHandler::GetMimeType_(const std::string &path) const {
 	return kMimeTypes_.GetMimeType(PathExtension_(path));
 }
@@ -267,12 +280,20 @@ void	HttpRequestHandler::DoGet_(const Location *location,
 		return;
 	}
 	if (IsDirectory_(full_path)) {
-		// TODO(any) Check if autoindex is off and the index file
-		//           doesn't exist, in this case list the directory
-		//           else append the index file and respond with its content
-		ListDirectory_(location, request.GetPath());
+		const CommonConfig &cfg = GetCommonConfig(location);
+		const bool has_end_slash = full_path[full_path.size() - 1] == '/';
+		std::string index_path;
+		if (has_end_slash)
+			index_path = full_path + cfg.index;
+		else
+			index_path = full_path + "/" + cfg.index;
+		if (!cfg.autoindex || IsValidPath_(index_path)) {
+			if (has_end_slash)
+				ServeFile_(location, index_path);
+			else
+				MovedPermanently_(request, index_path);
 		} else {
-			RequestError_(location, 404);
+			ListDirectory_(location, request.GetPath());
 		}
 	} else {
 		ServeFile_(location, full_path);
