@@ -34,14 +34,14 @@ class HttpRequestHandler : public IRequestHandler {
 		void				SetKeepAlive_(const HttpRequest &request);
 		const CommonConfig	&GetCommonConfig(const Location *location) const;
 		bool				HasAcceptedFormat_(const Location *location,
-												const HttpRequest &request);
+													const HttpRequest &request);
 		std::string			PathExtension_(const std::string &path) const;
 		void				DoGet_(const Location *location,
-									const HttpRequest &request);
+													const HttpRequest &request);
 		void				DoPost_(const Location *location,
-									const HttpRequest &request);
+													const HttpRequest &request);
 		void				DoDelete_(const Location *location,
-										const HttpRequest &request);
+													const HttpRequest &request);
 		std::string			GetFullPath_(const Location *location,
 										const std::string &request_path) const;
 		void				ListDirectory_(const Location *location,
@@ -51,8 +51,8 @@ class HttpRequestHandler : public IRequestHandler {
 		void				MovedPermanently_(const HttpRequest &request,
 												const std::string &index_path);
 		void				AddDirectoryContent_(std::stringstream *ss,
-											const Location *location,
-											const std::string &full_path);
+												const Location *location,
+												const std::string &full_path);
 		void				PathError_(const Location *location);
 		bool				IsValidPath_(const std::string &path) const;
 		bool				IsDirectory_(const std::string &path) const;

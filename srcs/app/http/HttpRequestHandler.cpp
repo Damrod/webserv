@@ -141,7 +141,7 @@ void	HttpRequestHandler::AddDirectoryContent_(std::stringstream *ss,
 	struct dirent *entry;
 	while ((entry = readdir(dir)) != NULL) {
 		std::string name = entry->d_name;
-		if (name == "." || name == ".." || name.rfind(".", 0) == 0)
+		if (name.rfind(".", 0) == 0)
 			continue;
 		const std::string full_path_name = full_path + "/" + name;
 		struct stat statbuf;
