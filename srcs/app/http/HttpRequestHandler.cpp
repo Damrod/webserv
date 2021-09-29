@@ -311,3 +311,11 @@ bool	HttpRequestHandler::IsDirectory_(const std::string &path) const {
 		return true;
 	return false;
 }
+
+bool	HttpRequestHandler::IsRegularFile_(const std::string &path) const {
+	struct stat statbuf;
+	if (stat(path.c_str(), &statbuf) == 0 &&
+			(statbuf.st_mode & S_IFMT) == S_IFREG)
+		return true;
+	return false;
+}

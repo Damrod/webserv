@@ -51,6 +51,7 @@ class HttpRequestHandler : public IRequestHandler {
 		void				PathError_(const Location *location);
 		bool				IsValidPath_(const std::string &path) const;
 		bool				IsDirectory_(const std::string &path) const;
+		bool				IsRegularFile_(const std::string &path) const;
 };
 
 #endif  // SRCS_INCS_HTTPREQUESTHANDLER_HPP_
