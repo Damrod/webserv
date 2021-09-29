@@ -2,15 +2,15 @@
 
 Lexer::~Lexer(void) {}
 
-static void addStringLit(std::list<Token> *tokens, std::string *filebuff,
+void Lexer::addStringLit(std::list<Token> *tokens, std::string *filebuff,
 				  size_t *tokenend, size_t *line) {
 	std::string token;
 	char cmp;
 	t_token_type type;
 
 	cmp = (*filebuff)[0];
-	type = (cmp == '\'' ?	Token::Type::T_STR_IMMEDIATE_T1:
-							Token::Type::T_STR_IMMEDIATE_T0);
+	type = (cmp == '\'' ?	Token::Type::T_WORD:
+							Token::Type::T_WORD);
 	*filebuff = filebuff->substr(1);
 	*tokenend = filebuff->find(cmp, 0);
 	if (*tokenend == filebuff->npos)
@@ -21,13 +21,13 @@ static void addStringLit(std::list<Token> *tokens, std::string *filebuff,
 	(*tokenend)++;
 }
 
-static void addPunct(std::list<Token> *tokens, char type,
+void Lexer::addPunct(std::list<Token> *tokens, char type,
 					 size_t *tokenend, size_t line) {
 	char			tmp[2];
 	t_token_type	ttype;
 
 	if (type == ';')
-		ttype = Token::Type::T_END;
+		ttype = Token::Type::T_SEMICOLON;
 	else if (type == '{')
 		ttype = Token::Type::T_SCOPE_OPEN;
 	else if (type == '}')
@@ -65,7 +65,7 @@ void Lexer::lex(const std::string &fileBuff) {
 		if (tokenend == filebuff.npos)
 			tokenend = filebuff.size();
 		if ((token = filebuff.substr(0, tokenend)) != "")
-			tokens_.push_back(Token(token, Token::Type::T_SYMBOL, line));
+			tokens_.push_back(Token(token, Token::Type::T_WORD, line));
 	}
 }
 

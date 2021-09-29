@@ -7,16 +7,11 @@ std::string Token::Type::GetTokenTypeStr(enum e_id type) {
 	return retval;
 }
 
-const char *Token::Type::str_map[10] = {
+const char *Token::Type::str_map[4] = {
 	"t scope open",
 	"t scope close",
-	"t symbol",
-	"t str immediate t0",
-	"t str immediate t1",
-	"t int immediate",
-	"t uint immediate",
-	"t dbl immediate",
-	"t end"
+	"t semicolon",
+	"t word"
 };
 
 std::string Token::State::GetParsingStateTypeStr(enum e_id type) {
@@ -28,7 +23,7 @@ std::string Token::State::GetParsingStateTypeStr(enum e_id type) {
 
 t_parsing_state Token::State::GetParsingStateTypeEnum
 (const std::string &data, t_token_type ttype) {
-	if (ttype == Token::Type::T_END || ttype == Token::Type::T_SCOPE_OPEN
+	if (ttype == Token::Type::T_SEMICOLON || ttype == Token::Type::T_SCOPE_OPEN
 		|| ttype == Token::Type::T_SCOPE_CLOSE)
 		return K_EXP_KW;
 	for (uint8_t i = K_EXIT; i < K_LAST_INVALID_STATE; ++i) {
@@ -38,7 +33,7 @@ t_parsing_state Token::State::GetParsingStateTypeEnum
 	return K_NONE;
 }
 
-const char *Token::State::keyword_to_str[20] = {
+const char *Token::State::keyword_to_str[18] = {
 	"",
 	"EXIT",
 	"INIT",
@@ -52,8 +47,6 @@ const char *Token::State::keyword_to_str[20] = {
 	"autoindex",
 	"index",
 	"upload_store",
-	"return_status",
-	"return_url",
 	"cgi_assign",
 	"location",
 	"limit_except",
