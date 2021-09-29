@@ -16,6 +16,7 @@ class ConfigParserAPI {
 	explicit ConfigParserAPI(const std::string &path);
 	std::vector<ServerConfig> GetServersSettings(void);
  private:
+	std::vector<ServerConfig> servers_settings_;
 	std::string path_;
 };
 

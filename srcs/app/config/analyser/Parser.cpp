@@ -13,6 +13,7 @@ Parser::Parser(const std::list<Token> &token, ParserAPI *config) :
 	ite_(tokens_.end()),
 	itc_(itb_) {
 	ctx_.push(Token::State::K_INIT);
+	parse();
 }
 
 Parser::Data::Data(Parser * const parser, const std::string &error_msg)
