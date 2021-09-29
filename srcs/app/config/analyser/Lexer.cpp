@@ -5,17 +5,14 @@ Lexer::~Lexer(void) {}
 void Lexer::addStringLit(std::string *filebuff, size_t *tokenend) {
 	std::string token;
 	char cmp;
-	t_token_type type;
 
 	cmp = (*filebuff)[0];
-	type = (cmp == '\'' ?	Token::Type::T_WORD:
-							Token::Type::T_WORD);
 	*filebuff = filebuff->substr(1);
 	*tokenend = filebuff->find(cmp, 0);
 	if (*tokenend == filebuff->npos)
 		throw Analyser::SyntaxError("Unterminated quote in line", line_);
 	token = filebuff->substr(0, *tokenend);
-	tokens_.push_back(Token(token, type, line_));
+	tokens_.push_back(Token(token, Token::Type::T_WORD, line_));
 	line_ += std::count(token.begin(), token.end(), '\n');
 	(*tokenend)++;
 }
