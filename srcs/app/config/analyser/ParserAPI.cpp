@@ -127,8 +127,8 @@ std::ostream &operator<<(std::ostream &o,
 		server_settings.begin();
 	for(size_t j = 0; it != server_settings.end(); ++it, ++j) {
 		o << "server " << j << ":\n";
-		o << "\tlisten_address : " << it->listen_address << "\n";
-		o << "\tlisten_port : " << it->listen_port << "\n";
+		o << toStrIndented(1, "listen_address", it->listen_address);
+		o << toStrIndented(1, "listen_port", it->listen_port);
 		o << "\tserver_names :" << "\n";
 		std::vector<std::string>::const_iterator itn = it->server_name.begin();
 		for(size_t i = 0; itn != it->server_name.end(); ++itn, ++i) {
