@@ -285,15 +285,14 @@ void	HttpRequestHandler::ServeFile_(const Location *location,
 	raw_response_ = response.CreateResponseString();
 }
 
-void	HttpRequestHandler::MovedPermanently_(const HttpRequest &request,
-												const std::string &index_path) {
+void	HttpRequestHandler::MovedPermanently_(const HttpRequest &request) {
 	HttpResponse response(301);
 	AddCommonHeaders_(&response);
-	response.AddHeader("Content-Type", GetMimeType_(index_path));
-	std::stringstream ss;
-	ss << "http://" << request.GetHost() << ":" << request.GetPort() <<
+	response.AddHeader("Content-Type", "text/html");
+	std::stringstream url;
+	url << "http://" << request.GetHost() << ":" << request.GetPort() <<
 		request.GetPath() << "/";
-	response.AddHeader("Location", ss.str());
+	response.AddHeader("Location", url.str());
 	const std::string body = DefaultResponseBody_("301 Moved Permanently");
 	response.SetBody(body);
 	raw_response_ = response.CreateResponseString();
@@ -329,7 +328,7 @@ void	HttpRequestHandler::DoGet_(const Location *location,
 			if (has_end_slash)
 				ServeFile_(location, index_path);
 			else
-				MovedPermanently_(request, index_path);
+				MovedPermanently_(request);
 		} else {
 			ListDirectory_(location, request.GetPath());
 		}
