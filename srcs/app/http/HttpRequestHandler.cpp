@@ -10,6 +10,7 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
+#include <HttpStatusCodes.hpp>
 #include <StringUtils.hpp>
 
 HttpRequestHandler::HttpRequestHandler(const ServerConfig &server_config,
@@ -50,7 +51,39 @@ HttpRequestHandler::FindLocation_(const std::string &request_path) const {
 	return best_match_idx == -1 ? NULL : &locations[best_match_idx];
 }
 
+std::string	HttpRequestHandler::GetReturnUrl_(const Location *location) const {
+	if (location)
+		return location->common.return_url;
+	return server_config_.common.return_url;
+}
+
+std::size_t
+HttpRequestHandler::GetReturnStatus_(const Location *location) const {
+	if (location)
+		return location->common.return_status;
+	return server_config_.common.return_status;
+}
+
+void		HttpRequestHandler::DoRedirection_(const Location *location) {
+	const std::size_t status_code = GetReturnStatus_(location);
+	HttpResponse response(status_code);
+	AddCommonHeaders_(&response);
+	response.AddHeader("Content-Type", "text/html");
+	response.AddHeader("Location", GetReturnUrl_(location));
+	const HttpStatusCodes response_codes;
+	std::stringstream response_message;
+	response_message << GetReturnStatus_(location) << " " <<
+									response_codes.GetReasonPhrase(status_code);
+	const std::string body = DefaultResponseBody_(response_message.str());
+	response.SetBody(body);
+	raw_response_ = response.CreateResponseString();
+}
+
 void		HttpRequestHandler::HandleRequest_() {
+	if (!server_config_.common.return_url.empty()) {
+		DoRedirection_(NULL);
+		return;
+	}
 	HttpRequest	*request = NULL;
 	try {
 		request = new HttpRequest(raw_request_);
@@ -272,6 +305,10 @@ std::string	HttpRequestHandler::GetMimeType_(const std::string &path) const {
 
 void	HttpRequestHandler::DoGet_(const Location *location,
 									const HttpRequest &request) {
+	if (location && !location->common.return_url.empty()) {
+		DoRedirection_(location);
+		return;
+	}
 	if (!HasAcceptedFormat_(location, request)) {
 		return;
 	}

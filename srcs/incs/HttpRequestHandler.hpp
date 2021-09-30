@@ -21,6 +21,9 @@ class HttpRequestHandler : public IRequestHandler {
 		bool				keep_alive_;
 
 		void				HandleRequest_();
+		std::string			GetReturnUrl_(const Location *location) const;
+		std::size_t			GetReturnStatus_(const Location *location) const;
+		void				DoRedirection_(const Location *location);
 		const Location		*FindLocation_(
 										const std::string &request_path) const;
 		void				RequestError_(const Location *location,
