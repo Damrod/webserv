@@ -1,4 +1,5 @@
 #include <HttpStatusCodes.hpp>
+#include <utility>
 
 const std::map<std::size_t, std::string>
 HttpStatusCodes::kStatusCodesMap_ = CreateStatusCodesMap_();
