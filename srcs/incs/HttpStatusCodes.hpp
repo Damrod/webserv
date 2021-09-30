@@ -5,9 +5,8 @@
 
 class HttpStatusCodes {
 	private:
-		typedef std::size_t								StatusCode_;
-		typedef std::string								ReasonPhrase_;
-		typedef std::map<StatusCode_, ReasonPhrase_>	StatusCodesMap_;
+		// Map of HTTP response status codes and reason phrases
+		typedef std::map<std::size_t, std::string>		StatusCodesMap_;
 		static const StatusCodesMap_					kStatusCodesMap_;
 		static const StatusCodesMap_					CreateStatusCodesMap_();
 
