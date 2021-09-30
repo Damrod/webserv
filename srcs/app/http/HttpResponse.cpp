@@ -2,68 +2,18 @@
 #include <sstream>
 #include <stdexcept>
 #include <utility>
+#include <HttpStatusCodes.hpp>
 #include <StringUtils.hpp>
 
 const char HttpResponse::kCRLF_[] = "\r\n";
 
-const std::map<std::size_t, std::string>
-HttpResponse::kResponseStatusMap = CreateResponseStatusMap();
-
-const std::map<std::size_t, std::string>
-HttpResponse::CreateResponseStatusMap() {
-	ResponseStatusMap rs;
-
-	rs.insert(std::make_pair(100, "Continue"));
-	rs.insert(std::make_pair(101, "Switching Protocols"));
-	rs.insert(std::make_pair(200, "OK"));
-	rs.insert(std::make_pair(201, "Created"));
-	rs.insert(std::make_pair(202, "Accepted"));
-	rs.insert(std::make_pair(203, "Non-Authoritative Information"));
-	rs.insert(std::make_pair(204, "No Content"));
-	rs.insert(std::make_pair(205, "Reset Content"));
-	rs.insert(std::make_pair(206, "Partial Content"));
-	rs.insert(std::make_pair(300, "Multiple Choices"));
-	rs.insert(std::make_pair(301, "Moved Permanently"));
-	rs.insert(std::make_pair(302, "Found"));
-	rs.insert(std::make_pair(303, "See Other"));
-	rs.insert(std::make_pair(304, "Not Modified"));
-	rs.insert(std::make_pair(305, "Use Proxy"));
-	rs.insert(std::make_pair(307, "Temporary Redirect"));
-	rs.insert(std::make_pair(400, "Bad Request"));
-	rs.insert(std::make_pair(401, "Unauthorized"));
-	rs.insert(std::make_pair(402, "Payment Required"));
-	rs.insert(std::make_pair(403, "Forbidden"));
-	rs.insert(std::make_pair(404, "Not Found"));
-	rs.insert(std::make_pair(405, "Method Not Allowed"));
-	rs.insert(std::make_pair(406, "Not Acceptable"));
-	rs.insert(std::make_pair(407, "Proxy Authentication Required"));
-	rs.insert(std::make_pair(408, "Request Timeout"));
-	rs.insert(std::make_pair(409, "Conflict"));
-	rs.insert(std::make_pair(410, "Gone"));
-	rs.insert(std::make_pair(411, "Length Required"));
-	rs.insert(std::make_pair(412, "Precondition Failed"));
-	rs.insert(std::make_pair(413, "Payload Too Large"));
-	rs.insert(std::make_pair(414, "URI Too Long"));
-	rs.insert(std::make_pair(415, "Unsupported Media Type"));
-	rs.insert(std::make_pair(416, "Range Not Satisfiable"));
-	rs.insert(std::make_pair(417, "Expectation Failed"));
-	rs.insert(std::make_pair(426, "Upgrade Required"));
-	rs.insert(std::make_pair(500, "Internal Server Error"));
-	rs.insert(std::make_pair(501, "Not Implemented"));
-	rs.insert(std::make_pair(502, "Bad Gateway"));
-	rs.insert(std::make_pair(503, "Service Unavailable"));
-	rs.insert(std::make_pair(504, "Gateway Timeout"));
-	rs.insert(std::make_pair(505, "HTTP Version Not Supported"));
-	return rs;
-}
-
 HttpResponse::HttpResponse(std::size_t status_code) {
-	ResponseStatusMap::const_iterator it = kResponseStatusMap.find(status_code);
-	if (it == kResponseStatusMap.end())
+	const HttpStatusCodes response_codes;
+	if (!response_codes.IsValid(status_code))
 		throw std::invalid_argument("[HttpResponse] Invalid Status");
 	http_version_ = "HTTP/1.1";
-	status_code_ = it->first;
-	reason_phrase_ = it->second;
+	status_code_ = status_code;
+	reason_phrase_ = response_codes.GetReasonPhrase(status_code);
 }
 
 void	HttpResponse::SetHttpVersion(const std::string &http_version) {
