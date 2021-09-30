@@ -5,21 +5,21 @@
 #include <string>
 #include <HttpRequest.hpp>
 #include <HttpResponse.hpp>
+#include <ServerConfig.hpp>
 
 class Connection {
-	private:
-		int			socket_;
-		//  HttpRequest	request_;
-		//  HttpResponse response_;
-
-		//  Temporary, until we implement HttpRequest and HttpResponse
-		std::string	raw_request_;
-		std::string raw_response_;
-
 	public:
-		explicit Connection(int sd);
+		Connection(const ServerConfig &server_config, int sd);
 		bool	ReadRequest();
 		bool	SendResponse();
+
+	private:
+		const ServerConfig	&server_config_;
+		const int			socket_;
+		bool				ready_for_response_;
+		bool				keep_alive_;
+		std::string			raw_request_;
+		std::string			raw_response_;
 };
 
 #endif  // SRCS_INCS_CONNECTION_HPP_

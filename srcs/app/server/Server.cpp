@@ -6,7 +6,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <cstring>
-#include <iostream>
 
 Server::Server(const ServerConfig &settings)
 	: settings_(settings), listen_sd_(-1) {
@@ -33,7 +32,7 @@ bool	Server::BindListeningSocket() {
 }
 
 void	Server::AddConnection(int sd) {
-	connections_.insert(std::make_pair(sd, Connection(sd)));
+	connections_.insert(std::make_pair(sd, Connection(settings_, sd)));
 }
 
 void	Server::RemoveConnection(int sd) {
@@ -45,15 +44,14 @@ int		Server::GetListeningSocket() const {
 	return listen_sd_;
 }
 
-bool	Server::HaveConnection(int sd) {
-	return connections_.find(sd) != connections_.end();
+bool	Server::HasConnection(int sd) {
+	return connections_.count(sd) > 0;
 }
 
 bool	Server::ReadRequest(int sd) {
 	std::map<int, Connection>::iterator it = connections_.find(sd);
 	if (it == connections_.end())
 		return false;
-	std::cout << it->second.ReadRequest() << std::endl;
 	return it->second.ReadRequest();
 }
 

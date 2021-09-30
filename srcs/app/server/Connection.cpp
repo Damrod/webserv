@@ -1,32 +1,42 @@
 #include <Connection.hpp>
-#include <iostream>
+#include <IRequestHandler.hpp>
+#include <HttpRequestHandler.hpp>
 
-Connection::Connection(int socket) : socket_(socket) {
-	// Temporary, until we implement HttpRequest and HttpResponse
-	raw_response_ = "HTTP/1.1 200 OK\r\n"
-								  "Server: hello_world\r\n"
-								  "Content-Length: 22\r\n"
-								  "Content-Type: text/html\r\n"
-								  "\r\n"
-								  "<h1>Hello, World!</h1>";
+Connection::Connection(const ServerConfig &server_config, int socket)
+	: server_config_(server_config), socket_(socket),
+		ready_for_response_(false), keep_alive_(true) {
 }
 
 bool	Connection::ReadRequest() {
-	// Temporary solution, until we implement the HttpRequest class
 	char	buffer[4096];
 
 	int nbytes = recv(socket_, buffer, sizeof(buffer), 0);
 	if (nbytes <= 0)
 		return false;
+	ready_for_response_ = true;
 	raw_request_.append(&buffer[0], &buffer[nbytes]);
 	return true;
 }
 
 bool	Connection::SendResponse() {
-	// Temporary solution, until we implement the HttpResponse class
+	if (!ready_for_response_)
+		return true;
+	if (raw_response_.empty()) {
+		IRequestHandler *handler =
+			new HttpRequestHandler(server_config_, raw_request_);
+		raw_request_.clear();
+		raw_response_ = handler->GetRawResponse();
+		keep_alive_ = handler->GetKeepAlive();
+		delete handler;
+	}
 	int nbytes = send(socket_, raw_response_.c_str(), raw_response_.size(), 0);
 	if (nbytes <= 0)
 		return false;
 	raw_response_.erase(0, nbytes);
+	if (raw_response_.empty()) {
+		ready_for_response_ = false;
+		if (!keep_alive_)
+			return false;
+	}
 	return true;
 }
