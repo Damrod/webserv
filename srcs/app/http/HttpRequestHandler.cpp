@@ -139,9 +139,10 @@ HttpRequestHandler::DefaultResponseBody_(const std::string &message) const {
 void
 HttpRequestHandler::DefaultStatusResponse_(const std::size_t status_code) {
 	HttpResponse		response(status_code);
-	std::stringstream	ss;
-	ss << response.GetStatusCode() << " " << response.GetReasonPhrase();
-	response.SetBody(DefaultResponseBody_(ss.str()));
+	std::stringstream	response_message;
+	response_message << response.GetStatusCode() << " " <<
+													response.GetReasonPhrase();
+	response.SetBody(DefaultResponseBody_(response_message.str()));
 	response.AddHeader("Content-Type", "text/html");
 	AddCommonHeaders_(&response);
 	raw_response_ = response.CreateResponseString();
@@ -163,7 +164,7 @@ std::string	HttpRequestHandler::GetFullPath_(const Location *location,
 	return location->common.root + request_path;
 }
 
-void	HttpRequestHandler::AddDirectoryContent_(std::stringstream *ss,
+void	HttpRequestHandler::AddDirectoryContent_(std::stringstream *body,
 											const Location *location,
 											const std::string &full_path) {
 	DIR *dir = opendir(full_path.c_str());
@@ -186,31 +187,31 @@ void	HttpRequestHandler::AddDirectoryContent_(std::stringstream *ss,
 			PathError_(location);
 			throw std::runtime_error("stat error");
 		}
-		*ss << "<a href=\"" << name << "\">" << name << "</a>\n";
+		*body << "<a href=\"" << name << "\">" << name << "</a>\n";
 	}
 	closedir(dir);
 }
 
 void	HttpRequestHandler::ListDirectory_(const Location *location,
 											const std::string &request_path) {
-	std::stringstream ss;
-	ss << "<html>\n" <<
+	std::stringstream body;
+	body << "<html>\n" <<
 		"<head><title>Index of " << request_path << "</title></head>\n" <<
 		"<body>\n" <<
 		"<h1>Index of " << request_path <<
 		"</h1><hr><pre><a href=\"../\">../</a>\n";
 	try {
 		const std::string full_path = GetFullPath_(location, request_path);
-		AddDirectoryContent_(&ss, location, full_path);
+		AddDirectoryContent_(&body, location, full_path);
 	}
 	catch (const std::exception &) {
 		return;
 	}
-	ss << "</pre><hr></body>\n" <<
+	body << "</pre><hr></body>\n" <<
 		"</html>\n";
 	HttpResponse	response(200);
 	response.AddHeader("Content-Type", "text/html");
-	response.SetBody(ss.str());
+	response.SetBody(body.str());
 	AddCommonHeaders_(&response);
 	raw_response_ = response.CreateResponseString();
 }
