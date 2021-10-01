@@ -12,7 +12,7 @@ class MimeTypes {
 		typedef	std::map<std::string, std::string>	MimeTypesMap_;
 
 		static const MimeTypesMap_	kMimeTypes_;
-		static MimeTypesMap_		CreateMimeTypesMap_();
+		static const MimeTypesMap_	CreateMimeTypesMap_();
 };
 
 #endif  // SRCS_INCS_MIMETYPES_HPP_

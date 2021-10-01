@@ -4,7 +4,7 @@
 const MimeTypes::MimeTypesMap_
 MimeTypes::kMimeTypes_ = CreateMimeTypesMap_();
 
-MimeTypes::MimeTypesMap_
+const MimeTypes::MimeTypesMap_
 MimeTypes::CreateMimeTypesMap_() {
 	MimeTypesMap_ mt;
 
