@@ -1,10 +1,10 @@
 #include <MimeTypes.hpp>
 #include <utility>
 
-const std::map<std::string, std::string>
+const MimeTypes::MimeTypesMap_
 MimeTypes::kMimeTypes_ = CreateMimeTypesMap_();
 
-std::map<std::string, std::string>
+const MimeTypes::MimeTypesMap_
 MimeTypes::CreateMimeTypesMap_() {
 	MimeTypesMap_ mt;
 
