@@ -35,7 +35,6 @@ server {
 	error_page 404	/404.html;
 
 	location		/index/ {
-		root		html;
 		index		nonexistent.html;
 		autoindex	on;
 	}
@@ -99,7 +98,6 @@ void MockConfigLoadFile::InitConfig_() {
 	server3.common.error_pages.insert(std::make_pair(404, "/404.html"));
 
 	Location web2_autoindex("/index/", server3.common);
-	web2_autoindex.common.root = "html";
 	web2_autoindex.common.index = "nonexistent.html";
 	web2_autoindex.common.autoindex = true;
 	server3.locations.push_back(web2_autoindex);
@@ -114,8 +112,8 @@ void MockConfigLoadFile::InitConfig_() {
 
 	// Add the server listening on 8085
 	ServerConfig server5;
-	server4.listen_port = 8084;
-	server3.common.root = "html/web3";
+	server5.listen_port = 8084;
+	server5.common.root = "html/web3";
 
 	Location web3_upload("/upload/", server5.common);
 	web3_upload.limit_except.push_back("POST");
