@@ -108,6 +108,8 @@ void MockConfigLoadFile::InitConfig_() {
 	// Add the server listening on 8083, performing an HTTP redirect
 	ServerConfig	server4;
 	server4.listen_port = 8083;
+	server4.common.return_status = 301;
+	server4.common.return_url = "https://www.google.com";
 	servers_configs_.push_back(server4);
 
 	// Add the server listening on 8085
