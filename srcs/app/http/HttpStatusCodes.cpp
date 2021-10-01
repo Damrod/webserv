@@ -1,10 +1,10 @@
 #include <HttpStatusCodes.hpp>
 #include <utility>
 
-const std::map<std::size_t, std::string>
+const HttpStatusCodes::StatusCodesMap_
 HttpStatusCodes::kStatusCodesMap_ = CreateStatusCodesMap_();
 
-const std::map<std::size_t, std::string>
+const HttpStatusCodes::StatusCodesMap_
 HttpStatusCodes::CreateStatusCodesMap_() {
 	StatusCodesMap_ sc;
 
