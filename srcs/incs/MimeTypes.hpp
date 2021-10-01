@@ -13,6 +13,10 @@ class MimeTypes {
 
 		static const MimeTypesMap_	kMimeTypes_;
 		static const MimeTypesMap_	CreateMimeTypesMap_();
+
+		// Disable copy construct and assign
+		MimeTypes(const MimeTypes &);
+		MimeTypes &	operator=(const MimeTypes &);
 };
 
 #endif  // SRCS_INCS_MIMETYPES_HPP_
