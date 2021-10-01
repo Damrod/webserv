@@ -7,12 +7,11 @@
 const char HttpResponse::kCRLF_[] = "\r\n";
 
 HttpResponse::HttpResponse(std::size_t status_code) {
-	const HttpStatusCodes response_codes;
-	if (!response_codes.IsValid(status_code))
+	if (!HttpStatusCodes::IsValid(status_code))
 		throw std::invalid_argument("[HttpResponse] Invalid Status");
 	http_version_ = "HTTP/1.1";
 	status_code_ = status_code;
-	reason_phrase_ = response_codes.GetReasonPhrase(status_code);
+	reason_phrase_ = HttpStatusCodes::GetReasonPhrase(status_code);
 }
 
 void	HttpResponse::SetHttpVersion(const std::string &http_version) {
