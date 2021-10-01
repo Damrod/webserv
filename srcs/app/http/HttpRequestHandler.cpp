@@ -70,10 +70,9 @@ void		HttpRequestHandler::DoRedirection_(const Location *location) {
 	AddCommonHeaders_(&response);
 	response.AddHeader("Content-Type", "text/html");
 	response.AddHeader("Location", GetReturnUrl_(location));
-	const HttpStatusCodes response_codes;
 	std::stringstream response_message;
 	response_message << GetReturnStatus_(location) << " " <<
-									response_codes.GetReasonPhrase(status_code);
+								HttpStatusCodes::GetReasonPhrase(status_code);
 	const std::string body = DefaultResponseBody_(response_message.str());
 	response.SetBody(body);
 	raw_response_ = response.CreateResponseString();
