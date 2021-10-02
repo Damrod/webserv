@@ -29,7 +29,7 @@ class HttpRequestHandler : public IRequestHandler {
 		void				RequestError_(const Location *location,
 												const std::size_t error_code);
 		std::string			DefaultResponseBody_(
-											const std::string &message) const;
+										const std::size_t status_code) const;
 		void				DefaultStatusResponse_(
 												const std::size_t status_code);
 		std::string			CurrentDate_() const;

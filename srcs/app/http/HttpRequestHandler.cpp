@@ -70,10 +70,7 @@ void		HttpRequestHandler::DoRedirection_(const Location *location) {
 	AddCommonHeaders_(&response);
 	response.AddHeader("Content-Type", "text/html");
 	response.AddHeader("Location", GetReturnUrl_(location));
-	std::stringstream response_message;
-	response_message << GetReturnStatus_(location) << " " <<
-								HttpStatusCodes::GetReasonPhrase(status_code);
-	const std::string body = DefaultResponseBody_(response_message.str());
+	const std::string body = DefaultResponseBody_(status_code);
 	response.SetBody(body);
 	raw_response_ = response.CreateResponseString();
 }
@@ -124,7 +121,10 @@ void	HttpRequestHandler::AddCommonHeaders_(HttpResponse *response) {
 }
 
 std::string
-HttpRequestHandler::DefaultResponseBody_(const std::string &message) const {
+HttpRequestHandler::DefaultResponseBody_(const std::size_t status_code) const {
+	std::stringstream	ss;
+	ss << status_code << " " << HttpStatusCodes::GetReasonPhrase(status_code);
+	const std::string	message = ss.str();
 	const std::string	body = "<html>\n"
 						"<head><title>" + message + "</title></head>\n"
 						"<body>\n"
@@ -138,10 +138,7 @@ HttpRequestHandler::DefaultResponseBody_(const std::string &message) const {
 void
 HttpRequestHandler::DefaultStatusResponse_(const std::size_t status_code) {
 	HttpResponse		response(status_code);
-	std::stringstream	response_message;
-	response_message << response.GetStatusCode() << " " <<
-													response.GetReasonPhrase();
-	response.SetBody(DefaultResponseBody_(response_message.str()));
+	response.SetBody(DefaultResponseBody_(status_code));
 	response.AddHeader("Content-Type", "text/html");
 	AddCommonHeaders_(&response);
 	raw_response_ = response.CreateResponseString();
@@ -293,7 +290,7 @@ void	HttpRequestHandler::MovedPermanently_(const HttpRequest &request) {
 	url << "http://" << request.GetHost() << ":" << request.GetPort() <<
 		request.GetPath() << "/";
 	response.AddHeader("Location", url.str());
-	const std::string body = DefaultResponseBody_("301 Moved Permanently");
+	const std::string body = DefaultResponseBody_(301);
 	response.SetBody(body);
 	raw_response_ = response.CreateResponseString();
 }
