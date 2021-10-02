@@ -9,7 +9,6 @@
 #include <exception>
 #include <fstream>
 #include <sstream>
-#include <stdexcept>
 #include <HttpStatusCodes.hpp>
 #include <StringUtils.hpp>
 
@@ -160,13 +159,13 @@ std::string	HttpRequestHandler::GetFullPath_(const Location *location,
 	return location->common.root + request_path;
 }
 
-void	HttpRequestHandler::AddDirectoryContent_(std::stringstream *body,
+bool	HttpRequestHandler::TryAddDirectoryContent_(std::stringstream *body,
 											const Location *location,
 											const std::string &full_path) {
 	DIR *dir = opendir(full_path.c_str());
 	if (dir == NULL) {
 		PathError_(location);
-		throw std::invalid_argument("invalid directory");
+		return false;
 	}
 	struct dirent *entry;
 	while ((entry = readdir(dir)) != NULL) {
@@ -174,18 +173,17 @@ void	HttpRequestHandler::AddDirectoryContent_(std::stringstream *body,
 		if (name.rfind(".", 0) == 0)
 			continue;
 		const std::string full_path_name = full_path + "/" + name;
-		struct stat statbuf;
-		if (stat(full_path_name.c_str(), &statbuf) == 0) {
-			if ((statbuf.st_mode & S_IFMT) == S_IFDIR)
+		if (IsDirectory_(full_path_name)) {
 				name.append("/");
 		} else {
 			closedir(dir);
 			PathError_(location);
-			throw std::runtime_error("stat error");
+			return false;
 		}
 		*body << "<a href=\"" << name << "\">" << name << "</a>\n";
 	}
 	closedir(dir);
+	return true;
 }
 
 void	HttpRequestHandler::ListDirectory_(const Location *location,
@@ -196,13 +194,9 @@ void	HttpRequestHandler::ListDirectory_(const Location *location,
 		"<body>\n" <<
 		"<h1>Index of " << request_path <<
 		"</h1><hr><pre><a href=\"../\">../</a>\n";
-	try {
-		const std::string full_path = GetFullPath_(location, request_path);
-		AddDirectoryContent_(&body, location, full_path);
-	}
-	catch (const std::exception &) {
+	const std::string full_path = GetFullPath_(location, request_path);
+	if (!TryAddDirectoryContent_(&body, location, full_path))
 		return;
-	}
 	body << "</pre><hr></body>\n" <<
 		"</html>\n";
 	HttpResponse	response(200);

@@ -56,7 +56,7 @@ class HttpRequestHandler : public IRequestHandler {
 		void				ServeFile_(const Location *location,
 												const std::string &file_path);
 		void				MovedPermanently_(const HttpRequest &request);
-		void				AddDirectoryContent_(std::stringstream *ss,
+		bool				TryAddDirectoryContent_(std::stringstream *ss,
 												const Location *location,
 												const std::string &full_path);
 		void				PathError_(const Location *location);
