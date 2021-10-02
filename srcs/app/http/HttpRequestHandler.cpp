@@ -257,7 +257,7 @@ std::string	HttpRequestHandler::PathExtension_(const std::string &path) const {
 void	HttpRequestHandler::ServeFile_(const Location *location,
 												const std::string &file_path) {
 	if (!IsRegularFile_(file_path)){
-		RequestError_(location, 404);
+		RequestError_(location, 403);
 		return;
 	}
 	std::ifstream ifs(file_path.c_str(), std::ios::in | std::ios::binary);
