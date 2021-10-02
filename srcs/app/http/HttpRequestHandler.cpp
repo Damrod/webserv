@@ -363,7 +363,7 @@ bool	HttpRequestHandler::IsValidPath_(const std::string &path) const {
 
 bool	HttpRequestHandler::IsDirectory_(const std::string &path) const {
 	struct stat statbuf;
-	if (stat(path.c_str(), &statbuf) == 0 &&
+	if (lstat(path.c_str(), &statbuf) == 0 &&
 			(statbuf.st_mode & S_IFMT) == S_IFDIR)
 		return true;
 	return false;
@@ -371,7 +371,7 @@ bool	HttpRequestHandler::IsDirectory_(const std::string &path) const {
 
 bool	HttpRequestHandler::IsRegularFile_(const std::string &path) const {
 	struct stat statbuf;
-	if (stat(path.c_str(), &statbuf) == 0 &&
+	if (lstat(path.c_str(), &statbuf) == 0 &&
 			(statbuf.st_mode & S_IFMT) == S_IFREG)
 		return true;
 	return false;
