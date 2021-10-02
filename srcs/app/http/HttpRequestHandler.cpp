@@ -165,7 +165,6 @@ bool	HttpRequestHandler::TryAddDirectoryContent_(std::stringstream *body,
 	DIR *dir = opendir(full_path.c_str());
 	if (dir == NULL) {
 		PathError_(location);
-		return false;
 	}
 	struct dirent *entry;
 	while ((entry = readdir(dir)) != NULL) {
@@ -173,13 +172,8 @@ bool	HttpRequestHandler::TryAddDirectoryContent_(std::stringstream *body,
 		if (name.rfind(".", 0) == 0)
 			continue;
 		const std::string full_path_name = full_path + "/" + name;
-		if (IsDirectory_(full_path_name)) {
+		if (IsDirectory_(full_path_name))
 				name.append("/");
-		} else {
-			closedir(dir);
-			PathError_(location);
-			return false;
-		}
 		*body << "<a href=\"" << name << "\">" << name << "</a>\n";
 	}
 	closedir(dir);
