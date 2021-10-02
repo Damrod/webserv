@@ -313,7 +313,7 @@ void	HttpRequestHandler::DoGet_(const Location *location,
 			index_path = full_path + cfg.index;
 		else
 			index_path = full_path + "/" + cfg.index;
-		if (!cfg.autoindex || IsValidPath_(index_path)) {
+		if (!cfg.autoindex || IsRegularFile_(index_path)) {
 			if (has_end_slash)
 				ServeFile_(location, index_path);
 			else
