@@ -15,6 +15,10 @@ class HttpRequestHandler : public IRequestHandler {
 		bool				GetKeepAlive() const;
 
 	private:
+		HttpRequestHandler();
+		HttpRequestHandler(const HttpRequestHandler &);
+		HttpRequestHandler&	operator=(const HttpRequestHandler&);
+
 		const ServerConfig	&server_config_;
 		std::string			raw_request_;
 		std::string			raw_response_;
@@ -60,8 +64,6 @@ class HttpRequestHandler : public IRequestHandler {
 		bool				IsDirectory_(const std::string &path) const;
 		bool				IsRegularFile_(const std::string &path) const;
 		std::string			GetMimeType_(const std::string &file_path) const;
-
-		static const MimeTypes	kMimeTypes_;
 };
 
 #endif  // SRCS_INCS_HTTPREQUESTHANDLER_HPP_

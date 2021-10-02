@@ -296,7 +296,7 @@ void	HttpRequestHandler::MovedPermanently_(const HttpRequest &request) {
 }
 
 std::string	HttpRequestHandler::GetMimeType_(const std::string &path) const {
-	return kMimeTypes_.GetMimeType(PathExtension_(path));
+	return MimeTypes::GetMimeType(PathExtension_(path));
 }
 
 void	HttpRequestHandler::DoGet_(const Location *location,
