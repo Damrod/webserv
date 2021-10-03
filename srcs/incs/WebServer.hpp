@@ -25,13 +25,13 @@ class WebServer {
 	public:
 		WebServer();
 		// Load the config file and servers settings
-		bool	Init(const std::string &pathname);
+		void	Init(const std::string &pathname);
 
 		// Run the web server
 		void	Run();
 
 	private:
-		bool	PopulateServers_();
+		void	PopulateServers_();
 		void	AddListeningSocketsToMasterSet_();
 		void	SetMaxSocket_(int curr_sd);
 		void	AcceptNewConnection_(int sd);
