@@ -53,7 +53,7 @@ class Token {
 			enum e_id  state;
 			std::string	data;
 		} t_kw2str;
-		const static t_kw2str kw2strmap[14];
+		static const t_kw2str kw2strmap[14];
 
 	private:
 		static const char *keyword_to_str[18];
