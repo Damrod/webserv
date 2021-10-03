@@ -16,10 +16,12 @@ Server::Server(const ServerConfig &settings)
 
 void	Server::BindListeningSocket() {
 	listen_sd_ = socket(AF_INET, SOCK_STREAM, 0);
-	if (listen_sd_ < 0)
+	if (listen_sd_ < 0) {
 		throw std::runtime_error(std::strerror(errno));
-	if (fcntl(listen_sd_, F_SETFL, O_NONBLOCK) < 0)
+	}
+	if (fcntl(listen_sd_, F_SETFL, O_NONBLOCK) < 0) {
 		throw std::runtime_error(std::strerror(errno));
+	}
 
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;  // IPv4
@@ -28,14 +30,17 @@ void	Server::BindListeningSocket() {
 	std::memset(addr.sin_zero, 0, sizeof(addr.sin_zero));
 
 	int on = 1;
-	if (setsockopt(listen_sd_, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
+	if (setsockopt(listen_sd_, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0) {
 		throw std::runtime_error(std::strerror(errno));
+	}
 
-	if (bind(listen_sd_, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+	if (bind(listen_sd_, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
 		throw std::runtime_error(std::strerror(errno));
+	}
 
-	if (listen(listen_sd_, SOMAXCONN) < 0)
+	if (listen(listen_sd_, SOMAXCONN) < 0) {
 		throw std::runtime_error(std::strerror(errno));
+	}
 }
 
 void	Server::AddConnection(int sd) {
@@ -57,14 +62,16 @@ bool	Server::HasConnection(int sd) {
 
 bool	Server::ReadRequest(int sd) {
 	std::map<int, Connection>::iterator it = connections_.find(sd);
-	if (it == connections_.end())
+	if (it == connections_.end()) {
 		return false;
+	}
 	return it->second.ReadRequest();
 }
 
 bool	Server::SendResponse(int sd) {
 	std::map<int, Connection>::iterator it = connections_.find(sd);
-	if (it == connections_.end())
+	if (it == connections_.end()) {
 		return false;
+	}
 	return it->second.SendResponse();
 }
