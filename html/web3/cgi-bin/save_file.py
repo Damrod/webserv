@@ -18,7 +18,7 @@ if fileitem.filename:
     if not os.path.exists(directory):
         os.mkdir(directory)
     if not os.path.exists(directory + fn):
-        open('/tmp/webserv/' + fn, 'wb').write(fileitem.file.read())
+        open(directory + fn, 'wb').write(fileitem.file.read())
         message = 'The file "' + fn + '" was uploaded successfully'
     else:
         message = 'The file already exists'
