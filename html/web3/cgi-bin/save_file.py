@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 
-import cgi, os, cgitb
+import os, cgi, cgitb
+from ConfigParser import SafeConfigParser
 
 cgitb.enable()
 
@@ -14,7 +15,11 @@ if fileitem.filename:
     # strip leading path from file name to avoid
     # directory traversal attacks
     fn = os.path.basename(fileitem.filename)
-    directory = '/tmp/webserv/'
+    parser = SafeConfigParser()
+    this_dir = os.path.dirname(os.path.abspath(__file__))
+    ini_file = os.path.join(this_dir, 'config/save_file.ini')
+    parser.read(ini_file)
+    directory = parser.get('paths', 'upload_path')
     if not os.path.exists(directory):
         os.mkdir(directory)
     if not os.path.exists(directory + fn):
