@@ -1,5 +1,7 @@
 #include <WebServer.hpp>
+#include <cerrno>
 #include <cstring>
+#include <stdexcept>
 #include <ServerConfig.hpp>
 
 WebServer::WebServer() {
@@ -9,14 +11,9 @@ WebServer::WebServer() {
 	max_sd_ = -1;
 }
 
-bool	WebServer::Init(const std::string &pathname) {
-	// Load the config file
-	if (!config_.LoadFile(pathname))
-		return false;
-	// Populate the servers
-	if (!PopulateServers_())
-		return false;
-	return true;
+void	WebServer::Init(const std::string &pathname) {
+	config_.LoadFile(pathname);
+	PopulateServers_();
 }
 
 void	WebServer::Run() {
@@ -26,6 +23,11 @@ void	WebServer::Run() {
 		std::memcpy(&write_set_, &master_set_, sizeof(master_set_));
 		int ready_connections =
 			select(max_sd_ + 1, &read_set_, &write_set_, NULL, NULL);
+		if (ready_connections < 0) {
+			throw std::runtime_error(std::strerror(errno));
+		} else if (ready_connections == 0) {
+			throw std::runtime_error("select returned 0 with NULL timeout");
+		}
 		for (int sd = 0; sd <= max_sd_ && ready_connections > 0; ++sd) {
 			if (FD_ISSET(sd, &read_set_)) {
 				--ready_connections;
@@ -42,7 +44,7 @@ void	WebServer::Run() {
 	}
 }
 
-bool	WebServer::PopulateServers_() {
+void	WebServer::PopulateServers_() {
 	std::vector<ServerConfig>	servers_settings;
 
 	servers_settings = config_.GetServersSettings();
@@ -51,12 +53,10 @@ bool	WebServer::PopulateServers_() {
 	while (settings_it != servers_settings.end()) {
 		Server	server(*settings_it);
 
-		if (!server.BindListeningSocket())
-			return false;
+		server.BindListeningSocket();
 		servers_.insert(std::make_pair(server.GetListeningSocket(), server));
 		++settings_it;
 	}
-	return true;
 }
 
 void	WebServer::AddListeningSocketsToMasterSet_() {
@@ -65,8 +65,9 @@ void	WebServer::AddListeningSocketsToMasterSet_() {
 	for (; server_it != servers_.end(); ++server_it) {
 		int listen_sd = server_it->second.GetListeningSocket();
 		FD_SET(listen_sd, &master_set_);
-		if (max_sd_ < listen_sd)
+		if (max_sd_ < listen_sd) {
 			max_sd_ = listen_sd;
+		}
 	}
 }
 
@@ -91,11 +92,17 @@ void	WebServer::AcceptNewConnection_(int sd) {
 	Server *server_ptr = &server_it->second;
 
 	int new_sd = accept(server_ptr->GetListeningSocket(), NULL, NULL);
-	fcntl(new_sd, F_SETFL, O_NONBLOCK);
+	if (new_sd < 0) {
+		throw std::runtime_error(std::strerror(errno));
+	}
+	if (fcntl(new_sd, F_SETFL, O_NONBLOCK) < 0) {
+		throw std::runtime_error(std::strerror(errno));
+	}
 	FD_SET(new_sd, &master_set_);
 	server_ptr->AddConnection(new_sd);
-	if (max_sd_ < new_sd)
+	if (max_sd_ < new_sd) {
 		max_sd_ = new_sd;
+	}
 }
 
 std::map<int, Server>::iterator
@@ -103,8 +110,9 @@ WebServer::FindConnectionServer_(int sd) {
 	ServersMap_::iterator	server_it = servers_.begin();
 
 	for(; server_it!= servers_.end(); ++server_it) {
-		if (server_it->second.HasConnection(sd))
+		if (server_it->second.HasConnection(sd)) {
 			return server_it;
+		}
 	}
 	return servers_.end();
 }
