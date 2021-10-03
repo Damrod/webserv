@@ -65,7 +65,7 @@ server {
 
 	location	/cgi-bin/ {
 		limit_except POST GET;
-		cgi-assign .py	/usr/bin/python;
+		cgi-assign .py	/usr/bin/python2;
 	}
 }
 */
@@ -136,7 +136,7 @@ void MockConfigLoadFile::InitConfig_() {
 	web3_cgi_bin.limit_except.push_back("POST");
 	web3_cgi_bin.limit_except.push_back("GET");
 	web3_cgi_bin.common.cgi_assign.insert(
-									std::make_pair("py", "/usr/bin/python"));
+									std::make_pair("py", "/usr/bin/python2"));
 	server5.locations.push_back(web3_cgi_bin);
 	servers_configs_.push_back(server5);
 }
