@@ -2,6 +2,7 @@
 #define SRCS_INCS_HTTPRESPONSE_HPP_
 #include <map>
 #include <string>
+#include <HttpStatusCodes.hpp>
 
 class HttpResponse {
 	private:
@@ -26,13 +27,7 @@ class HttpResponse {
 		std::string	CreateResponseString() const;
 
 	private:
-		typedef std::size_t							StatusCode;
-		typedef std::string							ReasonPhrase;
-		typedef std::map<StatusCode, ReasonPhrase>	ResponseStatusMap;
-
-		static const ResponseStatusMap 				kResponseStatusMap;
 		static const char							kCRLF_[];
-		static const ResponseStatusMap				CreateResponseStatusMap();
 
 		std::string	http_version_;
 		std::size_t	status_code_;
