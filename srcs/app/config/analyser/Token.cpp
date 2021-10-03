@@ -14,11 +14,42 @@ const char *Token::Type::str_map[4] = {
 	"t word"
 };
 
+const Token::State::t_kw2str Token::State::kw2strmap[14] = {
+		{.state = Token::State::K_SERVER,
+		.data = "server"},
+		{.state = Token::State::K_LISTEN,
+		.data = "listen"},
+		{.state = Token::State::K_SERVER_NAME,
+		.data = "server_name"},
+		{.state = Token::State::K_ROOT,
+		.data = "root"},
+		{.state = Token::State::K_CLIENT_MAX_BODY_SIZE,
+		.data = "client_max_body_size"},
+		{.state = Token::State::K_ERROR_PAGE,
+		.data = "error_page"},
+		{.state = Token::State::K_RETURN,
+		.data = "return"},
+		{.state = Token::State::K_AUTOINDEX,
+		.data = "autoindex"},
+		{.state = Token::State::K_INDEX,
+		.data = "index"},
+		{.state = Token::State::K_UPLOAD_STORE,
+		.data = "upload_store"},
+		{.state = Token::State::K_SERVER_NAME,
+		.data = "server_name"},
+		{.state = Token::State::K_CGI_ASSIGN,
+		.data = "cgi_assign"},
+		{.state = Token::State::K_LOCATION,
+		.data = "location"},
+		{.state = Token::State::K_LIMIT_EXCEPT,
+		.data = "limit_except"}};
+
 std::string Token::State::GetParsingStateTypeStr(enum e_id type) {
-	std::string retval("");
-	if (type > K_NONE && type < K_LAST_INVALID_STATE)
-		return keyword_to_str[type];
-	return retval;
+	for (size_t i = 0; i < sizeof(kw2strmap)/sizeof(kw2strmap[0]); ++i) {
+		if(type == kw2strmap[i].state)
+			return kw2strmap[i].data;
+	}
+	return "";
 }
 
 t_parsing_state Token::State::GetParsingStateTypeEnum
@@ -26,33 +57,12 @@ t_parsing_state Token::State::GetParsingStateTypeEnum
 	if (ttype == Token::Type::T_SEMICOLON || ttype == Token::Type::T_SCOPE_OPEN
 		|| ttype == Token::Type::T_SCOPE_CLOSE)
 		return K_EXP_KW;
-	for (uint8_t i = K_EXIT; i < K_LAST_INVALID_STATE; ++i) {
-		if (keyword_to_str[i + 1] == data)
-			return static_cast<t_parsing_state>(i);
+	for (size_t i = 0; i < sizeof(kw2strmap)/sizeof(kw2strmap[0]); ++i) {
+		if(data == kw2strmap[i].data)
+			return kw2strmap[i].state;
 	}
-	return K_NONE;
+	return Token::State::K_NONE;
 }
-
-const char *Token::State::keyword_to_str[18] = {
-	"",
-	"EXIT",
-	"INIT",
-	"server",
-	"listen",
-	"server_name",
-	"root",
-	"client_max_body_size",
-	"error_page",
-	"return",
-	"autoindex",
-	"index",
-	"upload_store",
-	"cgi_assign",
-	"location",
-	"limit_except",
-	"EXPECT SEMICOLON",
-	"EXPECT KEYWORD"
-};
 
 Token::Token(const std::string &data, t_token_type type, size_t line)
 	: data_(data),

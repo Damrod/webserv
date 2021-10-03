@@ -49,6 +49,11 @@ class Token {
 		static std::string GetParsingStateTypeStr(enum e_id type);
 		static enum e_id GetParsingStateTypeEnum(const std::string &data,
 												 Type::e_id ttype);
+		typedef struct keyword_to_str {
+			enum e_id  state;
+			std::string	data;
+		} t_kw2str;
+		const static t_kw2str kw2strmap[14];
 
 	private:
 		static const char *keyword_to_str[18];
