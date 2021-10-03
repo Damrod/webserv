@@ -23,8 +23,10 @@ void	WebServer::Run() {
 		std::memcpy(&write_set_, &master_set_, sizeof(master_set_));
 		int ready_connections =
 			select(max_sd_ + 1, &read_set_, &write_set_, NULL, NULL);
-		if (ready_connections <= 0) {
+		if (ready_connections < 0) {
 			throw std::runtime_error(std::strerror(errno));
+		} else if (ready_connections == 0) {
+			throw std::runtime_error("select returned 0 with NULL timeout");
 		}
 		for (int sd = 0; sd <= max_sd_ && ready_connections > 0; ++sd) {
 			if (FD_ISSET(sd, &read_set_)) {
