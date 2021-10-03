@@ -4,6 +4,7 @@ webserv
 ### C++ ###
 # Prerequisites
 *.d
+!http.d
 
 # Compiled Object files
 *.slo
@@ -137,3 +138,7 @@ GSYMS
 
 ### Local doc files ###
 NOTES.md
+
+### draft and personal files
+*.nocommit
+nocommit/*
