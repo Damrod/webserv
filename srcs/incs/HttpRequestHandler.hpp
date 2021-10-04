@@ -24,46 +24,46 @@ class HttpRequestHandler : public IRequestHandler {
 		std::string			raw_response_;
 		bool				keep_alive_;
 
-		void				HandleRequest_();
+		void				SetKeepAlive_(const HttpRequest &request);
+		const Location		*FindLocation_(
+										const std::string &request_path) const;
 		std::string			GetReturnUrl_(const Location *location) const;
 		std::size_t			GetReturnStatus_(const Location *location) const;
 		void				DoRedirection_(const Location *location);
-		const Location		*FindLocation_(
-										const std::string &request_path) const;
-		void				RequestError_(const Location *location,
-												const std::size_t error_code);
+		void				HandleRequest_();
+		void				AddCommonHeaders_(HttpResponse *response);
 		std::string			DefaultResponseBody_(
 										const std::size_t status_code) const;
 		void				DefaultStatusResponse_(
 												const std::size_t status_code);
-		std::string			CurrentDate_() const;
-		void				AddCommonHeaders_(HttpResponse *response);
-		void				SetKeepAlive_(const HttpRequest &request);
+		void				RequestError_(const Location *location,
+												const std::size_t error_code);
+		void				PathError_(const Location *location);
+		bool				TryAddDirectoryContent_(std::stringstream *ss,
+												const Location *location,
+												const std::string &full_path);
+		std::string			GetFullPath_(const Location *location,
+										const std::string &request_path) const;
+		void				ListDirectory_(const Location *location,
+											const std::string &request_path);
 		const CommonConfig	&GetCommonConfig(const Location *location) const;
 		bool				HasAcceptedFormat_(const Location *location,
 													const HttpRequest &request);
-		std::string			PathExtension_(const std::string &path) const;
+		void				ServeFile_(const Location *location,
+												const std::string &file_path);
+		void				MovedPermanently_(const HttpRequest &request);
 		void				DoGet_(const Location *location,
 													const HttpRequest &request);
 		void				DoPost_(const Location *location,
 													const HttpRequest &request);
 		void				DoDelete_(const Location *location,
 													const HttpRequest &request);
-		std::string			GetFullPath_(const Location *location,
-										const std::string &request_path) const;
-		void				ListDirectory_(const Location *location,
-											const std::string &request_path);
-		void				ServeFile_(const Location *location,
-												const std::string &file_path);
-		void				MovedPermanently_(const HttpRequest &request);
-		bool				TryAddDirectoryContent_(std::stringstream *ss,
-												const Location *location,
-												const std::string &full_path);
-		void				PathError_(const Location *location);
 		bool				IsValidPath_(const std::string &path) const;
 		bool				IsDirectory_(const std::string &path) const;
 		bool				IsRegularFile_(const std::string &path) const;
+		std::string			PathExtension_(const std::string &path) const;
 		std::string			GetMimeType_(const std::string &file_path) const;
+		std::string			CurrentDate_() const;
 };
 
 #endif  // SRCS_INCS_HTTPREQUESTHANDLER_HPP_

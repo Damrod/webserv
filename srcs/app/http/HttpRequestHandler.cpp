@@ -106,16 +106,6 @@ void		HttpRequestHandler::HandleRequest_() {
 	delete request;
 }
 
-std::string	HttpRequestHandler::CurrentDate_() const {
-	char				buffer[100];
-	const std::time_t	date = std::time(NULL);
-	std::strftime(buffer,
-				sizeof(buffer),
-				"%a, %d %b %Y %H:%M:%S %Z",
-				std::gmtime(&date));
-	return buffer;
-}
-
 void	HttpRequestHandler::AddCommonHeaders_(HttpResponse *response) {
 	response->AddHeader("Server", "webserv");
 	if (keep_alive_) {
@@ -150,6 +140,15 @@ HttpRequestHandler::DefaultStatusResponse_(const std::size_t status_code) {
 	raw_response_ = response.CreateResponseString();
 }
 
+void	HttpRequestHandler::RequestError_(const Location *location,
+											const std::size_t error_code) {
+	// TODO(any) Respond with the error page
+	//           if its defined in server configuration
+	//           and the page exist
+	(void)location;
+	DefaultStatusResponse_(error_code);
+}
+
 void	HttpRequestHandler::PathError_(const Location *location) {
 	if (errno == ENOENT || errno == ENOTDIR) {
 		RequestError_(location, 404);
@@ -158,14 +157,6 @@ void	HttpRequestHandler::PathError_(const Location *location) {
 	} else {
 		RequestError_(location, 500);
 	}
-}
-
-std::string	HttpRequestHandler::GetFullPath_(const Location *location,
-										const std::string &request_path) const {
-	if (!location) {
-		return server_config_.common.root + request_path;
-	}
-	return location->common.root + request_path;
 }
 
 bool	HttpRequestHandler::TryAddDirectoryContent_(std::stringstream *body,
@@ -191,6 +182,14 @@ bool	HttpRequestHandler::TryAddDirectoryContent_(std::stringstream *body,
 	return true;
 }
 
+std::string	HttpRequestHandler::GetFullPath_(const Location *location,
+										const std::string &request_path) const {
+	if (!location) {
+		return server_config_.common.root + request_path;
+	}
+	return location->common.root + request_path;
+}
+
 void	HttpRequestHandler::ListDirectory_(const Location *location,
 											const std::string &request_path) {
 	std::stringstream body;
@@ -210,15 +209,6 @@ void	HttpRequestHandler::ListDirectory_(const Location *location,
 	response.SetBody(body.str());
 	AddCommonHeaders_(&response);
 	raw_response_ = response.CreateResponseString();
-}
-
-void	HttpRequestHandler::RequestError_(const Location *location,
-											const std::size_t error_code) {
-	// TODO(any) Respond with the error page
-	//           if its defined in server configuration
-	//           and the page exist
-	(void)location;
-	DefaultStatusResponse_(error_code);
 }
 
 const CommonConfig &
@@ -249,24 +239,6 @@ bool	HttpRequestHandler::HasAcceptedFormat_(const Location *location,
 		return false;
 	}
 	return true;
-}
-
-std::string	HttpRequestHandler::PathExtension_(const std::string &path) const {
-	const std::size_t extension_position = path.rfind(".");
-	if (extension_position == std::string::npos || extension_position < 2) {
-		return "";
-	}
-	const std::size_t	last_dir_position = path.rfind("/");
-	if (last_dir_position == std::string::npos) {
-		return path.substr(extension_position + 1);
-	}
-	if (last_dir_position < extension_position - 1) {
-		const std::string last_path_part = path.substr(last_dir_position + 1);
-		if (last_path_part != "." && last_path_part != "..") {
-			return path.substr(extension_position + 1);
-		}
-	}
-	return "";
 }
 
 void	HttpRequestHandler::ServeFile_(const Location *location,
@@ -300,10 +272,6 @@ void	HttpRequestHandler::MovedPermanently_(const HttpRequest &request) {
 	const std::string body = DefaultResponseBody_(301);
 	response.SetBody(body);
 	raw_response_ = response.CreateResponseString();
-}
-
-std::string	HttpRequestHandler::GetMimeType_(const std::string &path) const {
-	return MimeTypes::GetMimeType(PathExtension_(path));
 }
 
 void	HttpRequestHandler::DoGet_(const Location *location,
@@ -392,4 +360,36 @@ bool	HttpRequestHandler::IsRegularFile_(const std::string &path) const {
 		return true;
 	}
 	return false;
+}
+
+std::string	HttpRequestHandler::PathExtension_(const std::string &path) const {
+	const std::size_t extension_position = path.rfind(".");
+	if (extension_position == std::string::npos || extension_position < 2) {
+		return "";
+	}
+	const std::size_t	last_dir_position = path.rfind("/");
+	if (last_dir_position == std::string::npos) {
+		return path.substr(extension_position + 1);
+	}
+	if (last_dir_position < extension_position - 1) {
+		const std::string last_path_part = path.substr(last_dir_position + 1);
+		if (last_path_part != "." && last_path_part != "..") {
+			return path.substr(extension_position + 1);
+		}
+	}
+	return "";
+}
+
+std::string	HttpRequestHandler::GetMimeType_(const std::string &path) const {
+	return MimeTypes::GetMimeType(PathExtension_(path));
+}
+
+std::string	HttpRequestHandler::CurrentDate_() const {
+	char				buffer[100];
+	const std::time_t	date = std::time(NULL);
+	std::strftime(buffer,
+				sizeof(buffer),
+				"%a, %d %b %Y %H:%M:%S %Z",
+				std::gmtime(&date));
+	return buffer;
 }
