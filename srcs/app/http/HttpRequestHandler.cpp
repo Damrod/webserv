@@ -142,10 +142,14 @@ HttpRequestHandler::DefaultStatusResponse_(const std::size_t status_code) {
 
 void	HttpRequestHandler::RequestError_(const Location *location,
 											const std::size_t error_code) {
-	// TODO(any) Respond with the error page
-	//           if its defined in server configuration
-	//           and the page exist
-	(void)location;
+	const CommonConfig &cfg = GetCommonConfig(location);
+	CommonConfig::ErrorPagesMap::const_iterator it =
+											cfg.error_pages.find(error_code);
+	if (it != cfg.error_pages.end()) {
+		const std::string error_page = cfg.root + it->second;
+		ServeFile_(location, error_page);
+		return;
+	}
 	DefaultStatusResponse_(error_code);
 }
 
