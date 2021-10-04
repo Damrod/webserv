@@ -292,26 +292,21 @@ void	HttpRequestHandler::DoGet_(const Location *location,
 		PathError_(location);
 		return;
 	}
-	if (IsDirectory_(full_path)) {
+	if (IsRegularFile_(full_path)) {
+		ServeFile_(location, full_path);
+	} else {
 		const CommonConfig &cfg = GetCommonConfig(location);
 		const bool has_end_slash = full_path[full_path.size() - 1] == '/';
-		std::string index_path;
-		if (has_end_slash) {
-			index_path = full_path + cfg.index;
-		} else {
-			index_path = full_path + "/" + cfg.index;
+		if (!has_end_slash) {
+			MovedPermanently_(request);
+			return;
 		}
+		const std::string index_path = full_path + cfg.index;
 		if (!cfg.autoindex || IsRegularFile_(index_path)) {
-			if (has_end_slash) {
-				ServeFile_(location, index_path);
-			} else {
-				MovedPermanently_(request);
-			}
+			ServeFile_(location, index_path);
 		} else {
 			ListDirectory_(location, request.GetPath());
 		}
-	} else {
-		ServeFile_(location, full_path);
 	}
 }
 
