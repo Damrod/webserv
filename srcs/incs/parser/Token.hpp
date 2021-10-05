@@ -5,7 +5,6 @@
 #include <string>
 #include <iostream>
 #include <map>
-#include <parser/ParsingEvents.hpp>
 
 class Token {
  public:
@@ -63,14 +62,12 @@ class Token {
 	std::string GetTokenTypeStr(void) const;
 	const std::string &getRawData(void) const;
 	size_t GetLine(void) const;
-	t_Ev GetEvent(void) const;
 	enum State::e_id GetState(void) const;
 
  protected:
 	std::string data_;
 	const Type::e_id type_;
 	const size_t line_;
-	const t_Ev event_;
 	const enum State::e_id state_;
 };
 

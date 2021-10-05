@@ -78,7 +78,7 @@ t_parsing_state Parser::StHandler::SyntaxFailer(const Data &data) {
 	std::cerr << "Raw data: \""<< data.current_.getRawData() << "\"\n";
 	std::cerr << "Token type: \""<< data.current_.GetTokenTypeStr()
 			  << "\"\n";
-	std::cerr << "Event type: \""<<  data.current_.GetEvent() << "\"\n";
+	std::cerr << "Event type: \""<<  data.current_.getType() << "\"\n";
 	std::cerr << "State type: \""<<  data.current_.GetState() << "\"\n";
 	std::string result = "Syntax error: " + data.error_msg_;
 	throw SyntaxError(result, LINE);
@@ -101,16 +101,16 @@ t_parsing_state Parser::StHandler::AutoindexHandler(const Data &data) {
 
 t_parsing_state Parser::StHandler::ServerNameHandler(const Data &data) {
 	static size_t args = 0;
-	t_Ev event = ParsingEvents::GetEvent(data.current_);
+	t_token_type event = data.current_.getType();
 
-	if (args == 0 && event == ParsingEvents::SEMIC)
+	if (args == 0 && event == Token::Type::T_SEMICOLON)
 		throw Analyser::SyntaxError("invalid number of arguments in "
 									"\"server_name\" directive:", LINE);
-	if (event == ParsingEvents::SEMIC) {
+	if (event == Token::Type::T_SEMICOLON) {
 		args = 0;
 		return Token::State::K_EXP_KW;
 	}
-	if (event != ParsingEvents::WORD)
+	if (event != Token::Type::T_WORD)
 		throw Analyser::SyntaxError("Invalid type of argument in line", LINE);
 	else
 		data.AddServerName(data.current_.getRawData());
@@ -134,55 +134,51 @@ t_parsing_state Parser::StHandler::ServerHandler(const Data &data) {
 
 const struct Parser::s_trans Parser::transitions[13] = {
 	{ .state = Token::State::K_INIT,
-	  .evt = ParsingEvents::OPEN,
+	  .evt = Token::Type::T_SCOPE_OPEN,
 	  .apply = StHandler::InitHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_INIT,
-	  .evt = ParsingEvents::EV_NONE,
+	  .evt = Token::Type::T_WORD,
 	  .apply = StHandler::SyntaxFailer,
 	  .errormess = "expected { in line"},
 	{ .state = Token::State::K_EXP_KW,
-	  .evt = ParsingEvents::CLOSE,
+	  .evt = Token::Type::T_SCOPE_CLOSE,
 	  .apply = StHandler::ExpKwHandlerClose,
 	  .errormess = ""},
 	{ .state = Token::State::K_EXP_KW,
-	  .evt = ParsingEvents::KEYWORD,
+	  .evt = Token::Type::T_WORD,
 	  .apply = StHandler::ExpKwHandlerKw,
 	  .errormess = ""},
 	{ .state = Token::State::K_EXP_SEMIC,
-	  .evt = ParsingEvents::SEMIC,
+	  .evt = Token::Type::T_SEMICOLON,
 	  .apply = StHandler::SemicHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_EXP_SEMIC,
-	  .evt = ParsingEvents::EV_NONE,
+	  .evt = Token::Type::T_WORD,
 	  .apply = StHandler::SyntaxFailer,
 	  .errormess = "expected ; in line "},
 	{ .state = Token::State::K_AUTOINDEX,
-	  .evt = ParsingEvents::WORD,
+	  .evt = Token::Type::T_WORD,
 	  .apply = StHandler::AutoindexHandler,
 	  .errormess = ""},
-	{ .state = Token::State::K_AUTOINDEX,
-	  .evt = ParsingEvents::EV_NONE,
-	  .apply = StHandler::SyntaxFailer,
-	  .errormess = "expected 'on' or 'off' in line "},
 	{ .state = Token::State::K_SERVER_NAME,
-	  .evt = ParsingEvents::EV_NONE,
+	  .evt = Token::Type::T_WORD,
 	  .apply = StHandler::ServerNameHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_LOCATION,
-	  .evt = ParsingEvents::WORD,
+	  .evt = Token::Type::T_WORD,
 	  .apply = StHandler::LocationHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_LOCATION,
-	  .evt = ParsingEvents::EV_NONE,
+	  .evt = Token::Type::T_WORD,
 	  .apply = StHandler::SyntaxFailer,
 	  .errormess = "Expecting path after location directive"},
 	{ .state = Token::State::K_SERVER,
-	  .evt = ParsingEvents::OPEN,
+	  .evt = Token::Type::T_SCOPE_OPEN,
 	  .apply = StHandler::ServerHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_SERVER,
-	  .evt = ParsingEvents::EV_NONE,
+	  .evt = Token::Type::T_WORD,
 	  .apply = StHandler::SyntaxFailer,
 	  .errormess = "Expecting { after server directive"}
 };
@@ -191,14 +187,14 @@ t_parsing_state Parser::ParserMainLoop(Parser *parser) {
 	t_parsing_state state;
 	for (state = Token::State::K_INIT;
 			 parser->itc_ != parser->ite_ ; parser->itc_++) {
-		t_Ev event = ParsingEvents::GetEvent(*parser->itc_);
+		t_token_type event = parser->itc_->getType();
 		for (size_t i = 0;
 			 i < sizeof(transitions) / sizeof(transitions[0]);
 			 ++i) {
 			if ((state == transitions[i].state)
 				|| (Token::State::K_NONE == transitions[i].state)) {
 				if ((event == transitions[i].evt)
-					|| (ParsingEvents::EV_NONE == transitions[i].evt)) {
+					|| (Token::Type::T_WORD == transitions[i].evt)) {
 					Data data(parser, transitions[i].errormess);
 					state = transitions[i].apply(data);
 					if (state == Token::State::K_EXIT)

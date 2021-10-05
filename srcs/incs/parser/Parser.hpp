@@ -9,8 +9,6 @@
 #include <stack>
 #include <parser/Lexer.hpp>
 #include <parser/ParserAPI.hpp>
-#include <parser/ParsingEvents.hpp>
-
 
 class Parser: public Analyser {
  public:
@@ -60,7 +58,7 @@ class Parser: public Analyser {
 	std::list<Token>::const_iterator itc_;
 	struct s_trans {
 		t_parsing_state state;
-		t_Ev evt;
+		t_token_type evt;
 		t_parsing_state (*apply)(const Data &data);
 		std::string errormess;
 	};
