@@ -142,6 +142,7 @@ bool	HttpRequestHandler::TryAddDirectoryContent_(std::stringstream *body,
 	DIR *dir = opendir(full_path.c_str());
 	if (dir == NULL) {
 		PathError_();
+		return false;
 	}
 	struct dirent *entry;
 	while ((entry = readdir(dir)) != NULL) {
