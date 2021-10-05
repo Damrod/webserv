@@ -22,7 +22,8 @@ bool ParserAPI::canAddLocation(const std::string &path) {
 }
 
 
-void ParserAPI::SetListenAddress(uint32_t address, uint16_t port, t_parsing_state ctx_) {
+void ParserAPI::SetListenAddress(uint32_t address, uint16_t port,
+t_parsing_state ctx_) {
 	if (ctx_ != Token::State::K_SERVER)
 		throw std::invalid_argument("Invalid context for listen address");
 	if (canAddServer(address, port)) {
