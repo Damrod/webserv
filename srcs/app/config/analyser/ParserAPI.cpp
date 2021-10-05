@@ -8,16 +8,29 @@ std::vector<ServerConfig>	&ParserAPI::GetServersSettings(void) {
 	return *servers_settings_;
 }
 
-void ParserAPI::SetListenPort(uint16_t port, t_parsing_state ctx_) {
-	if (ctx_ != Token::State::K_SERVER)
-		throw std::invalid_argument("Invalid context for port");
-	servers_settings_->back().listen_port = port;
+bool ParserAPI::canAddServer(uint32_t address, uint16_t port) {
+	(void) address;
+	(void) port;
+	// mock
+	return true;
 }
 
-void ParserAPI::SetListenAddress(uint32_t address, t_parsing_state ctx_) {
+bool ParserAPI::canAddLocation(const std::string &path) {
+	(void) path;
+	// mock
+	return true;
+}
+
+
+void ParserAPI::SetListenAddress(uint32_t address, uint16_t port, t_parsing_state ctx_) {
 	if (ctx_ != Token::State::K_SERVER)
 		throw std::invalid_argument("Invalid context for listen address");
-	servers_settings_->back().listen_address = address;
+	if (canAddServer(address, port)) {
+		servers_settings_->back().listen_address = address;
+		servers_settings_->back().listen_port = port;
+	} else {
+		throw std::invalid_argument("duplicate default server for ");
+	}
 }
 
 void ParserAPI::AddServerName(const std::string &name, t_parsing_state ctx_) {
@@ -99,9 +112,13 @@ static CommonConfig GetLastCommonCfg(std::vector<ServerConfig>
 void ParserAPI::AddLocation(const std::string &path, t_parsing_state ctx_) {
 	if (ctx_ != Token::State::K_SERVER)
 		throw std::invalid_argument("Invalid context for location");
-	CommonConfig common = GetLastCommonCfg(servers_settings_);
-	Location location(path, common);
-	servers_settings_->back().locations.push_back(location);
+	if (canAddLocation(path)) {
+		CommonConfig common = GetLastCommonCfg(servers_settings_);
+		Location location(path, common);
+		servers_settings_->back().locations.push_back(location);
+	} else {
+		throw std::invalid_argument("duplicate default server for ");
+	}
 }
 
 static std::string printCommon(const CommonConfig &common, uint8_t lvl) {

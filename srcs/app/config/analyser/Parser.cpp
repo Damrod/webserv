@@ -27,12 +27,8 @@ Parser::Data::Data(Parser * const parser, const std::string &error_msg)
 // probably the context sensitiveness for the setters should be implemented
 // in here Parser.hpp/cpp, not in Config.hpp/cpp
 
-void Parser::Data::SetListenPort(uint16_t port) const {
-	config_->SetListenPort(port, ctx_->top());
-}
-
-void Parser::Data::SetListenAddress(uint32_t address) const {
-	config_->SetListenAddress(address, ctx_->top());
+void Parser::Data::SetListenAddress(uint32_t address, uint16_t port) const {
+	config_->SetListenAddress(address, port, ctx_->top());
 }
 
 void Parser::Data::AddLocation(const std::string &path) const {
@@ -93,16 +89,16 @@ t_parsing_state Parser::StHandler::ExpKwHandlerClose(const Data &data) {
 t_parsing_state Parser::StHandler::ExpKwHandlerKw(const Data &data) {
 	if (data.current_.GetState() < Token::State::K_SERVER
 	|| data.current_.GetState() > Token::State::K_LIMIT_EXCEPT)
-		throw SyntaxError("Expecting keyword but found " +
-		data.current_.getRawData(), data.current_.GetLine());
+		throw SyntaxError("Expecting keyword but found '" +
+		data.current_.getRawData() + "'", data.current_.GetLine());
 	return data.current_.GetState();
 }
 
 t_parsing_state Parser::StHandler::AutoindexHandler(const Data &data) {
 	if (data.current_.getRawData() != "on"
 	&& data.current_.getRawData() != "off")
-		throw SyntaxError("Expecting 'on'/'off' but found " +
-		data.current_.getRawData(), data.current_.GetLine());
+		throw SyntaxError("Expecting 'on'/'off' but found '" +
+		data.current_.getRawData()  + "'", data.current_.GetLine());
 	data.AddAutoindex(data.current_.getRawData());
 	return Token::State::K_EXP_SEMIC;
 }

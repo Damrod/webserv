@@ -23,8 +23,7 @@ class Parser: public Analyser {
 		Parser * const parser_;
 		std::stack<t_parsing_state> *ctx_;
 		// this should probably take a std::string, not uint16_t
-		void SetListenPort(uint16_t port) const;
-		void SetListenAddress(uint32_t address) const;
+		void SetListenAddress(uint32_t address, uint16_t port) const;
 		void AddServerName(const std::string &name) const;
 		void SetRoot(const std::string &root) const;
 		void AddIndex(const std::string &index) const;

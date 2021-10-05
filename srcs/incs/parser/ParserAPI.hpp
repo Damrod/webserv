@@ -40,13 +40,14 @@ std::map<T, U>map, const std::string &key, const std::string &value) {
 class ParserAPI {
  private:
 	std::vector<ServerConfig>	*servers_settings_;
+	bool canAddServer(uint32_t address, uint16_t port);
+	bool canAddLocation(const std::string &path);
  public:
 	explicit ParserAPI(std::vector<ServerConfig> *server_settings);
 	std::vector<ServerConfig>	&GetServersSettings(void);
 	void SetServersSettings(std::vector<ServerConfig> *server_settings);
 	virtual ~ParserAPI(void) {}
-	void SetListenPort(uint16_t port, t_parsing_state ctx);
-	void SetListenAddress(uint32_t address, t_parsing_state ctx);
+	void SetListenAddress(uint32_t address, uint16_t port, t_parsing_state ctx);
 	void AddServerName(const std::string &name, t_parsing_state ctx);
 	void SetRoot(const std::string &root, t_parsing_state ctx);
 	void AddIndex(const std::string &index, t_parsing_state ctx);
