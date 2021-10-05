@@ -15,8 +15,12 @@
 HttpRequestHandler::HttpRequestHandler(const ServerConfig &server_config,
 										const std::string &raw_request)
 	: server_config_(server_config), raw_request_(raw_request),
-		keep_alive_(true) {
+		keep_alive_(true), request_location_(NULL) {
 	HandleRequest_();
+}
+
+HttpRequestHandler::~HttpRequestHandler() {
+	delete request_location_;
 }
 
 std::string	HttpRequestHandler::GetRawResponse() const {
@@ -34,46 +38,17 @@ void		HttpRequestHandler::SetKeepAlive_(const HttpRequest &request) {
 	}
 }
 
-const Location*
-HttpRequestHandler::FindLocation_(const std::string &request_path) const {
-	const std::vector<Location>	&locations = server_config_.locations;
-	if (locations.empty()) {
-		return NULL;
-	}
-	ssize_t	best_match_idx = -1;
-	for (std::size_t i = 0; i < locations.size(); ++i) {
-		if (request_path.rfind(locations[i].path, 0) != 0) {
-			continue;
-		}
-		if (best_match_idx == -1 ||
-			locations[best_match_idx].path.size() < locations[i].path.size()) {
-			best_match_idx = i;
-		}
-	}
-	return best_match_idx == -1 ? NULL : &locations[best_match_idx];
-}
-
-std::string	HttpRequestHandler::GetReturnUrl_(const Location *location) const {
-	if (location) {
-		return location->common.return_url;
-	}
-	return server_config_.common.return_url;
-}
-
-std::size_t
-HttpRequestHandler::GetReturnStatus_(const Location *location) const {
-	if (location) {
-		return location->common.return_status;
-	}
-	return server_config_.common.return_status;
-}
-
-void		HttpRequestHandler::DoRedirection_(const Location *location) {
-	const std::size_t status_code = GetReturnStatus_(location);
+void		HttpRequestHandler::DoRedirection_() {
+	const std::size_t status_code = request_location_ ?
+									request_location_->common.return_status :
+									server_config_.common.return_status;
+	const std::string return_url = request_location_ ?
+									request_location_->common.return_url :
+									server_config_.common.return_url;
 	HttpResponse response(status_code);
 	AddCommonHeaders_(&response);
 	response.AddHeader("Content-Type", "text/html");
-	response.AddHeader("Location", GetReturnUrl_(location));
+	response.AddHeader("Location", return_url);
 	const std::string body = DefaultResponseBody_(status_code);
 	response.SetBody(body);
 	raw_response_ = response.CreateResponseString();
@@ -81,7 +56,7 @@ void		HttpRequestHandler::DoRedirection_(const Location *location) {
 
 void		HttpRequestHandler::HandleRequest_() {
 	if (!server_config_.common.return_url.empty()) {
-		DoRedirection_(NULL);
+		DoRedirection_();
 		return;
 	}
 	HttpRequest	*request = NULL;
@@ -89,19 +64,19 @@ void		HttpRequestHandler::HandleRequest_() {
 		request = new HttpRequest(raw_request_);
 	}
 	catch (const std::exception &e) {
-		RequestError_(NULL, 400);
+		RequestError_(400);
 		return;
 	}
 	SetKeepAlive_(*request);
-	const Location *location = FindLocation_(request->GetPath());
+	request_location_ = new RequestLocation(server_config_, request->GetPath());
 	if (request->GetMethod() == "GET") {
-		DoGet_(location, *request);
+		DoGet_(*request);
 	} else if (request->GetMethod() == "POST") {
-		DoPost_(location, *request);
+		DoPost_(*request);
 	} else if (request->GetMethod() == "DELETE") {
-		DoDelete_(location, *request);
+		DoDelete_(*request);
 	} else {
-		RequestError_(location, 501);
+		RequestError_(501);
 	}
 	delete request;
 }
@@ -140,35 +115,33 @@ HttpRequestHandler::DefaultStatusResponse_(const std::size_t status_code) {
 	raw_response_ = response.CreateResponseString();
 }
 
-void	HttpRequestHandler::RequestError_(const Location *location,
-											const std::size_t error_code) {
-	const CommonConfig &cfg = GetCommonConfig(location);
+void	HttpRequestHandler::RequestError_(const std::size_t error_code) {
 	CommonConfig::ErrorPagesMap::const_iterator it =
-											cfg.error_pages.find(error_code);
-	if (it != cfg.error_pages.end()) {
-		const std::string error_page = cfg.root + it->second;
-		ServeFile_(location, error_page);
+						request_location_->common.error_pages.find(error_code);
+	if (it != request_location_->common.error_pages.end()) {
+		const std::string error_page =
+									request_location_->common.root + it->second;
+		ServeFile_(error_page);
 		return;
 	}
 	DefaultStatusResponse_(error_code);
 }
 
-void	HttpRequestHandler::PathError_(const Location *location) {
+void	HttpRequestHandler::PathError_() {
 	if (errno == ENOENT || errno == ENOTDIR) {
-		RequestError_(location, 404);
+		RequestError_(404);
 	} else if (errno == EACCES) {
-		RequestError_(location, 403);
+		RequestError_(403);
 	} else {
-		RequestError_(location, 500);
+		RequestError_(500);
 	}
 }
 
 bool	HttpRequestHandler::TryAddDirectoryContent_(std::stringstream *body,
-											const Location *location,
 											const std::string &full_path) {
 	DIR *dir = opendir(full_path.c_str());
 	if (dir == NULL) {
-		PathError_(location);
+		PathError_();
 	}
 	struct dirent *entry;
 	while ((entry = readdir(dir)) != NULL) {
@@ -186,24 +159,15 @@ bool	HttpRequestHandler::TryAddDirectoryContent_(std::stringstream *body,
 	return true;
 }
 
-std::string	HttpRequestHandler::GetFullPath_(const Location *location,
-										const std::string &request_path) const {
-	if (!location) {
-		return server_config_.common.root + request_path;
-	}
-	return location->common.root + request_path;
-}
-
-void	HttpRequestHandler::ListDirectory_(const Location *location,
-											const std::string &request_path) {
+void	HttpRequestHandler::ListDirectory_(const std::string &request_path) {
 	std::stringstream body;
 	body << "<html>\n" <<
 		"<head><title>Index of " << request_path << "</title></head>\n" <<
 		"<body>\n" <<
 		"<h1>Index of " << request_path <<
 		"</h1><hr><pre><a href=\"../\">../</a>\n";
-	const std::string full_path = GetFullPath_(location, request_path);
-	if (!TryAddDirectoryContent_(&body, location, full_path)) {
+	const std::string full_path = request_location_->common.root + request_path;
+	if (!TryAddDirectoryContent_(&body, full_path)) {
 		return;
 	}
 	body << "</pre><hr></body>\n" <<
@@ -215,45 +179,37 @@ void	HttpRequestHandler::ListDirectory_(const Location *location,
 	raw_response_ = response.CreateResponseString();
 }
 
-const CommonConfig &
-HttpRequestHandler::GetCommonConfig(const Location *location) const {
-	if (location) {
-		return location->common;
-	}
-	return server_config_.common;
-}
-
-bool	HttpRequestHandler::HasAcceptedFormat_(const Location *location,
-												const HttpRequest &request) {
-	if (location && !location->limit_except.empty()) {
-		if (std::find(location->limit_except.begin(),
-					location->limit_except.end(),
-					request.GetMethod()) == location->limit_except.end()) {
-			RequestError_(location, 405);
+bool	HttpRequestHandler::HasAcceptedFormat_(const HttpRequest &request) {
+	if (request_location_->HasLocation() &&
+									!request_location_->limit_except->empty()) {
+		if (std::find(request_location_->limit_except->begin(),
+				request_location_->limit_except->end(),
+				request.GetMethod()) ==
+									request_location_->limit_except->end()) {
+			RequestError_(405);
 			return false;
 		}
 	}
-	const CommonConfig &cfg = GetCommonConfig(location);
-	if (request.GetBody().size() > cfg.client_max_body_size) {
-		RequestError_(location, 413);
+	if (request.GetBody().size() >
+							request_location_->common.client_max_body_size) {
+		RequestError_(413);
 		return false;
 	}
 	if (request.HasHeader("Content-Encoding")) {
-		RequestError_(location, 415);
+		RequestError_(415);
 		return false;
 	}
 	return true;
 }
 
-void	HttpRequestHandler::ServeFile_(const Location *location,
-												const std::string &file_path) {
+void	HttpRequestHandler::ServeFile_(const std::string &file_path) {
 	if (!IsRegularFile_(file_path)) {
-		RequestError_(location, 403);
+		RequestError_(403);
 		return;
 	}
 	std::ifstream ifs(file_path.c_str(), std::ios::in | std::ios::binary);
 	if (!ifs) {
-		RequestError_(location, 404);
+		RequestError_(404);
 		return;
 	}
 	const std::string body = std::string(std::istreambuf_iterator<char>(ifs),
@@ -278,43 +234,42 @@ void	HttpRequestHandler::MovedPermanently_(const HttpRequest &request) {
 	raw_response_ = response.CreateResponseString();
 }
 
-void	HttpRequestHandler::DoGet_(const Location *location,
-									const HttpRequest &request) {
-	if (location && !location->common.return_url.empty()) {
-		DoRedirection_(location);
+void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
+	if (!request_location_->common.return_url.empty()) {
+		DoRedirection_();
 		return;
 	}
-	if (!HasAcceptedFormat_(location, request)) {
+	if (!HasAcceptedFormat_(request)) {
 		return;
 	}
-	const std::string full_path = GetFullPath_(location, request.GetPath());
+	const std::string full_path =
+							request_location_->common.root + request.GetPath();
 	if (!IsValidPath_(full_path)) {
-		PathError_(location);
+		PathError_();
 		return;
 	}
 	if (IsRegularFile_(full_path)) {
-		ServeFile_(location, full_path);
+		ServeFile_(full_path);
 	} else {
-		const CommonConfig &cfg = GetCommonConfig(location);
 		const bool has_end_slash = full_path[full_path.size() - 1] == '/';
 		if (!has_end_slash) {
 			MovedPermanently_(request);
 			return;
 		}
-		const std::string index_path = full_path + cfg.index;
-		if (!cfg.autoindex || IsRegularFile_(index_path)) {
-			ServeFile_(location, index_path);
+		const std::string index_path =
+									full_path + request_location_->common.index;
+		if (!request_location_->common.autoindex ||
+												IsRegularFile_(index_path)) {
+			ServeFile_(index_path);
 		} else {
-			ListDirectory_(location, request.GetPath());
+			ListDirectory_(request.GetPath());
 		}
 	}
 }
 
-void	HttpRequestHandler::DoPost_(const Location *location,
-									const HttpRequest &request) {
+void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
 	// TODO(any) Implement POST
 	(void)request;
-	(void)location;
 	HttpResponse	response(200);
 	std::string		body = "Responding to a POST request\n";
 
@@ -324,11 +279,9 @@ void	HttpRequestHandler::DoPost_(const Location *location,
 	raw_response_ = response.CreateResponseString();
 }
 
-void	HttpRequestHandler::DoDelete_(const Location *location,
-										const HttpRequest &request) {
+void	HttpRequestHandler::DoDelete_(const HttpRequest &request) {
 	// TODO(any) Implement DELETE
 	(void)request;
-	(void)location;
 	HttpResponse	response(200);
 	std::string		body = "Responding to a DELETE request\n";
 
