@@ -9,15 +9,24 @@ std::vector<ServerConfig>	&ParserAPI::GetServersSettings(void) {
 }
 
 bool ParserAPI::canAddServer(uint32_t address, uint16_t port) {
-	(void) address;
-	(void) port;
-	// mock
+	std::vector<ServerConfig>::const_iterator it = servers_settings_->begin();
+	for (; it != servers_settings_->end(); ++it) {
+		if (it->listen_address == address && it->listen_port == port) {
+			return false;
+		}
+	}
 	return true;
 }
 
 bool ParserAPI::canAddLocation(const std::string &path) {
-	(void) path;
-	// mock
+	// std::vector<Location>::const_iterator it = servers_settings_->
+	// back().locations.begin();
+	// for (; it != servers_settings_->back().locations.end(); ++it) {
+	// 	if (it->path == path) {
+	// 		return false;
+	// 	}
+	// }
+	(void)path;
 	return true;
 }
 
@@ -118,7 +127,7 @@ void ParserAPI::AddLocation(const std::string &path, t_parsing_state ctx_) {
 		Location location(path, common);
 		servers_settings_->back().locations.push_back(location);
 	} else {
-		throw std::invalid_argument("duplicate default server for ");
+		throw std::invalid_argument("duplicate location for path '" + path + "'");
 	}
 }
 
