@@ -91,10 +91,18 @@ t_parsing_state Parser::StHandler::ExpKwHandlerClose(const Data &data) {
 }
 
 t_parsing_state Parser::StHandler::ExpKwHandlerKw(const Data &data) {
+	if (data.current_.GetState() < Token::State::K_SERVER
+	|| data.current_.GetState() > Token::State::K_LIMIT_EXCEPT)
+		throw SyntaxError("Expecting keyword but found " +
+		data.current_.getRawData(), data.current_.GetLine());
 	return data.current_.GetState();
 }
 
 t_parsing_state Parser::StHandler::AutoindexHandler(const Data &data) {
+	if (data.current_.getRawData() != "on"
+	&& data.current_.getRawData() != "off")
+		throw SyntaxError("Expecting 'on'/'off' but found " +
+		data.current_.getRawData(), data.current_.GetLine());
 	data.AddAutoindex(data.current_.getRawData());
 	return Token::State::K_EXP_SEMIC;
 }
