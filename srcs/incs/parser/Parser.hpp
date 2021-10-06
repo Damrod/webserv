@@ -37,6 +37,7 @@ class Parser: public Analyser {
 		const std::string &GetRawData(void) const;
 		const std::string &GetErrorMessage(void) const;
 		size_t GetLineNumber(void) const;
+
 	private:
 		const std::string &error_msg_;
 		const size_t line_;

@@ -181,15 +181,15 @@ t_parsing_state Parser::Data::GetState(void) const {
 }
 
 const std::string &Parser::Data::GetRawData(void) const {
-	return rawData_;	
+	return rawData_;
 }
 
 const std::string &Parser::Data::GetErrorMessage(void) const {
-	return error_msg_;	
+	return error_msg_;
 }
 
 size_t Parser::Data::GetLineNumber(void) const {
-	return line_;	
+	return line_;
 }
 
 t_parsing_state Parser::TopContext_(void) const {
