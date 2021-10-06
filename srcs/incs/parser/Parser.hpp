@@ -18,10 +18,10 @@ class Parser: public Analyser {
 	void parse(void);
 	class Data {
 	public:
+		Data(Parser * const parser, const std::string &error_msg);
 		const Token &current_;
 		const std::string error_msg_;
 		Parser * const parser_;
-		std::stack<t_parsing_state> *ctx_;
 		// this should probably take a std::string, not uint16_t
 		void SetListenAddress(uint32_t address, uint16_t port) const;
 		void AddServerName(const std::string &name) const;
@@ -31,8 +31,11 @@ class Parser: public Analyser {
 		void SetClientMaxSz(uint32_t size) const;
 		void AddLocation(const std::string &name) const;
 		void AddServer(void) const;
-		Data(Parser * const parser, const std::string &error_msg);
+		void PushContext_(const t_parsing_state &ctx) const;
+		void PopContext_(void) const;
+		void NextEvent(void) const;
 	private:
+		t_parsing_state ctx_;
 		ParserAPI *config_;
 	};
 	// ============= handlers ===================
@@ -50,6 +53,10 @@ class Parser: public Analyser {
 	};
 	StHandler handlers_;
 	t_parsing_state ParserMainLoop(void);
+	void PushContext_(const t_parsing_state &ctx);
+	void PopContext_(void);
+	t_parsing_state TopContext_(void) const;
+	t_token_type NextEvent(void);
 	std::stack<t_parsing_state> ctx_;
 	const std::list<Token> &tokens_;
 	ParserAPI *config_;

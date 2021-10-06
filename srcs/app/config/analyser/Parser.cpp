@@ -20,7 +20,7 @@ Parser::Data::Data(Parser * const parser, const std::string &error_msg)
 	:  current_(*parser->itc_),
 	  error_msg_(error_msg),
 	  parser_(parser),
-	   ctx_(&parser->ctx_),
+	   ctx_(parser->TopContext_()),
 	   config_(parser->config_) {
 }
 
@@ -28,36 +28,36 @@ Parser::Data::Data(Parser * const parser, const std::string &error_msg)
 // in here Parser.hpp/cpp, not in Config.hpp/cpp
 
 void Parser::Data::SetListenAddress(uint32_t address, uint16_t port) const {
-	config_->SetListenAddress(address, port, ctx_->top());
+	config_->SetListenAddress(address, port, ctx_);
 }
 
 void Parser::Data::AddLocation(const std::string &path) const {
 	// path should be in location ctor
-	config_->AddLocation(path, ctx_->top());
+	config_->AddLocation(path, ctx_);
 }
 
 void Parser::Data::AddServerName(const std::string &name) const {
-	config_->AddServerName(name, ctx_->top());
+	config_->AddServerName(name, ctx_);
 }
 
 void Parser::Data::SetRoot(const std::string &root) const {
-	config_->SetRoot(root, ctx_->top());
+	config_->SetRoot(root, ctx_);
 }
 
 void Parser::Data::AddIndex(const std::string &index) const {
-	config_->AddIndex(index, ctx_->top());
+	config_->AddIndex(index, ctx_);
 }
 
 void Parser::Data::AddAutoindex(const std::string &autoindex) const {
-	config_->AddAutoindex(autoindex == "on", ctx_->top());
+	config_->AddAutoindex(autoindex == "on", ctx_);
 }
 
 void Parser::Data::SetClientMaxSz(uint32_t size) const {
-	config_->SetClientMaxSz(size, ctx_->top());
+	config_->SetClientMaxSz(size, ctx_);
 }
 
 void Parser::Data::AddServer(void) const {
-	config_->AddServer(ctx_->top());
+	config_->AddServer(ctx_);
 }
 
 t_parsing_state Parser::StHandler::InitHandler(const Data &data) {
@@ -82,7 +82,7 @@ t_parsing_state Parser::StHandler::SyntaxFailer(const Data &data) {
 
 t_parsing_state Parser::StHandler::ExpKwHandlerClose(const Data &data) {
 	(void)data;
-	data.ctx_->pop();
+	data.PopContext_();
 	return Token::State::K_EXIT;
 }
 
@@ -125,15 +125,48 @@ t_parsing_state Parser::StHandler::ServerNameHandler(const Data &data) {
 
 t_parsing_state Parser::StHandler::LocationHandler(const Data &data) {
 	data.AddLocation(data.current_.getRawData());
-	data.ctx_->push(Token::State::K_LOCATION);
-	data.parser_->itc_++;
+	data.PushContext_(Token::State::K_LOCATION);
+	data.NextEvent();
 	return (*data.parser_).ParserMainLoop();
 }
 
 t_parsing_state Parser::StHandler::ServerHandler(const Data &data) {
 	data.AddServer();
-	data.ctx_->push(Token::State::K_SERVER);
+	data.PushContext_(Token::State::K_SERVER);
 	return (*data.parser_).ParserMainLoop();
+}
+
+void Parser::PushContext_(const t_parsing_state &ctx) {
+	ctx_.push(ctx);
+}
+
+void Parser::Data::PopContext_(void) const {
+	parser_->PopContext_();
+}
+
+void Parser::Data::PushContext_(const t_parsing_state &ctx) const {
+	parser_->PushContext_(ctx);
+}
+
+void Parser::PopContext_(void) {
+	ctx_.pop();
+}
+
+void Parser::Data::NextEvent(void) const {
+	parser_->NextEvent();
+}
+
+
+t_token_type Parser::NextEvent(void) {
+	++itc_;
+	if (itc_ != ite_)
+		return itc_->getType();
+	return
+		Token::Type::T_INVALID;
+}
+
+t_parsing_state Parser::TopContext_(void) const {
+	return ctx_.top();
 }
 
 const struct Parser::s_trans Parser::transitions[13] = {
