@@ -20,7 +20,7 @@ class Parser: public Analyser {
 	public:
 		Data(Parser * const parser, const std::string &error_msg);
 		// this should probably take a std::string, not uint16_t
-		void SetListenAddress(uint32_t address, uint16_t port) const;
+		void SetListenAddress(const std::string &svNameAddr) const;
 		void AddServerName(const std::string &name) const;
 		void SetRoot(const std::string &root) const;
 		void AddIndex(const std::string &index) const;
@@ -63,6 +63,7 @@ class Parser: public Analyser {
 		t_parsing_state AutoindexHandler(const Data &data);
 		t_parsing_state LocationHandler(const Data &data);
 		t_parsing_state ServerHandler(const Data &data);
+		t_parsing_state ListenHandler(const Data &data);
 	};
 	StHandler handlers_;
 	t_parsing_state ParserMainLoop(void);

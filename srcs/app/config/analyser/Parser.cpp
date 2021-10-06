@@ -31,7 +31,40 @@ Parser::Data::Data(Parser * const parser, const std::string &error_msg) :
 // probably the context sensitiveness for the setters should be implemented
 // in here Parser.hpp/cpp, not in Config.hpp/cpp
 
-void Parser::Data::SetListenAddress(uint32_t address, uint16_t port) const {
+void Parser::Data::SetListenAddress(const std::string &svnaddr) const {
+	char *endptr;
+	const char * buffer = svnaddr.c_str();
+	uint32_t address = 0;
+	for (uint8_t i = 0; i < 4; ++i) {
+		int64_t result = std::strtol(buffer, &endptr, 10);
+		if (i == 0 && !*endptr) {
+			if (errno || result < 1 || result > UINT16_MAX)
+				throw std::invalid_argument("listen directive port invalid");
+			else
+				config_->SetListenAddress(0, static_cast<uint16_t>(result), ctx_);
+			return;
+		}
+		if ((i != 3 && *endptr != '.') || errno || result < 0 || result > UINT8_MAX)
+			throw std::invalid_argument("listen directive expects an IP");
+		address |= static_cast<uint8_t>(result);
+		if (i != 3)
+			address <<= 8;
+		if (*endptr)
+			buffer = endptr + 1;
+		else if (i != 3 && !*endptr)
+			throw std::invalid_argument("An IP has four groups of one byte");
+	}
+	if (!*endptr) {
+		config_->SetListenAddress(address, 80, ctx_);
+		return;
+	}
+	if (*endptr != ':')
+		throw std::invalid_argument("listen directive expects a port number");
+	buffer = endptr + 1;
+	int64_t result = std::strtol(buffer, &endptr, 10);
+	if (*endptr || errno || result < 1 || result > UINT16_MAX)
+		throw std::invalid_argument("port number varies between 1 and " + UINT8_MAX);
+	uint16_t port = static_cast<uint32_t>(result);
 	config_->SetListenAddress(address, port, ctx_);
 }
 
@@ -126,6 +159,11 @@ t_parsing_state Parser::StHandler::LocationHandler(const Data &data) {
 	data.PushContext(Token::State::K_LOCATION);
 	data.NextEvent();
 	return data.ParserLoopBack();
+}
+
+t_parsing_state Parser::StHandler::ListenHandler(const Data &data) {
+	data.SetListenAddress(data.GetRawData());
+	return Token::State::K_EXP_SEMIC;
 }
 
 t_parsing_state Parser::StHandler::ServerHandler(const Data &data) {
@@ -238,7 +276,7 @@ const struct Parser::s_trans Parser::transitions[13] = {
 	{ .state = Token::State::K_EXP_SEMIC,
 	  .evt = Token::Type::T_WORD,
 	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "expected ; in line "},
+	  .errormess = "expected ; in line"},
 	{ .state = Token::State::K_AUTOINDEX,
 	  .evt = Token::Type::T_WORD,
 	  .apply = &StHandler::AutoindexHandler,
@@ -251,10 +289,6 @@ const struct Parser::s_trans Parser::transitions[13] = {
 	  .evt = Token::Type::T_WORD,
 	  .apply = &StHandler::LocationHandler,
 	  .errormess = ""},
-	{ .state = Token::State::K_LOCATION,
-	  .evt = Token::Type::T_WORD,
-	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "Expecting path after location directive"},
 	{ .state = Token::State::K_SERVER,
 	  .evt = Token::Type::T_SCOPE_OPEN,
 	  .apply = &StHandler::ServerHandler,
@@ -262,7 +296,11 @@ const struct Parser::s_trans Parser::transitions[13] = {
 	{ .state = Token::State::K_SERVER,
 	  .evt = Token::Type::T_WORD,
 	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "Expecting { after server directive"}
+	  .errormess = "Expecting { after server directive"},
+	{ .state = Token::State::K_LISTEN,
+	  .evt = Token::Type::T_WORD,
+	  .apply = &StHandler::ListenHandler,
+	  .errormess = ""}
 };
 
 t_parsing_state Parser::ParserMainLoop(void) {
