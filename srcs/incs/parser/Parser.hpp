@@ -38,17 +38,18 @@ class Parser: public Analyser {
 	// ============= handlers ===================
 	class StHandler {
 	public:
-		static t_parsing_state SyntaxFailer(const Data &data);
-		static t_parsing_state ServerNameHandler(const Data &data);
-		static t_parsing_state InitHandler(const Data &data);
-		static t_parsing_state SemicHandler(const Data &data);
-		static t_parsing_state ExpKwHandlerClose(const Data &data);
-		static t_parsing_state ExpKwHandlerKw(const Data &data);
-		static t_parsing_state AutoindexHandler(const Data &data);
-		static t_parsing_state LocationHandler(const Data &data);
-		static t_parsing_state ServerHandler(const Data &data);
+		t_parsing_state SyntaxFailer(const Data &data);
+		t_parsing_state ServerNameHandler(const Data &data);
+		t_parsing_state InitHandler(const Data &data);
+		t_parsing_state SemicHandler(const Data &data);
+		t_parsing_state ExpKwHandlerClose(const Data &data);
+		t_parsing_state ExpKwHandlerKw(const Data &data);
+		t_parsing_state AutoindexHandler(const Data &data);
+		t_parsing_state LocationHandler(const Data &data);
+		t_parsing_state ServerHandler(const Data &data);
 	};
-	static t_parsing_state ParserMainLoop(Parser *parser);
+	StHandler handlers_;
+	t_parsing_state ParserMainLoop(void);
 	std::stack<t_parsing_state> ctx_;
 	const std::list<Token> &tokens_;
 	ParserAPI *config_;
@@ -58,7 +59,7 @@ class Parser: public Analyser {
 	struct s_trans {
 		t_parsing_state state;
 		t_token_type evt;
-		t_parsing_state (*apply)(const Data &data);
+		t_parsing_state (Parser::StHandler::*apply)(const Data &data);
 		std::string errormess;
 	};
 	static const s_trans transitions[13];

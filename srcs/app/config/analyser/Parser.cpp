@@ -127,71 +127,71 @@ t_parsing_state Parser::StHandler::LocationHandler(const Data &data) {
 	data.AddLocation(data.current_.getRawData());
 	data.ctx_->push(Token::State::K_LOCATION);
 	data.parser_->itc_++;
-	return ParserMainLoop(data.parser_);
+	return (*data.parser_).ParserMainLoop();
 }
 
 t_parsing_state Parser::StHandler::ServerHandler(const Data &data) {
 	data.AddServer();
 	data.ctx_->push(Token::State::K_SERVER);
-	return ParserMainLoop(data.parser_);
+	return (*data.parser_).ParserMainLoop();
 }
 
 const struct Parser::s_trans Parser::transitions[13] = {
 	{ .state = Token::State::K_INIT,
 	  .evt = Token::Type::T_SCOPE_OPEN,
-	  .apply = StHandler::InitHandler,
+	  .apply = &StHandler::InitHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_INIT,
 	  .evt = Token::Type::T_WORD,
-	  .apply = StHandler::SyntaxFailer,
+	  .apply = &StHandler::SyntaxFailer,
 	  .errormess = "expected { in line"},
 	{ .state = Token::State::K_EXP_KW,
 	  .evt = Token::Type::T_SCOPE_CLOSE,
-	  .apply = StHandler::ExpKwHandlerClose,
+	  .apply = &StHandler::ExpKwHandlerClose,
 	  .errormess = ""},
 	{ .state = Token::State::K_EXP_KW,
 	  .evt = Token::Type::T_WORD,
-	  .apply = StHandler::ExpKwHandlerKw,
+	  .apply = &StHandler::ExpKwHandlerKw,
 	  .errormess = ""},
 	{ .state = Token::State::K_EXP_SEMIC,
 	  .evt = Token::Type::T_SEMICOLON,
-	  .apply = StHandler::SemicHandler,
+	  .apply = &StHandler::SemicHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_EXP_SEMIC,
 	  .evt = Token::Type::T_WORD,
-	  .apply = StHandler::SyntaxFailer,
+	  .apply = &StHandler::SyntaxFailer,
 	  .errormess = "expected ; in line "},
 	{ .state = Token::State::K_AUTOINDEX,
 	  .evt = Token::Type::T_WORD,
-	  .apply = StHandler::AutoindexHandler,
+	  .apply = &StHandler::AutoindexHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_SERVER_NAME,
 	  .evt = Token::Type::T_WORD,
-	  .apply = StHandler::ServerNameHandler,
+	  .apply = &StHandler::ServerNameHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_LOCATION,
 	  .evt = Token::Type::T_WORD,
-	  .apply = StHandler::LocationHandler,
+	  .apply = &StHandler::LocationHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_LOCATION,
 	  .evt = Token::Type::T_WORD,
-	  .apply = StHandler::SyntaxFailer,
+	  .apply = &StHandler::SyntaxFailer,
 	  .errormess = "Expecting path after location directive"},
 	{ .state = Token::State::K_SERVER,
 	  .evt = Token::Type::T_SCOPE_OPEN,
-	  .apply = StHandler::ServerHandler,
+	  .apply = &StHandler::ServerHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_SERVER,
 	  .evt = Token::Type::T_WORD,
-	  .apply = StHandler::SyntaxFailer,
+	  .apply = &StHandler::SyntaxFailer,
 	  .errormess = "Expecting { after server directive"}
 };
 
-t_parsing_state Parser::ParserMainLoop(Parser *parser) {
+t_parsing_state Parser::ParserMainLoop(void) {
 	t_parsing_state state;
 	for (state = Token::State::K_INIT;
-			 parser->itc_ != parser->ite_ ; parser->itc_++) {
-		t_token_type event = parser->itc_->getType();
+			itc_ != ite_ ; itc_++) {
+		t_token_type event = itc_->getType();
 		for (size_t i = 0;
 			 i < sizeof(transitions) / sizeof(transitions[0]);
 			 ++i) {
@@ -199,8 +199,8 @@ t_parsing_state Parser::ParserMainLoop(Parser *parser) {
 				|| (Token::State::K_NONE == transitions[i].state)) {
 				if ((event == transitions[i].evt)
 					|| (Token::Type::T_WORD == transitions[i].evt)) {
-					Data data(parser, transitions[i].errormess);
-					state = transitions[i].apply(data);
+					Data data(this, transitions[i].errormess);
+					state = ((handlers_).*(transitions[i].apply))(data);
 					if (state == Token::State::K_EXIT)
 						return Token::State::K_EXP_KW;
 					break;
@@ -208,9 +208,9 @@ t_parsing_state Parser::ParserMainLoop(Parser *parser) {
 			}
 		}
 	}
-	throw SyntaxError("Unclosed scope in line", (--parser->itc_)->GetLine());
+	throw SyntaxError("Unclosed scope in line", (--itc_)->GetLine());
 }
 
 void Parser::parse(void) {
-	ParserMainLoop(this);
+	ParserMainLoop();
 }
