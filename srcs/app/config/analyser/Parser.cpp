@@ -3,7 +3,7 @@
 #ifdef DBG
 # define LINE __LINE__
 #else
-# define LINE data.current_.GetLine()
+# define LINE data.GetLineNumber()
 #endif
 
 Parser::Parser(const std::list<Token> &token, ParserAPI *config) :
@@ -16,12 +16,15 @@ Parser::Parser(const std::list<Token> &token, ParserAPI *config) :
 	parse();
 }
 
-Parser::Data::Data(Parser * const parser, const std::string &error_msg)
-	:  current_(*parser->itc_),
-	  error_msg_(error_msg),
-	  parser_(parser),
-	   ctx_(parser->TopContext_()),
-	   config_(parser->config_) {
+Parser::Data::Data(Parser * const parser, const std::string &error_msg) :
+	error_msg_(error_msg),
+	line_(parser->itc_->GetLine()),
+	event_(parser->itc_->getType()),
+	state_(parser->itc_->GetState()),
+	rawData_(parser->itc_->getRawData()),
+	parser_(parser),
+	ctx_(parser->TopContext_()),
+	config_(parser->config_) {
 }
 
 // probably the context sensitiveness for the setters should be implemented
@@ -71,41 +74,41 @@ t_parsing_state Parser::StHandler::SemicHandler(const Data &data) {
 }
 
 t_parsing_state Parser::StHandler::SyntaxFailer(const Data &data) {
-	std::cerr << "Raw data: \""<< data.current_.getRawData() << "\"\n";
-	std::cerr << "Token type: \""<< data.current_.GetTokenTypeStr()
-			  << "\"\n";
-	std::cerr << "Event type: \""<<  data.current_.getType() << "\"\n";
-	std::cerr << "State type: \""<<  data.current_.GetState() << "\"\n";
-	std::string result = "Syntax error: " + data.error_msg_;
+	std::cerr << "Raw data: \""<< data.GetRawData() << "\"\n";
+	// std::cerr << "Token type: \""<< data.current_.GetTokenTypeStr()
+	//		  << "\"\n";
+	std::cerr << "Event type: \""<<  data.GetEvent() << "\"\n";
+	std::cerr << "State type: \""<<  data.GetState() << "\"\n";
+	std::string result = "Syntax error: " + data.GetErrorMessage();
 	throw SyntaxError(result, LINE);
 }
 
 t_parsing_state Parser::StHandler::ExpKwHandlerClose(const Data &data) {
 	(void)data;
-	data.PopContext_();
+	data.PopContext();
 	return Token::State::K_EXIT;
 }
 
 t_parsing_state Parser::StHandler::ExpKwHandlerKw(const Data &data) {
-	if (data.current_.GetState() < Token::State::K_SERVER
-	|| data.current_.GetState() > Token::State::K_LIMIT_EXCEPT)
+	if (data.GetState() < Token::State::K_SERVER
+	|| data.GetState() > Token::State::K_LIMIT_EXCEPT)
 		throw SyntaxError("Expecting keyword but found '" +
-		data.current_.getRawData() + "'", data.current_.GetLine());
-	return data.current_.GetState();
+		data.GetRawData() + "'", data.GetLineNumber());
+	return data.GetState();
 }
 
 t_parsing_state Parser::StHandler::AutoindexHandler(const Data &data) {
-	if (data.current_.getRawData() != "on"
-	&& data.current_.getRawData() != "off")
+	if (data.GetRawData() != "on"
+	&& data.GetRawData() != "off")
 		throw SyntaxError("Expecting 'on'/'off' but found '" +
-		data.current_.getRawData()  + "'", data.current_.GetLine());
-	data.AddAutoindex(data.current_.getRawData());
+		data.GetRawData()  + "'", data.GetLineNumber());
+	data.AddAutoindex(data.GetRawData());
 	return Token::State::K_EXP_SEMIC;
 }
 
 t_parsing_state Parser::StHandler::ServerNameHandler(const Data &data) {
 	static size_t args = 0;
-	t_token_type event = data.current_.getType();
+	t_token_type event = data.GetEvent();
 
 	if (args == 0 && event == Token::Type::T_SEMICOLON)
 		throw Analyser::SyntaxError("invalid number of arguments in "
@@ -117,34 +120,34 @@ t_parsing_state Parser::StHandler::ServerNameHandler(const Data &data) {
 	if (event != Token::Type::T_WORD)
 		throw Analyser::SyntaxError("Invalid type of argument in line", LINE);
 	else
-		data.AddServerName(data.current_.getRawData());
+		data.AddServerName(data.GetRawData());
 	args++;
 	return Token::State::K_SERVER_NAME;
 }
 
 
 t_parsing_state Parser::StHandler::LocationHandler(const Data &data) {
-	data.AddLocation(data.current_.getRawData());
-	data.PushContext_(Token::State::K_LOCATION);
+	data.AddLocation(data.GetRawData());
+	data.PushContext(Token::State::K_LOCATION);
 	data.NextEvent();
-	return (*data.parser_).ParserMainLoop();
+	return data.ParserLoopBack();
 }
 
 t_parsing_state Parser::StHandler::ServerHandler(const Data &data) {
 	data.AddServer();
-	data.PushContext_(Token::State::K_SERVER);
-	return (*data.parser_).ParserMainLoop();
+	data.PushContext(Token::State::K_SERVER);
+	return data.ParserLoopBack();
 }
 
 void Parser::PushContext_(const t_parsing_state &ctx) {
 	ctx_.push(ctx);
 }
 
-void Parser::Data::PopContext_(void) const {
+void Parser::Data::PopContext(void) const {
 	parser_->PopContext_();
 }
 
-void Parser::Data::PushContext_(const t_parsing_state &ctx) const {
+void Parser::Data::PushContext(const t_parsing_state &ctx) const {
 	parser_->PushContext_(ctx);
 }
 
@@ -163,6 +166,30 @@ t_token_type Parser::NextEvent(void) {
 		return itc_->getType();
 	return
 		Token::Type::T_INVALID;
+}
+
+t_parsing_state Parser::Data::ParserLoopBack(void) const {
+	return (*parser_).ParserMainLoop();
+}
+
+t_token_type Parser::Data::GetEvent(void) const {
+	return event_;
+}
+
+t_parsing_state Parser::Data::GetState(void) const {
+	return state_;
+}
+
+const std::string &Parser::Data::GetRawData(void) const {
+	return rawData_;	
+}
+
+const std::string &Parser::Data::GetErrorMessage(void) const {
+	return error_msg_;	
+}
+
+size_t Parser::Data::GetLineNumber(void) const {
+	return line_;	
 }
 
 t_parsing_state Parser::TopContext_(void) const {
