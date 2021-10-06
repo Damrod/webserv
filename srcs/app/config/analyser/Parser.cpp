@@ -11,7 +11,8 @@ Parser::Parser(const std::list<Token> &token, ParserAPI *config) :
 	config_(config),
 	itb_(tokens_.begin()),
 	ite_(tokens_.end()),
-	itc_(itb_) {
+	itc_(itb_),
+	argNumber_(0) {
 	ctx_.push(Token::State::K_INIT);
 	parse();
 }
@@ -107,21 +108,18 @@ t_parsing_state Parser::StHandler::AutoindexHandler(const Data &data) {
 }
 
 t_parsing_state Parser::StHandler::ServerNameHandler(const Data &data) {
-	static size_t args = 0;
-	t_token_type event = data.GetEvent();
-
-	if (args == 0 && event == Token::Type::T_SEMICOLON)
+	if (data.GetArgNumber() == 0 && data.GetEvent() == Token::Type::T_SEMICOLON)
 		throw Analyser::SyntaxError("invalid number of arguments in "
 									"\"server_name\" directive:", LINE);
-	if (event == Token::Type::T_SEMICOLON) {
-		args = 0;
+	if (data.GetEvent() == Token::Type::T_SEMICOLON) {
+		data.ResetArgNumber();
 		return Token::State::K_EXP_KW;
 	}
-	if (event != Token::Type::T_WORD)
+	if (data.GetEvent() != Token::Type::T_WORD)
 		throw Analyser::SyntaxError("Invalid type of argument in line", LINE);
 	else
 		data.AddServerName(data.GetRawData());
-	args++;
+	data.IncrementArgNumber();
 	return Token::State::K_SERVER_NAME;
 }
 
@@ -196,6 +194,29 @@ t_parsing_state Parser::TopContext_(void) const {
 	return ctx_.top();
 }
 
+void Parser::Data::IncrementArgNumber(void) const {
+	parser_->IncrementArgNumber();
+}
+
+void Parser::Data::ResetArgNumber(void) const {
+	parser_->ResetArgNumber();
+}
+
+size_t Parser::Data::GetArgNumber(void) const {
+	return parser_->GetArgNumber();
+}
+
+size_t Parser::GetArgNumber(void) {
+	return argNumber_;
+}
+
+void Parser::IncrementArgNumber(void) {
+	argNumber_++;
+}
+
+void Parser::ResetArgNumber(void) {
+	argNumber_ = 0;
+}
 const struct Parser::s_trans Parser::transitions[13] = {
 	{ .state = Token::State::K_INIT,
 	  .evt = Token::Type::T_SCOPE_OPEN,

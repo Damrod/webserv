@@ -37,6 +37,9 @@ class Parser: public Analyser {
 		const std::string &GetRawData(void) const;
 		const std::string &GetErrorMessage(void) const;
 		size_t GetLineNumber(void) const;
+		size_t GetArgNumber(void) const;
+		void IncrementArgNumber(void) const;
+		void ResetArgNumber(void) const;
 
 	private:
 		const std::string &error_msg_;
@@ -67,6 +70,9 @@ class Parser: public Analyser {
 	void PopContext_(void);
 	t_parsing_state TopContext_(void) const;
 	t_token_type NextEvent(void);
+	size_t GetArgNumber(void);
+	void IncrementArgNumber(void);
+	void ResetArgNumber(void);
 	std::stack<t_parsing_state> ctx_;
 	const std::list<Token> &tokens_;
 	ParserAPI *config_;
@@ -80,6 +86,7 @@ class Parser: public Analyser {
 		std::string errormess;
 	};
 	static const s_trans transitions[13];
+	size_t argNumber_;
 };
 
 #endif  // SRCS_INCS_PARSER_PARSER_HPP_
