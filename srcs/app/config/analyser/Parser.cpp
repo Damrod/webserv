@@ -115,10 +115,7 @@ t_parsing_state Parser::StHandler::ServerNameHandler(const Data &data) {
 		data.ResetArgNumber();
 		return Token::State::K_EXP_KW;
 	}
-	if (data.GetEvent() != Token::Type::T_WORD)
-		throw Analyser::SyntaxError("Invalid type of argument in line", LINE);
-	else
-		data.AddServerName(data.GetRawData());
+	data.AddServerName(data.GetRawData());
 	data.IncrementArgNumber();
 	return Token::State::K_SERVER_NAME;
 }
