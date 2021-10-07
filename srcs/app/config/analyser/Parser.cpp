@@ -32,47 +32,37 @@ Parser::Data::Data(Parser * const parser, const std::string &error_msg) :
 // in here Parser.hpp/cpp, not in Config.hpp/cpp
 
 void Parser::Data::SetListenAddress(const std::string &svnaddr) const {
-	/* const uint32_t address = inet_addr(svnaddr.c_str());
+	const char * addressStr = svnaddr.c_str();
+	int64_t port;
+	char *endptr = NULL;
 	if (std::count(svnaddr.begin(), svnaddr.end(), '.') != 3) {
-		if ()
-	} */
-	char *endptr;
-	const char * buffer = svnaddr.c_str();
-	uint32_t address = 0;
-	for (uint8_t i = 0; i < 4; ++i) {
-		int64_t result = std::strtol(buffer, &endptr, 10);
-		if (i == 0 && !*endptr) {
-			if (errno || result < 1 || result > UINT16_MAX)
-				throw std::invalid_argument("listen directive port invalid");
-			else
-				config_->SetListenAddress(0, static_cast<uint16_t>(result), ctx_);
-			return;
+		port = std::strtol(addressStr, &endptr, 10);
+		if (*endptr || errno || port < 1 || port > UINT16_MAX) {
+			throw std::invalid_argument("listen directive port invalid");
+		} else {
+			config_->SetListenAddress(0, static_cast<uint16_t>(port), ctx_);
 		}
-		if ((i != 3 && *endptr != '.') || errno || result < 0 || result > UINT8_MAX)
-			throw SyntaxError("listen directive expects an IP", GetLineNumber());
-		address |= static_cast<uint8_t>(result);
-		if (i != 3)
-			address <<= 8;
-		if (*endptr)
-			buffer = endptr + 1;
-		else if (i != 3 && !*endptr)
-			throw std::invalid_argument("An IP has four groups of one byte");
-	}
-	if (!*endptr) {
-		config_->SetListenAddress(address, 80, ctx_);
 		return;
 	}
-	if (*endptr != ':')
-		throw std::invalid_argument("listen directive expects a port number");
-	buffer = endptr + 1;
-	int64_t result = std::strtol(buffer, &endptr, 10);
-	if (*endptr || errno || result < 1 || result > UINT16_MAX) {
-		std::stringstream comp;
-		comp << "Port number varies between 1 and " << UINT16_MAX;
-		throw std::invalid_argument(comp.str());
+	const char *portStr = NULL;
+	if (std::count(svnaddr.begin(), svnaddr.end(), ':') == 1) {
+		std::string tmp = addressStr;
+		addressStr = tmp.substr(0, tmp.find(':')).c_str();
+		portStr = tmp.substr(tmp.find(':') + 1, tmp.length()).c_str();
 	}
-	uint16_t port = static_cast<uint16_t>(result);
-	config_->SetListenAddress(address, port, ctx_);
+	const in_addr_t address = inet_addr(addressStr);
+	if (address == static_cast<in_addr_t>(-1)) {
+		throw std::invalid_argument("listen directive IP invalid");
+	}
+	if (portStr) {
+		port = std::strtol(portStr, &endptr, 10);
+	} else {
+		port = 8080;
+	}
+	if ((endptr && *endptr) || errno || port < 1 || port > UINT16_MAX) {
+		throw std::invalid_argument("listen directive port invalid");
+	}
+	config_->SetListenAddress(ntohl(address), static_cast<uint16_t>(port), ctx_);
 }
 
 void Parser::Data::AddLocation(const std::string &path) const {
