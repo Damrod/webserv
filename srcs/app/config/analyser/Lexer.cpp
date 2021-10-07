@@ -10,7 +10,7 @@ void Lexer::addStringLit(std::string *filebuff, size_t *tokenend) {
 	*filebuff = filebuff->substr(1);
 	*tokenend = filebuff->find(cmp, 0);
 	if (*tokenend == filebuff->npos)
-		throw Analyser::SyntaxError("Unterminated quote in line", line_);
+		throw Analyser::SyntaxError("Unterminated quote", line_);
 	token = filebuff->substr(0, *tokenend);
 	tokens_.push_back(Token(token, Token::Type::T_WORD, line_));
 	line_ += std::count(token.begin(), token.end(), '\n');
@@ -28,7 +28,7 @@ void Lexer::addPunct(char type, size_t *tokenend) {
 	else if (type == '}')
 		ttype = Token::Type::T_SCOPE_CLOSE;
 	else
-		throw Analyser::SyntaxError("Unexpected token near line", line_);
+		throw Analyser::SyntaxError("Unexpected token", line_);
 	tmp[0] = type;
 	tmp[1] = '\0';
 	tokens_.push_back(Token(tmp, ttype, line_));

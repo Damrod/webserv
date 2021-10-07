@@ -7,7 +7,7 @@ Analyser::~Analyser(void) {}
 Analyser::SyntaxError::SyntaxError(const std::string &error, size_t line)
 	: line_(line) {
 	std::ostringstream str;
-	str << error << " " << line_;
+	str << error << " in line " << line_;
 	lineerr_ = str.str();
 }
 

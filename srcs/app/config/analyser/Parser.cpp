@@ -32,6 +32,10 @@ Parser::Data::Data(Parser * const parser, const std::string &error_msg) :
 // in here Parser.hpp/cpp, not in Config.hpp/cpp
 
 void Parser::Data::SetListenAddress(const std::string &svnaddr) const {
+	/* const uint32_t address = inet_addr(svnaddr.c_str());
+	if (std::count(svnaddr.begin(), svnaddr.end(), '.') != 3) {
+		if ()
+	} */
 	char *endptr;
 	const char * buffer = svnaddr.c_str();
 	uint32_t address = 0;
@@ -45,7 +49,7 @@ void Parser::Data::SetListenAddress(const std::string &svnaddr) const {
 			return;
 		}
 		if ((i != 3 && *endptr != '.') || errno || result < 0 || result > UINT8_MAX)
-			throw std::invalid_argument("listen directive expects an IP");
+			throw SyntaxError("listen directive expects an IP", GetLineNumber());
 		address |= static_cast<uint8_t>(result);
 		if (i != 3)
 			address <<= 8;
@@ -145,8 +149,8 @@ t_parsing_state Parser::StHandler::AutoindexHandler(const Data &data) {
 
 t_parsing_state Parser::StHandler::ServerNameHandler(const Data &data) {
 	if (data.GetArgNumber() == 0 && data.GetEvent() == Token::Type::T_SEMICOLON)
-		throw Analyser::SyntaxError("invalid number of arguments in "
-									"\"server_name\" directive:", LINE);
+		throw Analyser::SyntaxError("Invalid number of arguments in "
+									"'server_name' directive", LINE);
 	if (data.GetEvent() == Token::Type::T_SEMICOLON) {
 		data.ResetArgNumber();
 		return Token::State::K_EXP_KW;
@@ -200,8 +204,8 @@ t_token_type Parser::NextEvent(void) {
 	++itc_;
 	if (itc_ != ite_)
 		return itc_->getType();
-	return
-		Token::Type::T_INVALID;
+	throw SyntaxError("Attempting to read the token past the end of the file"
+	, (--itc_)->GetLine());
 }
 
 t_parsing_state Parser::Data::ParserLoopBack(void) const {
@@ -255,7 +259,7 @@ void Parser::IncrementArgNumber(void) {
 void Parser::ResetArgNumber(void) {
 	argNumber_ = 0;
 }
-const struct Parser::s_trans Parser::transitions[17] = {
+const struct Parser::s_trans Parser::transitions[18] = {
 	{ .state = Token::State::K_INIT,
 	  .evt = Token::Type::T_SCOPE_OPEN,
 	  .apply = &StHandler::InitHandler,
@@ -263,7 +267,7 @@ const struct Parser::s_trans Parser::transitions[17] = {
 	{ .state = Token::State::K_INIT,
 	  .evt = Token::Type::T_NONE,
 	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "expected { in line"},
+	  .errormess = "Expecting {"},
 	{ .state = Token::State::K_EXP_KW,
 	  .evt = Token::Type::T_SCOPE_CLOSE,
 	  .apply = &StHandler::ExpKwHandlerClose,
@@ -272,6 +276,10 @@ const struct Parser::s_trans Parser::transitions[17] = {
 	  .evt = Token::Type::T_WORD,
 	  .apply = &StHandler::ExpKwHandlerKw,
 	  .errormess = ""},
+	{ .state = Token::State::K_EXP_KW,
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "Expecting keyword"},
 	{ .state = Token::State::K_EXP_SEMIC,
 	  .evt = Token::Type::T_SEMICOLON,
 	  .apply = &StHandler::SemicHandler,
@@ -279,7 +287,7 @@ const struct Parser::s_trans Parser::transitions[17] = {
 	{ .state = Token::State::K_EXP_SEMIC,
 	  .evt = Token::Type::T_NONE,
 	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "expected ; in line"},
+	  .errormess = "Expecting ;"},
 	{ .state = Token::State::K_AUTOINDEX,
 	  .evt = Token::Type::T_WORD,
 	  .apply = &StHandler::AutoindexHandler,
@@ -287,7 +295,7 @@ const struct Parser::s_trans Parser::transitions[17] = {
 	{ .state = Token::State::K_AUTOINDEX,
 	  .evt = Token::Type::T_NONE,
 	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "expected 'on' or 'off' in line"},
+	  .errormess = "Expecting 'on' or 'off'"},
 	{ .state = Token::State::K_SERVER_NAME,
 	  .evt = Token::Type::T_WORD,
 	  .apply = &StHandler::ServerNameHandler,
@@ -299,7 +307,7 @@ const struct Parser::s_trans Parser::transitions[17] = {
 	{ .state = Token::State::K_SERVER_NAME,
 	  .evt = Token::Type::T_NONE,
 	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "Expecting some server names in line"},
+	  .errormess = "Expecting some server names"},
 	{ .state = Token::State::K_LOCATION,
 	  .evt = Token::Type::T_WORD,
 	  .apply = &StHandler::LocationHandler,
@@ -307,7 +315,7 @@ const struct Parser::s_trans Parser::transitions[17] = {
 	{ .state = Token::State::K_LOCATION,
 	  .evt = Token::Type::T_NONE,
 	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "Expecting some location in line"},
+	  .errormess = "Expecting some location"},
 	{ .state = Token::State::K_SERVER,
 	  .evt = Token::Type::T_SCOPE_OPEN,
 	  .apply = &StHandler::ServerHandler,
@@ -315,7 +323,7 @@ const struct Parser::s_trans Parser::transitions[17] = {
 	{ .state = Token::State::K_SERVER,
 	  .evt = Token::Type::T_NONE,
 	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "Expecting { after server directive in line"},
+	  .errormess = "Expecting { after server directive"},
 	{ .state = Token::State::K_LISTEN,
 	  .evt = Token::Type::T_WORD,
 	  .apply = &StHandler::ListenHandler,
@@ -323,7 +331,7 @@ const struct Parser::s_trans Parser::transitions[17] = {
 	{ .state = Token::State::K_LISTEN,
 	  .evt = Token::Type::T_NONE,
 	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "Expecting IP in listen directive in line"},
+	  .errormess = "Expecting IP in listen directive"},
 };
 
 t_parsing_state Parser::ParserMainLoop(void) {
@@ -347,7 +355,7 @@ t_parsing_state Parser::ParserMainLoop(void) {
 			}
 		}
 	}
-	throw SyntaxError("Unclosed scope in line", (--itc_)->GetLine());
+	throw SyntaxError("Unclosed scope", (--itc_)->GetLine());
 }
 
 void Parser::parse(void) {

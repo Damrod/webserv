@@ -7,6 +7,7 @@
 #include <queue>
 #include <vector>
 #include <stack>
+#include <arpa/inet.h>
 #include <parser/Lexer.hpp>
 #include <parser/ParserAPI.hpp>
 
@@ -86,7 +87,7 @@ class Parser: public Analyser {
 		t_parsing_state (Parser::StHandler::*apply)(const Data &data);
 		std::string errormess;
 	};
-	static const s_trans transitions[17];
+	static const s_trans transitions[18];
 	size_t argNumber_;
 };
 
