@@ -1,13 +1,13 @@
 #ifndef SRCS_INCS_PARSER_PARSER_HPP_
 #define SRCS_INCS_PARSER_PARSER_HPP_
 
+#include <arpa/inet.h>
 #include <iterator>
 #include <string>
 #include <list>
 #include <queue>
 #include <vector>
 #include <stack>
-#include <arpa/inet.h>
 #include <parser/Lexer.hpp>
 #include <parser/ParserAPI.hpp>
 

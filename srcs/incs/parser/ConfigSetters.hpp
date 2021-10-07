@@ -1,6 +1,7 @@
 #ifndef SRCS_INCS_PARSER_CONFIGSETTERS_HPP_
 #define SRCS_INCS_PARSER_CONFIGSETTERS_HPP_
 
+#include <arpa/inet.h>
 #include <sstream>
 #include <vector>
 #include <string>
