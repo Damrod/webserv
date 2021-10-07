@@ -6,7 +6,8 @@
 
 WebServer::WebServer() {
 	FD_ZERO(&master_set_);
-	FD_ZERO(&read_set_);
+	FD_ZERO(&tmp_read_set_);
+	FD_ZERO(&tmp_write_set_);
 	FD_ZERO(&write_set_);
 	max_sd_ = -1;
 }
@@ -19,26 +20,27 @@ void	WebServer::Init(const std::string &pathname) {
 void	WebServer::Run() {
 	AddListeningSocketsToMasterSet_();
 	while (max_sd_ != -1) {
-		std::memcpy(&read_set_, &master_set_, sizeof(master_set_));
-		std::memcpy(&write_set_, &master_set_, sizeof(master_set_));
+		std::memcpy(&tmp_read_set_, &master_set_, sizeof(master_set_));
+		std::memcpy(&tmp_write_set_, &write_set_, sizeof(master_set_));
 		int ready_connections =
-			select(max_sd_ + 1, &read_set_, &write_set_, NULL, NULL);
+			select(max_sd_ + 1, &tmp_read_set_, &tmp_write_set_, NULL, NULL);
 		if (ready_connections < 0) {
 			throw std::runtime_error(std::strerror(errno));
 		} else if (ready_connections == 0) {
 			throw std::runtime_error("select returned 0 with NULL timeout");
 		}
 		for (int sd = 0; sd <= max_sd_ && ready_connections > 0; ++sd) {
-			if (FD_ISSET(sd, &read_set_)) {
+			if (FD_ISSET(sd, &tmp_read_set_)) {
 				--ready_connections;
 				if (IsListeningSocket_(sd)) {
 					AcceptNewConnection_(sd);
 				} else {
 					ReadRequest_(sd);
 				}
-			} else if (FD_ISSET(sd, &write_set_) && !IsListeningSocket_(sd)) {
+			} else if (FD_ISSET(sd, &tmp_write_set_)) {
 				--ready_connections;
 				SendResponse_(sd);
+                FD_CLR(sd, &write_set_);
 			}
 		}
 	}
@@ -127,8 +129,11 @@ void	WebServer::ReadRequest_(int sd) {
 	if (!server_ptr->ReadRequest(sd)) {
 		server_ptr->RemoveConnection(sd);
 		FD_CLR(sd, &master_set_);
+		FD_CLR(sd, &write_set_);
 		SetMaxSocket_(sd);
+        return ;
 	}
+    FD_SET(sd, &write_set_);
 }
 
 void	WebServer::SendResponse_(int sd) {
@@ -138,6 +143,7 @@ void	WebServer::SendResponse_(int sd) {
 	if (!server_ptr->SendResponse(sd)) {
 		server_ptr->RemoveConnection(sd);
 		FD_CLR(sd, &master_set_);
+		FD_CLR(sd, &write_set_);
 		SetMaxSocket_(sd);
 	}
 }
