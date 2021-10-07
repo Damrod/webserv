@@ -62,8 +62,11 @@ void Parser::Data::SetListenAddress(const std::string &svnaddr) const {
 		throw std::invalid_argument("listen directive expects a port number");
 	buffer = endptr + 1;
 	int64_t result = std::strtol(buffer, &endptr, 10);
-	if (*endptr || errno || result < 1 || result > UINT16_MAX)
-		throw std::invalid_argument("port number varies between 1 and " + UINT8_MAX);
+	if (*endptr || errno || result < 1 || result > UINT16_MAX) {
+		std::stringstream comp;
+		comp << "Port number varies between 1 and " << UINT16_MAX;
+		throw std::invalid_argument(comp.str());
+	}
 	uint16_t port = static_cast<uint16_t>(result);
 	config_->SetListenAddress(address, port, ctx_);
 }
