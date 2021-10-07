@@ -45,10 +45,14 @@ void Parser::Data::SetListenAddress(const std::string &svnaddr) const {
 		return;
 	}
 	const char *portStr = NULL;
+	std::string addTmp;
+	std::string pTmp;
 	if (std::count(svnaddr.begin(), svnaddr.end(), ':') == 1) {
 		std::string tmp = addressStr;
-		addressStr = tmp.substr(0, tmp.find(':')).c_str();
-		portStr = tmp.substr(tmp.find(':') + 1, tmp.length()).c_str();
+		addTmp = tmp.substr(0, tmp.find(':'));
+		pTmp = tmp.substr(tmp.find(':') + 1, tmp.length());
+		addressStr = addTmp.c_str();
+		portStr = pTmp.c_str();
 	}
 	const in_addr_t address = inet_addr(addressStr);
 	if (address == static_cast<in_addr_t>(-1)) {
