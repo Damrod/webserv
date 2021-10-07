@@ -69,11 +69,12 @@ void		HttpRequestHandler::HandleRequest_() {
 	}
 	SetKeepAlive_(*request);
 	request_location_ = new RequestLocation(server_config_, request->GetPath());
-	if (request->GetMethod() == "GET") {
+	const std::string request_method = request->GetMethod();
+	if (request_method == "GET") {
 		DoGet_(*request);
-	} else if (request->GetMethod() == "POST") {
+	} else if (request_method == "POST") {
 		DoPost_(*request);
-	} else if (request->GetMethod() == "DELETE") {
+	} else if (request_method == "DELETE") {
 		DoDelete_(*request);
 	} else {
 		RequestError_(501);
