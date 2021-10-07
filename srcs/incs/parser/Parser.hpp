@@ -2,6 +2,7 @@
 #define SRCS_INCS_PARSER_PARSER_HPP_
 
 #include <arpa/inet.h>
+#include <cerrno>
 #include <iterator>
 #include <string>
 #include <list>

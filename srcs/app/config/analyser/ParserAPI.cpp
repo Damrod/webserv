@@ -9,12 +9,15 @@ std::vector<ServerConfig>	&ParserAPI::GetServersSettings(void) {
 }
 
 bool ParserAPI::canAddServer(uint32_t address, uint16_t port) {
-	std::vector<ServerConfig>::const_iterator it = servers_settings_->begin();
-	for (; it != servers_settings_->end(); ++it) {
-		if (it->listen_address == address && it->listen_port == port) {
-			return false;
-		}
-	}
+	// std::vector<ServerConfig>::const_iterator it = servers_settings_->begin();
+	// for (; it != servers_settings_->end(); ++it) {
+	//	if (it->listen_address == address && it->listen_port == port) {
+	//		return false;
+	//	}
+	// } Maybe this function doesnt make sense since we don't handle more than one
+	// server:port combination per server anyway
+	(void)address;
+	(void)port;
 	return true;
 }
 
