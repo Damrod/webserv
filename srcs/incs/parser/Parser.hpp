@@ -86,7 +86,7 @@ class Parser: public Analyser {
 		t_parsing_state (Parser::StHandler::*apply)(const Data &data);
 		std::string errormess;
 	};
-	static const s_trans transitions[13];
+	static const s_trans transitions[17];
 	size_t argNumber_;
 };
 

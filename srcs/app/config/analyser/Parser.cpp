@@ -64,7 +64,7 @@ void Parser::Data::SetListenAddress(const std::string &svnaddr) const {
 	int64_t result = std::strtol(buffer, &endptr, 10);
 	if (*endptr || errno || result < 1 || result > UINT16_MAX)
 		throw std::invalid_argument("port number varies between 1 and " + UINT8_MAX);
-	uint16_t port = static_cast<uint32_t>(result);
+	uint16_t port = static_cast<uint16_t>(result);
 	config_->SetListenAddress(address, port, ctx_);
 }
 
@@ -252,13 +252,13 @@ void Parser::IncrementArgNumber(void) {
 void Parser::ResetArgNumber(void) {
 	argNumber_ = 0;
 }
-const struct Parser::s_trans Parser::transitions[13] = {
+const struct Parser::s_trans Parser::transitions[17] = {
 	{ .state = Token::State::K_INIT,
 	  .evt = Token::Type::T_SCOPE_OPEN,
 	  .apply = &StHandler::InitHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_INIT,
-	  .evt = Token::Type::T_WORD,
+	  .evt = Token::Type::T_NONE,
 	  .apply = &StHandler::SyntaxFailer,
 	  .errormess = "expected { in line"},
 	{ .state = Token::State::K_EXP_KW,
@@ -274,37 +274,53 @@ const struct Parser::s_trans Parser::transitions[13] = {
 	  .apply = &StHandler::SemicHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_EXP_SEMIC,
-	  .evt = Token::Type::T_WORD,
+	  .evt = Token::Type::T_NONE,
 	  .apply = &StHandler::SyntaxFailer,
 	  .errormess = "expected ; in line"},
 	{ .state = Token::State::K_AUTOINDEX,
 	  .evt = Token::Type::T_WORD,
 	  .apply = &StHandler::AutoindexHandler,
 	  .errormess = ""},
+	{ .state = Token::State::K_AUTOINDEX,
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "expected 'on' or 'off' in line"},
 	{ .state = Token::State::K_SERVER_NAME,
 	  .evt = Token::Type::T_WORD,
 	  .apply = &StHandler::ServerNameHandler,
 	  .errormess = ""},
+	{ .state = Token::State::K_SERVER_NAME,
+	  .evt = Token::Type::T_SEMICOLON,
+	  .apply = &StHandler::ServerNameHandler,
+	  .errormess = ""},
+	{ .state = Token::State::K_SERVER_NAME,
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "Expecting some server names in line"},
 	{ .state = Token::State::K_LOCATION,
 	  .evt = Token::Type::T_WORD,
 	  .apply = &StHandler::LocationHandler,
 	  .errormess = ""},
+	{ .state = Token::State::K_LOCATION,
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "Expecting some location in line"},
 	{ .state = Token::State::K_SERVER,
 	  .evt = Token::Type::T_SCOPE_OPEN,
 	  .apply = &StHandler::ServerHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_SERVER,
-	  .evt = Token::Type::T_WORD,
+	  .evt = Token::Type::T_NONE,
 	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "Expecting { after server directive"},
-	{ .state = Token::State::K_LISTEN,
-	  .evt = Token::Type::T_SEMICOLON,
-	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "Expecting IP in listen rather than ; in line"},
+	  .errormess = "Expecting { after server directive in line"},
 	{ .state = Token::State::K_LISTEN,
 	  .evt = Token::Type::T_WORD,
 	  .apply = &StHandler::ListenHandler,
-	  .errormess = ""}
+	  .errormess = ""},
+	{ .state = Token::State::K_LISTEN,
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "Expecting IP in listen directive in line"},
 };
 
 t_parsing_state Parser::ParserMainLoop(void) {
@@ -318,7 +334,7 @@ t_parsing_state Parser::ParserMainLoop(void) {
 			if ((state == transitions[i].state)
 				|| (Token::State::K_NONE == transitions[i].state)) {
 				if ((event == transitions[i].evt)
-					|| (Token::Type::T_WORD == transitions[i].evt)) {
+					|| (Token::Type::T_NONE == transitions[i].evt)) {
 					Data data(this, transitions[i].errormess);
 					state = ((handlers_).*(transitions[i].apply))(data);
 					if (state == Token::State::K_EXIT)

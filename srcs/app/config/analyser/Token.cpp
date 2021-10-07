@@ -1,8 +1,8 @@
 #include <parser/Token.hpp>
 
 std::string Token::Type::GetTokenTypeStr(enum e_id type) {
-	std::string retval("unknown");
-	if (type > T_UNKNOWN && type < T_INVALID)
+	std::string retval("NONE");
+	if (type > T_NONE && type < T_INVALID)
 		return str_map[type];
 	return retval;
 }
