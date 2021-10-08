@@ -8,10 +8,9 @@
 
 Parser::Parser(const std::list<Token> &token, ParserAPI *config) :
 	handlers_(this),
-	tokens_(token),
 	config_(config),
-	itb_(tokens_.begin()),
-	ite_(tokens_.end()),
+	itb_(token.begin()),
+	ite_(token.end()),
 	itc_(itb_),
 	argNumber_(0) {
 	ctx_.push(Token::State::K_INIT);
