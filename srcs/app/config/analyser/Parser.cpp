@@ -8,7 +8,6 @@
 
 Parser::Engine::Engine(const std::list<Token> &token, ParserAPI *config) :
 	handlers_(this, config),
-	config_(config),
 	ite_(token.end()),
 	itc_(token.begin()),
 	transitions_(TransitionFactory_()),
@@ -211,11 +210,22 @@ t_parsing_state Parser::StatelessSet::ExpKwHandlerClose
 	return Token::State::K_EXIT;
 }
 
+static bool isKwAllowedInCtx_(t_parsing_state kw, t_parsing_state ctx) {
+	(void)kw;  // mocking
+	(void)ctx;
+	return true;
+}
+
 t_parsing_state Parser::StatelessSet::ExpKwHandlerKw(const StatefulSet &data) {
 	if (data.GetState() < Token::State::K_SERVER
 	|| data.GetState() > Token::State::K_LIMIT_EXCEPT)
 		throw SyntaxError("Expecting keyword but found '" +
 		data.GetRawData() + "'", data.GetLineNumber());
+	if (!isKwAllowedInCtx_(data.GetState(), data.GetCtx()))
+		throw SyntaxError("Keyword '" + data.GetRawData() + "' "
+						  "not allowed in context '" +
+						  Token::State::GetParsingStateTypeStr(data.GetCtx())
+						  + "'", data.GetLineNumber());
 	return data.GetState();
 }
 

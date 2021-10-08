@@ -32,6 +32,7 @@ class StatelessSet : public Analyser {
 	t_parsing_state ServerHandler(const StatefulSet &data);
 	t_parsing_state ListenHandler(const StatefulSet &data);
 // setters
+ private:
 	void SetListenAddress(const std::string &svNameAddr,
 						  t_parsing_state ctx) const;
 	void AddServerName(const std::string &name, t_parsing_state ctx) const;
@@ -41,8 +42,6 @@ class StatelessSet : public Analyser {
 	void SetClientMaxSz(uint32_t size, t_parsing_state ctx) const;
 	void AddLocation(const std::string &name, t_parsing_state ctx) const;
 	void AddServer(t_parsing_state ctx) const;
-
- private:
 	ParserAPI *config_;
 	Engine *parser_;
 };
@@ -72,7 +71,6 @@ class Engine: public Analyser {
 	virtual std::vector < Parser::s_trans > TransitionFactory_(void);
 	StatelessSet handlers_;
 	std::stack<t_parsing_state> ctx_;
-	ParserAPI *config_;
 	const std::list<Token>::const_iterator ite_;
 	std::list<Token>::const_iterator itc_;
 	const std::vector < struct s_trans > transitions_;
