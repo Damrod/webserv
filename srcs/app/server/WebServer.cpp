@@ -2,6 +2,7 @@
 #include <cerrno>
 #include <cstring>
 #include <stdexcept>
+#include <ConnectionIOStatus.hpp>
 #include <ServerConfig.hpp>
 
 WebServer::WebServer() {
@@ -40,7 +41,6 @@ void	WebServer::Run() {
 			} else if (FD_ISSET(sd, &tmp_write_set_)) {
 				--ready_connections;
 				SendResponse_(sd);
-                FD_CLR(sd, &write_set_);
 			}
 		}
 	}
@@ -126,21 +126,26 @@ void	WebServer::ReadRequest_(int sd) {
 	ServersMap_::iterator server_it = FindConnectionServer_(sd);
 	Server *server_ptr = &server_it->second;
 
-	if (!server_ptr->ReadRequest(sd)) {
+	ReadRequestStatus::Type status = server_ptr->ReadRequest(sd);
+	if (status == ReadRequestStatus::kStart) {
+		FD_SET(sd, &write_set_);
+	} else if (status == ReadRequestStatus::kFail) {
 		server_ptr->RemoveConnection(sd);
 		FD_CLR(sd, &master_set_);
 		FD_CLR(sd, &write_set_);
 		SetMaxSocket_(sd);
-        return;
 	}
-    FD_SET(sd, &write_set_);
 }
 
 void	WebServer::SendResponse_(int sd) {
 	ServersMap_::iterator server_it = FindConnectionServer_(sd);
 	Server	*server_ptr = &server_it->second;
 
-	if (!server_ptr->SendResponse(sd)) {
+	SendResponseStatus::Type status = server_ptr->SendResponse(sd);
+	if (status == SendResponseStatus::kCompleteKeep) {
+		FD_CLR(sd, &write_set_);
+	} else if (status == SendResponseStatus::kFail ||
+				status == SendResponseStatus::kCompleteClose) {
 		server_ptr->RemoveConnection(sd);
 		FD_CLR(sd, &master_set_);
 		FD_CLR(sd, &write_set_);
