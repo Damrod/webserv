@@ -17,17 +17,17 @@ Parser::Parser(const std::list<Token> &token, ParserAPI *config) :
 	parse();
 }
 
-Parser::Data::Data(Parser * const parser, const std::string &error_msg) :
-	error_msg_(error_msg),
-	line_(parser->itc_->GetLine()),
-	event_(parser->itc_->getType()),
-	state_(parser->itc_->GetState()),
-	rawData_(parser->itc_->getRawData()),
-	ctx_(parser->TopContext_()),
-	config_(parser->config_) {
-}
+// Data::Data(Parser * const parser, const std::string &error_msg) :
+// 	error_msg_(error_msg),
+// 	line_(parser->itc_->GetLine()),
+// 	event_(parser->itc_->getType()),
+// 	state_(parser->itc_->GetState()),
+// 	rawData_(parser->itc_->getRawData()),
+// 	ctx_(parser->TopContext_()),
+// 	config_(parser->config_) {
+// }
 
-Parser::Data::Data(size_t line,
+Data::Data(size_t line,
 				   t_token_type evt,
 				   t_parsing_state st,
 				   const std::string &rawData,
@@ -35,18 +35,18 @@ Parser::Data::Data(size_t line,
 				   ParserAPI *config,
 				   const std::string &error) :
 	error_msg_(error),
-	line_(line),
 	event_(evt),
 	state_(st),
 	rawData_(rawData),
 	ctx_(ctx),
 	config_(config) {
+	line_ = line;
 }
 
 // probably the context sensitiveness for the setters should be implemented
 // in here Parser.hpp/cpp, not in Config.hpp/cpp
 
-void Parser::Data::SetListenAddress(const std::string &svnaddr) const {
+void Data::SetListenAddress(const std::string &svnaddr) const {
 	const char * addressStr = svnaddr.c_str();
 	std::string addTmp;  // we need this objects lifetime to last for the entire
 						 // function
@@ -79,32 +79,32 @@ void Parser::Data::SetListenAddress(const std::string &svnaddr) const {
 							ctx_);
 }
 
-void Parser::Data::AddLocation(const std::string &path) const {
+void Data::AddLocation(const std::string &path) const {
 	// path should be in location ctor
 	config_->AddLocation(path, ctx_);
 }
 
-void Parser::Data::AddServerName(const std::string &name) const {
+void Data::AddServerName(const std::string &name) const {
 	config_->AddServerName(name, ctx_);
 }
 
-void Parser::Data::SetRoot(const std::string &root) const {
+void Data::SetRoot(const std::string &root) const {
 	config_->SetRoot(root, ctx_);
 }
 
-void Parser::Data::AddIndex(const std::string &index) const {
+void Data::AddIndex(const std::string &index) const {
 	config_->AddIndex(index, ctx_);
 }
 
-void Parser::Data::AddAutoindex(const std::string &autoindex) const {
+void Data::AddAutoindex(const std::string &autoindex) const {
 	config_->AddAutoindex(autoindex == "on", ctx_);
 }
 
-void Parser::Data::SetClientMaxSz(uint32_t size) const {
+void Data::SetClientMaxSz(uint32_t size) const {
 	config_->SetClientMaxSz(size, ctx_);
 }
 
-void Parser::Data::AddServer(void) const {
+void Data::AddServer(void) const {
 	config_->AddServer(ctx_);
 }
 
@@ -200,23 +200,23 @@ t_token_type Parser::SkipEvent(void) {
 	, (--itc_)->GetLine());
 }
 
-t_token_type Parser::Data::GetEvent(void) const {
+t_token_type Data::GetEvent(void) const {
 	return event_;
 }
 
-t_parsing_state Parser::Data::GetState(void) const {
+t_parsing_state Data::GetState(void) const {
 	return state_;
 }
 
-const std::string &Parser::Data::GetRawData(void) const {
+const std::string &Data::GetRawData(void) const {
 	return rawData_;
 }
 
-const std::string &Parser::Data::GetErrorMessage(void) const {
+const std::string &Data::GetErrorMessage(void) const {
 	return error_msg_;
 }
 
-size_t Parser::Data::GetLineNumber(void) const {
+size_t Data::GetLineNumber(void) const {
 	return line_;
 }
 

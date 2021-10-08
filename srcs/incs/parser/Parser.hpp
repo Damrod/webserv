@@ -12,45 +12,14 @@
 #include <parser/Lexer.hpp>
 #include <parser/ParserAPI.hpp>
 
+class Data;
+
 class Parser: public Analyser {
  public:
 	Parser(const std::list<Token> &token, ParserAPI *config);
 
  private:
 	void parse(void);
-	class Data {
-	public:
-		Data(size_t line, t_token_type evt, t_parsing_state st,
-			 const std::string &rawData,
-			 t_parsing_state ctx,
-			 ParserAPI *config,
-			 const std::string &error);
-		Data(Parser * const parser, const std::string &error_msg);
-		// this should probably take a std::string, not uint16_t
-		void SetListenAddress(const std::string &svNameAddr) const;
-		void AddServerName(const std::string &name) const;
-		void SetRoot(const std::string &root) const;
-		void AddIndex(const std::string &index) const;
-		void AddAutoindex(const std::string &autoindex) const;
-		void SetClientMaxSz(uint32_t size) const;
-		void AddLocation(const std::string &name) const;
-		void AddServer(void) const;
-		void SkipEvent(void) const;
-		t_token_type GetEvent(void) const;
-		t_parsing_state GetState(void) const;
-		const std::string &GetRawData(void) const;
-		const std::string &GetErrorMessage(void) const;
-		size_t GetLineNumber(void) const;
-
-	private:
-		const std::string &error_msg_;
-		const size_t line_;
-		const t_token_type event_;
-		const t_parsing_state state_;
-		const std::string &rawData_;
-		const t_parsing_state ctx_;
-		ParserAPI *config_;
-	};
 	// ============= handlers ===================
 	class StHandler {
 	public:
@@ -90,6 +59,39 @@ class Parser: public Analyser {
 	};
 	static const s_trans transitions[18];
 	size_t argNumber_;
+};
+
+class Data : public Analyser {
+ public:
+	Data(size_t line, t_token_type evt, t_parsing_state st,
+		 const std::string &rawData,
+		 t_parsing_state ctx,
+		 ParserAPI *config,
+		 const std::string &error);
+	Data(Parser * const parser, const std::string &error_msg);
+	// this should probably take a std::string, not uint16_t
+	void SetListenAddress(const std::string &svNameAddr) const;
+	void AddServerName(const std::string &name) const;
+	void SetRoot(const std::string &root) const;
+	void AddIndex(const std::string &index) const;
+	void AddAutoindex(const std::string &autoindex) const;
+	void SetClientMaxSz(uint32_t size) const;
+	void AddLocation(const std::string &name) const;
+	void AddServer(void) const;
+	void SkipEvent(void) const;
+	t_token_type GetEvent(void) const;
+	t_parsing_state GetState(void) const;
+	const std::string &GetRawData(void) const;
+	const std::string &GetErrorMessage(void) const;
+	size_t GetLineNumber(void) const;
+
+ private:
+	const std::string &error_msg_;
+	const t_token_type event_;
+	const t_parsing_state state_;
+	const std::string &rawData_;
+	const t_parsing_state ctx_;
+	ParserAPI *config_;
 };
 
 #endif  // SRCS_INCS_PARSER_PARSER_HPP_
