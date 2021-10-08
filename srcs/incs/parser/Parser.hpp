@@ -9,7 +9,6 @@
 #include <queue>
 #include <vector>
 #include <stack>
-// #include <tuple>
 #include <parser/Lexer.hpp>
 #include <parser/ParserAPI.hpp>
 
@@ -21,6 +20,7 @@ class Engine;
 class StatelessSet : public Analyser {
  public:
 	explicit StatelessSet(Engine *parser);
+//  state handlers
 	t_parsing_state SyntaxFailer(const StatefulSet &data);
 	t_parsing_state ServerNameHandler(const StatefulSet &data);
 	t_parsing_state InitHandler(const StatefulSet &data);
@@ -31,6 +31,7 @@ class StatelessSet : public Analyser {
 	t_parsing_state LocationHandler(const StatefulSet &data);
 	t_parsing_state ServerHandler(const StatefulSet &data);
 	t_parsing_state ListenHandler(const StatefulSet &data);
+// setters
  private:
 	Engine *parser_;
 };
@@ -59,26 +60,26 @@ class Engine: public Analyser {
 	void ResetArgNumber(void);
 
  private:
-	static std::vector < Parser::s_trans > TransitionFactory_(void);
+	virtual std::vector < Parser::s_trans > TransitionFactory_(void);
 	StatelessSet handlers_;
 	std::stack<t_parsing_state> ctx_;
 	ParserAPI *config_;
-	const std::list<Token>::const_iterator itb_;
 	const std::list<Token>::const_iterator ite_;
 	std::list<Token>::const_iterator itc_;
-	static const std::vector < struct s_trans > transitions;
+	const std::vector < struct s_trans > transitions_;
 	size_t argNumber_;
 };
 
 class StatefulSet : public Analyser {
  public:
-	StatefulSet(size_t line, t_token_type evt, t_parsing_state st,
-		 const std::string &rawStatefulSet,
-		 t_parsing_state ctx,
-		 ParserAPI *config,
-		 const std::string &error);
+	StatefulSet(size_t line,
+				t_token_type evt,
+				t_parsing_state st,
+				const std::string &rawStatefulSet,
+				t_parsing_state ctx,
+				ParserAPI *config,
+				const std::string &error);
 	StatefulSet(Engine * const parser, const std::string &error_msg);
-	// this should probably take a std::string, not uint16_t
 	void SetListenAddress(const std::string &svNameAddr) const;
 	void AddServerName(const std::string &name) const;
 	void SetRoot(const std::string &root) const;
@@ -90,7 +91,7 @@ class StatefulSet : public Analyser {
 	void SkipEvent(void) const;
 	t_token_type GetEvent(void) const;
 	t_parsing_state GetState(void) const;
-	const std::string &GetRawStatefulSet(void) const;
+	const std::string &GetRawData(void) const;
 	const std::string &GetErrorMessage(void) const;
 	size_t GetLineNumber(void) const;
 

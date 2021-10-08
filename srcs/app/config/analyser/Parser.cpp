@@ -9,9 +9,9 @@
 Parser::Engine::Engine(const std::list<Token> &token, ParserAPI *config) :
 	handlers_(this),
 	config_(config),
-	itb_(token.begin()),
 	ite_(token.end()),
-	itc_(itb_),
+	itc_(token.begin()),
+	transitions_(TransitionFactory_()),
 	argNumber_(0) {
 	line_ = 1;
 	ctx_.push(Token::State::K_INIT);
@@ -95,8 +95,8 @@ std::vector < Parser::s_trans > Parser::Engine::TransitionFactory_(void) {
 	return ret;
 }
 
-const std::vector < Parser::s_trans > Parser::Engine::transitions =
-														TransitionFactory_();
+//  const std::vector < Parser::s_trans > Parser::Engine::transitions =
+//												  TransitionFactory_();
 
 Parser::StatefulSet::StatefulSet(size_t line,
 				   t_token_type evt,
@@ -192,7 +192,7 @@ t_parsing_state Parser::StatelessSet::SemicHandler(const StatefulSet &data) {
 t_parsing_state Parser::StatelessSet::SyntaxFailer(const StatefulSet &data) {
 	std::stringstream str;
 #ifdef DBG
-	str << "Raw data: \""<< data.GetRawStatefulSet() << "\"\n";
+	str << "Raw data: \""<< data.GetRawData() << "\"\n";
 	str << "Event type: \""<<  data.GetEvent() << "\"\n";
 	str << "State type: \""<<  data.GetState() << "\"\n";
 #endif
@@ -211,17 +211,17 @@ t_parsing_state Parser::StatelessSet::ExpKwHandlerKw(const StatefulSet &data) {
 	if (data.GetState() < Token::State::K_SERVER
 	|| data.GetState() > Token::State::K_LIMIT_EXCEPT)
 		throw SyntaxError("Expecting keyword but found '" +
-		data.GetRawStatefulSet() + "'", data.GetLineNumber());
+		data.GetRawData() + "'", data.GetLineNumber());
 	return data.GetState();
 }
 
 t_parsing_state Parser::StatelessSet::AutoindexHandler
 													(const StatefulSet &data) {
-	if (data.GetRawStatefulSet() != "on"
-	&& data.GetRawStatefulSet() != "off")
+	if (data.GetRawData() != "on"
+	&& data.GetRawData() != "off")
 		throw SyntaxError("Expecting 'on'/'off' but found '" +
-		data.GetRawStatefulSet()  + "'", data.GetLineNumber());
-	data.AddAutoindex(data.GetRawStatefulSet());
+		data.GetRawData()  + "'", data.GetLineNumber());
+	data.AddAutoindex(data.GetRawData());
 	return Token::State::K_EXP_SEMIC;
 }
 
@@ -235,21 +235,21 @@ t_parsing_state Parser::StatelessSet::ServerNameHandler
 		parser_->ResetArgNumber();
 		return Token::State::K_EXP_KW;
 	}
-	data.AddServerName(data.GetRawStatefulSet());
+	data.AddServerName(data.GetRawData());
 	parser_->IncrementArgNumber();
 	return Token::State::K_SERVER_NAME;
 }
 
 
 t_parsing_state Parser::StatelessSet::LocationHandler(const StatefulSet &data) {
-	data.AddLocation(data.GetRawStatefulSet());
+	data.AddLocation(data.GetRawData());
 	parser_->PushContext(Token::State::K_LOCATION);
 	parser_->SkipEvent();
 	return parser_->ParserMainLoop();
 }
 
 t_parsing_state Parser::StatelessSet::ListenHandler(const StatefulSet &data) {
-	data.SetListenAddress(data.GetRawStatefulSet());
+	data.SetListenAddress(data.GetRawData());
 	return Token::State::K_EXP_SEMIC;
 }
 
@@ -283,7 +283,7 @@ t_parsing_state Parser::StatefulSet::GetState(void) const {
 	return state_;
 }
 
-const std::string &Parser::StatefulSet::GetRawStatefulSet(void) const {
+const std::string &Parser::StatefulSet::GetRawData(void) const {
 	return rawData_;
 }
 
@@ -320,20 +320,20 @@ t_parsing_state Parser::Engine::ParserMainLoop(void) {
 	for (; itc_ != ite_ ; itc_++) {
 		t_token_type event = itc_->getType();
 		for (size_t i = 0;
-			 i < transitions.size();
+			 i < transitions_.size();
 			 ++i) {
-			if ((state == transitions[i].state)
-				|| (Token::State::K_NONE == transitions[i].state)) {
-				if ((event == transitions[i].evt)
-					|| (Token::Type::T_NONE == transitions[i].evt)) {
+			if ((state == transitions_[i].state)
+				|| (Token::State::K_NONE == transitions_[i].state)) {
+				if ((event == transitions_[i].evt)
+					|| (Token::Type::T_NONE == transitions_[i].evt)) {
 					StatefulSet data(itc_->GetLine(),
 						itc_->getType(),
 						itc_->GetState(),
 						itc_->getRawData(),
 						ctx_.top(),
 						config_,
-						transitions[i].errormess);
-					state = ((handlers_).*(transitions[i].apply))(data);
+						transitions_[i].errormess);
+					state = ((handlers_).*(transitions_[i].apply))(data);
 					if (state == Token::State::K_EXIT)
 						return Token::State::K_EXP_KW;
 					break;
