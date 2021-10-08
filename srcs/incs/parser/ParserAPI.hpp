@@ -53,6 +53,11 @@ class ParserAPI {
 	void AddIndex(const std::string &index, t_parsing_state ctx);
 	void AddAutoindex(bool autoindex, t_parsing_state ctx);
 	void SetClientMaxSz(uint32_t size, t_parsing_state ctx);
+	void AddErrorPage(uint16_t code, const std::string &uri,
+								t_parsing_state ctx_);
+	void AddCgiAssign(const std::string &extension,
+								const std::string &binaryHandlerPath,
+								t_parsing_state ctx_);
 	void AddServer(t_parsing_state ctx);
 	void AddLocation(const std::string &path, t_parsing_state ctx);
 };

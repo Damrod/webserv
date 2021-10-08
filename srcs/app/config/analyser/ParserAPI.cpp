@@ -9,13 +9,13 @@ std::vector<ServerConfig>	&ParserAPI::GetServersSettings(void) {
 }
 
 bool ParserAPI::canAddServer(uint32_t address, uint16_t port) {
-	// std::vector<ServerConfig>::const_iterator it = servers_settings_->begin();
+// std::vector<ServerConfig>::const_iterator it = servers_settings_->begin();
 	// for (; it != servers_settings_->end(); ++it) {
 	//  if (it->listen_address == address && it->listen_port == port) {
 	//		  return false;
 	//	}
-	// } Maybe this function doesnt make sense since we don't handle more than one
-	// server:port combination per server anyway
+	// } Maybe this function doesnt make sense since we don't handle more than
+	// one server:port combination per server anyway
 	(void)address;
 	(void)port;
 	return true;
@@ -96,6 +96,33 @@ void ParserAPI::SetClientMaxSz(uint32_t size, t_parsing_state ctx_) {
 		else
 			throw std::invalid_argument(
 				"Invalid context for client_max_body_size");
+	}
+}
+
+void ParserAPI::AddErrorPage(uint16_t code, const std::string &uri,
+							t_parsing_state ctx_) {
+	if (ctx_ == Token::State::K_SERVER) {
+		servers_settings_->back().common.error_pages[code] = uri;
+	} else {
+		if (ctx_ == Token::State::K_LOCATION)
+			servers_settings_->back().locations.back().common.
+				error_pages[code] = uri;
+		else
+			throw std::invalid_argument("Invalid context for autoindex");
+	}
+}
+
+void ParserAPI::AddCgiAssign(const std::string &extension,
+							 const std::string &binaryHandlerPath,
+							 t_parsing_state ctx_) {
+	if (ctx_ == Token::State::K_SERVER) {
+		servers_settings_->back().common.cgi_assign[extension] = binaryHandlerPath;
+	} else {
+		if (ctx_ == Token::State::K_LOCATION)
+			servers_settings_->back().locations.back().common.
+				cgi_assign[extension] = binaryHandlerPath;
+		else
+			throw std::invalid_argument("Invalid context for autoindex");
 	}
 }
 
