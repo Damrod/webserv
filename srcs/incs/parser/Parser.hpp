@@ -9,35 +9,42 @@
 #include <queue>
 #include <vector>
 #include <stack>
+#include <tuple>
 #include <parser/Lexer.hpp>
 #include <parser/ParserAPI.hpp>
 
 class Data;
+class Parser;
+
+class StHandler : public Analyser {
+ public:
+	explicit StHandler(Parser *parser);
+	t_parsing_state SyntaxFailer(const Data &data);
+	t_parsing_state ServerNameHandler(const Data &data);
+	t_parsing_state InitHandler(const Data &data);
+	t_parsing_state SemicHandler(const Data &data);
+	t_parsing_state ExpKwHandlerClose(const Data &data);
+	t_parsing_state ExpKwHandlerKw(const Data &data);
+	t_parsing_state AutoindexHandler(const Data &data);
+	t_parsing_state LocationHandler(const Data &data);
+	t_parsing_state ServerHandler(const Data &data);
+	t_parsing_state ListenHandler(const Data &data);
+ private:
+	Parser *parser_;
+};
+
+struct s_trans {
+	t_parsing_state state;
+	t_token_type evt;
+	t_parsing_state (StHandler::*apply)(const Data &data);
+	std::string errormess;
+};
+
+typedef t_parsing_state (StHandler::*StateHandler)(const Data &data);
 
 class Parser: public Analyser {
  public:
 	Parser(const std::list<Token> &token, ParserAPI *config);
-
- private:
-	void parse(void);
-	// ============= handlers ===================
-	class StHandler {
-	public:
-		explicit StHandler(Parser *parser);
-		t_parsing_state SyntaxFailer(const Data &data);
-		t_parsing_state ServerNameHandler(const Data &data);
-		t_parsing_state InitHandler(const Data &data);
-		t_parsing_state SemicHandler(const Data &data);
-		t_parsing_state ExpKwHandlerClose(const Data &data);
-		t_parsing_state ExpKwHandlerKw(const Data &data);
-		t_parsing_state AutoindexHandler(const Data &data);
-		t_parsing_state LocationHandler(const Data &data);
-		t_parsing_state ServerHandler(const Data &data);
-		t_parsing_state ListenHandler(const Data &data);
-	private:
-		Parser *parser_;
-	};
-	StHandler handlers_;
 	t_parsing_state ParserMainLoop(void);
 	void PushContext_(const t_parsing_state &ctx);
 	void PopContext_(void);
@@ -46,18 +53,20 @@ class Parser: public Analyser {
 	size_t GetArgNumber(void);
 	void IncrementArgNumber(void);
 	void ResetArgNumber(void);
+
+ private:
+	// ============= handlers ===================
+	StHandler handlers_;
 	std::stack<t_parsing_state> ctx_;
 	ParserAPI *config_;
 	const std::list<Token>::const_iterator itb_;
 	const std::list<Token>::const_iterator ite_;
 	std::list<Token>::const_iterator itc_;
-	struct s_trans {
-		t_parsing_state state;
-		t_token_type evt;
-		t_parsing_state (Parser::StHandler::*apply)(const Data &data);
-		std::string errormess;
-	};
 	static const s_trans transitions[18];
+	static const std::vector < std::tuple <
+		t_parsing_state,
+		t_token_type,
+		StateHandler > > trans;
 	size_t argNumber_;
 };
 

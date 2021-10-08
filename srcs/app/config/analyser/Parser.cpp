@@ -13,9 +13,14 @@ Parser::Parser(const std::list<Token> &token, ParserAPI *config) :
 	ite_(token.end()),
 	itc_(itb_),
 	argNumber_(0) {
+	line_ = 1;
 	ctx_.push(Token::State::K_INIT);
-	parse();
+	ParserMainLoop();
 }
+
+const std::vector < std::tuple <t_parsing_state,
+								t_token_type,
+								StateHandler > > Parser::trans = {};
 
 // Data::Data(Parser * const parser, const std::string &error_msg) :
 // 	error_msg_(error_msg),
@@ -108,17 +113,17 @@ void Data::AddServer(void) const {
 	config_->AddServer(ctx_);
 }
 
-t_parsing_state Parser::StHandler::InitHandler(const Data &data) {
+t_parsing_state StHandler::InitHandler(const Data &data) {
 	(void) data;
 	return Token::State::K_EXP_KW;
 }
 
-t_parsing_state Parser::StHandler::SemicHandler(const Data &data) {
+t_parsing_state StHandler::SemicHandler(const Data &data) {
 	(void) data;
 	return Token::State::K_EXP_KW;
 }
 
-t_parsing_state Parser::StHandler::SyntaxFailer(const Data &data) {
+t_parsing_state StHandler::SyntaxFailer(const Data &data) {
 	std::cerr << "Raw data: \""<< data.GetRawData() << "\"\n";
 	// std::cerr << "Token type: \""<< data.current_.GetTokenTypeStr()
 	//		  << "\"\n";
@@ -128,13 +133,13 @@ t_parsing_state Parser::StHandler::SyntaxFailer(const Data &data) {
 	throw SyntaxError(result, LINE);
 }
 
-t_parsing_state Parser::StHandler::ExpKwHandlerClose(const Data &data) {
+t_parsing_state StHandler::ExpKwHandlerClose(const Data &data) {
 	(void)data;
 	parser_->PopContext_();
 	return Token::State::K_EXIT;
 }
 
-t_parsing_state Parser::StHandler::ExpKwHandlerKw(const Data &data) {
+t_parsing_state StHandler::ExpKwHandlerKw(const Data &data) {
 	if (data.GetState() < Token::State::K_SERVER
 	|| data.GetState() > Token::State::K_LIMIT_EXCEPT)
 		throw SyntaxError("Expecting keyword but found '" +
@@ -142,7 +147,7 @@ t_parsing_state Parser::StHandler::ExpKwHandlerKw(const Data &data) {
 	return data.GetState();
 }
 
-t_parsing_state Parser::StHandler::AutoindexHandler(const Data &data) {
+t_parsing_state StHandler::AutoindexHandler(const Data &data) {
 	if (data.GetRawData() != "on"
 	&& data.GetRawData() != "off")
 		throw SyntaxError("Expecting 'on'/'off' but found '" +
@@ -151,7 +156,7 @@ t_parsing_state Parser::StHandler::AutoindexHandler(const Data &data) {
 	return Token::State::K_EXP_SEMIC;
 }
 
-t_parsing_state Parser::StHandler::ServerNameHandler(const Data &data) {
+t_parsing_state StHandler::ServerNameHandler(const Data &data) {
 	if (parser_->GetArgNumber() == 0
 		&& data.GetEvent() == Token::Type::T_SEMICOLON)
 		throw Analyser::SyntaxError("Invalid number of arguments in "
@@ -166,19 +171,19 @@ t_parsing_state Parser::StHandler::ServerNameHandler(const Data &data) {
 }
 
 
-t_parsing_state Parser::StHandler::LocationHandler(const Data &data) {
+t_parsing_state StHandler::LocationHandler(const Data &data) {
 	data.AddLocation(data.GetRawData());
 	parser_->PushContext_(Token::State::K_LOCATION);
 	parser_->SkipEvent();
 	return parser_->ParserMainLoop();
 }
 
-t_parsing_state Parser::StHandler::ListenHandler(const Data &data) {
+t_parsing_state StHandler::ListenHandler(const Data &data) {
 	data.SetListenAddress(data.GetRawData());
 	return Token::State::K_EXP_SEMIC;
 }
 
-t_parsing_state Parser::StHandler::ServerHandler(const Data &data) {
+t_parsing_state StHandler::ServerHandler(const Data &data) {
 	data.AddServer();
 	parser_->PushContext_(Token::State::K_SERVER);
 	return parser_->ParserMainLoop();
@@ -236,11 +241,11 @@ void Parser::ResetArgNumber(void) {
 	argNumber_ = 0;
 }
 
-Parser::StHandler::StHandler(Parser *parser) :
+StHandler::StHandler(Parser *parser) :
 	parser_(parser)
 {}
 
-const struct Parser::s_trans Parser::transitions[18] = {
+const struct s_trans Parser::transitions[18] = {
 	{ .state = Token::State::K_INIT,
 	  .evt = Token::Type::T_SCOPE_OPEN,
 	  .apply = &StHandler::InitHandler,
@@ -343,8 +348,4 @@ t_parsing_state Parser::ParserMainLoop(void) {
 		}
 	}
 	throw SyntaxError("Unclosed scope", (--itc_)->GetLine());
-}
-
-void Parser::parse(void) {
-	ParserMainLoop();
 }
