@@ -6,7 +6,7 @@
 # define LINE data.GetLineNumber()
 #endif
 
-Parser::Parser(const std::list<Token> &token, ParserAPI *config) :
+Parser::Engine::Engine(const std::list<Token> &token, ParserAPI *config) :
 	handlers_(this),
 	config_(config),
 	itb_(token.begin()),
@@ -18,96 +18,87 @@ Parser::Parser(const std::list<Token> &token, ParserAPI *config) :
 	ParserMainLoop();
 }
 
-static std::vector < struct s_trans > transFactory(void) {
-	std::vector < struct s_trans > ret;
-	ret.push_back((struct s_trans){.state = Token::State::K_INIT,
+std::vector < Parser::s_trans > Parser::Engine::TransitionFactory_(void) {
+	std::vector < Parser::s_trans > ret;
+	ret.push_back((Parser::s_trans){.state = Token::State::K_INIT,
 				   .evt = Token::Type::T_SCOPE_OPEN,
-				   .apply = &StHandler::InitHandler,
+				   .apply = &Parser::StatelessSet::InitHandler,
 				   .errormess = ""});
-	ret.push_back((struct s_trans){.state = Token::State::K_INIT,
+	ret.push_back((Parser::s_trans){.state = Token::State::K_INIT,
 	  .evt = Token::Type::T_NONE,
-	  .apply = &StHandler::SyntaxFailer,
+	  .apply = &Parser::StatelessSet::SyntaxFailer,
 	  .errormess = "Expecting {"});
-	ret.push_back((struct s_trans){.state = Token::State::K_EXP_KW,
+	ret.push_back((Parser::s_trans){.state = Token::State::K_EXP_KW,
 	  .evt = Token::Type::T_SCOPE_CLOSE,
-	  .apply = &StHandler::ExpKwHandlerClose,
+	  .apply = &Parser::StatelessSet::ExpKwHandlerClose,
 	  .errormess = ""});
-	ret.push_back((struct s_trans){.state = Token::State::K_EXP_KW,
+	ret.push_back((Parser::s_trans){.state = Token::State::K_EXP_KW,
 	  .evt = Token::Type::T_WORD,
-	  .apply = &StHandler::ExpKwHandlerKw,
+	  .apply = &Parser::StatelessSet::ExpKwHandlerKw,
 	  .errormess = ""});
-	ret.push_back((struct s_trans){.state = Token::State::K_EXP_KW,
+	ret.push_back((Parser::s_trans){.state = Token::State::K_EXP_KW,
 	  .evt = Token::Type::T_NONE,
-	  .apply = &StHandler::SyntaxFailer,
+	  .apply = &Parser::StatelessSet::SyntaxFailer,
 	  .errormess = "Expecting keyword"});
-	ret.push_back((struct s_trans){.state = Token::State::K_EXP_SEMIC,
+	ret.push_back((Parser::s_trans){.state = Token::State::K_EXP_SEMIC,
 	  .evt = Token::Type::T_SEMICOLON,
-	  .apply = &StHandler::SemicHandler,
+	  .apply = &Parser::StatelessSet::SemicHandler,
 	  .errormess = ""});
-	ret.push_back((struct s_trans){.state = Token::State::K_EXP_SEMIC,
+	ret.push_back((Parser::s_trans){.state = Token::State::K_EXP_SEMIC,
 	  .evt = Token::Type::T_NONE,
-	  .apply = &StHandler::SyntaxFailer,
+	  .apply = &Parser::StatelessSet::SyntaxFailer,
 	  .errormess = "Expecting ;"});
-	ret.push_back((struct s_trans){.state = Token::State::K_AUTOINDEX,
+	ret.push_back((Parser::s_trans){.state = Token::State::K_AUTOINDEX,
 	  .evt = Token::Type::T_WORD,
-	  .apply = &StHandler::AutoindexHandler,
+	  .apply = &Parser::StatelessSet::AutoindexHandler,
 	  .errormess = ""});
-	ret.push_back((struct s_trans){.state = Token::State::K_AUTOINDEX,
+	ret.push_back((Parser::s_trans){.state = Token::State::K_AUTOINDEX,
 	  .evt = Token::Type::T_NONE,
-	  .apply = &StHandler::SyntaxFailer,
+	  .apply = &Parser::StatelessSet::SyntaxFailer,
 	  .errormess = "Expecting 'on' or 'off'"});
-	ret.push_back((struct s_trans){.state = Token::State::K_SERVER_NAME,
+	ret.push_back((Parser::s_trans){.state = Token::State::K_SERVER_NAME,
 	  .evt = Token::Type::T_WORD,
-	  .apply = &StHandler::ServerNameHandler,
+	  .apply = &Parser::StatelessSet::ServerNameHandler,
 	  .errormess = ""});
-	ret.push_back((struct s_trans){.state = Token::State::K_SERVER_NAME,
+	ret.push_back((Parser::s_trans){.state = Token::State::K_SERVER_NAME,
 	  .evt = Token::Type::T_SEMICOLON,
-	  .apply = &StHandler::ServerNameHandler,
+	  .apply = &Parser::StatelessSet::ServerNameHandler,
 	  .errormess = ""});
-	ret.push_back((struct s_trans){.state = Token::State::K_SERVER_NAME,
+	ret.push_back((Parser::s_trans){.state = Token::State::K_SERVER_NAME,
 	  .evt = Token::Type::T_NONE,
-	  .apply = &StHandler::SyntaxFailer,
+	  .apply = &Parser::StatelessSet::SyntaxFailer,
 	  .errormess = "Expecting some server names"});
-	ret.push_back((struct s_trans){.state = Token::State::K_LOCATION,
+	ret.push_back((Parser::s_trans){.state = Token::State::K_LOCATION,
 	  .evt = Token::Type::T_WORD,
-	  .apply = &StHandler::LocationHandler,
+	  .apply = &Parser::StatelessSet::LocationHandler,
 	  .errormess = ""});
-	ret.push_back((struct s_trans){.state = Token::State::K_LOCATION,
+	ret.push_back((Parser::s_trans){.state = Token::State::K_LOCATION,
 	  .evt = Token::Type::T_NONE,
-	  .apply = &StHandler::SyntaxFailer,
+	  .apply = &Parser::StatelessSet::SyntaxFailer,
 	  .errormess = "Expecting path after location directive"});
-	ret.push_back((struct s_trans){.state = Token::State::K_SERVER,
+	ret.push_back((Parser::s_trans){.state = Token::State::K_SERVER,
 	  .evt = Token::Type::T_SCOPE_OPEN,
-	  .apply = &StHandler::ServerHandler,
+	  .apply = &Parser::StatelessSet::ServerHandler,
 	  .errormess = ""});
-	ret.push_back((struct s_trans){.state = Token::State::K_SERVER,
+	ret.push_back((Parser::s_trans){.state = Token::State::K_SERVER,
 	  .evt = Token::Type::T_NONE,
-	  .apply = &StHandler::SyntaxFailer,
+	  .apply = &Parser::StatelessSet::SyntaxFailer,
 	  .errormess = "Expecting { after server directive"});
-	ret.push_back((struct s_trans){.state = Token::State::K_LISTEN,
+	ret.push_back((Parser::s_trans){.state = Token::State::K_LISTEN,
 	  .evt = Token::Type::T_WORD,
-	  .apply = &StHandler::ListenHandler,
+	  .apply = &Parser::StatelessSet::ListenHandler,
 	  .errormess = ""});
-	ret.push_back((struct s_trans){.state = Token::State::K_LISTEN,
+	ret.push_back((Parser::s_trans){.state = Token::State::K_LISTEN,
 	  .evt = Token::Type::T_NONE,
-	  .apply = &StHandler::SyntaxFailer,
+	  .apply = &Parser::StatelessSet::SyntaxFailer,
 	  .errormess = "Expecting IP in listen directive"});
 	return ret;
 }
 
-const std::vector < struct s_trans > Parser::transitions = transFactory();
+const std::vector < Parser::s_trans > Parser::Engine::transitions =
+														TransitionFactory_();
 
-// Data::Data(Parser * const parser, const std::string &error_msg) :
-// 	error_msg_(error_msg),
-// 	line_(parser->itc_->GetLine()),
-// 	event_(parser->itc_->getType()),
-// 	state_(parser->itc_->GetState()),
-// 	rawData_(parser->itc_->getRawData()),
-// 	ctx_(parser->TopContext_()),
-// 	config_(parser->config_) {
-// }
-
-Data::Data(size_t line,
+Parser::StatefulSet::StatefulSet(size_t line,
 				   t_token_type evt,
 				   t_parsing_state st,
 				   const std::string &rawData,
@@ -126,7 +117,7 @@ Data::Data(size_t line,
 // probably the context sensitiveness for the setters should be implemented
 // in here Parser.hpp/cpp, not in Config.hpp/cpp
 
-void Data::SetListenAddress(const std::string &svnaddr) const {
+void Parser::StatefulSet::SetListenAddress(const std::string &svnaddr) const {
 	const char * addressStr = svnaddr.c_str();
 	std::string addTmp;  // we need this objects lifetime to last for the entire
 						 // function
@@ -159,79 +150,83 @@ void Data::SetListenAddress(const std::string &svnaddr) const {
 							ctx_);
 }
 
-void Data::AddLocation(const std::string &path) const {
+void Parser::StatefulSet::AddLocation(const std::string &path) const {
 	// path should be in location ctor
 	config_->AddLocation(path, ctx_);
 }
 
-void Data::AddServerName(const std::string &name) const {
+void Parser::StatefulSet::AddServerName(const std::string &name) const {
 	config_->AddServerName(name, ctx_);
 }
 
-void Data::SetRoot(const std::string &root) const {
+void Parser::StatefulSet::SetRoot(const std::string &root) const {
 	config_->SetRoot(root, ctx_);
 }
 
-void Data::AddIndex(const std::string &index) const {
+void Parser::StatefulSet::AddIndex(const std::string &index) const {
 	config_->AddIndex(index, ctx_);
 }
 
-void Data::AddAutoindex(const std::string &autoindex) const {
+void Parser::StatefulSet::AddAutoindex(const std::string &autoindex) const {
 	config_->AddAutoindex(autoindex == "on", ctx_);
 }
 
-void Data::SetClientMaxSz(uint32_t size) const {
+void Parser::StatefulSet::SetClientMaxSz(uint32_t size) const {
 	config_->SetClientMaxSz(size, ctx_);
 }
 
-void Data::AddServer(void) const {
+void Parser::StatefulSet::AddServer(void) const {
 	config_->AddServer(ctx_);
 }
 
-t_parsing_state StHandler::InitHandler(const Data &data) {
+t_parsing_state Parser::StatelessSet::InitHandler(const StatefulSet &data) {
 	(void) data;
 	return Token::State::K_EXP_KW;
 }
 
-t_parsing_state StHandler::SemicHandler(const Data &data) {
+t_parsing_state Parser::StatelessSet::SemicHandler(const StatefulSet &data) {
 	(void) data;
 	return Token::State::K_EXP_KW;
 }
 
-t_parsing_state StHandler::SyntaxFailer(const Data &data) {
-	std::cerr << "Raw data: \""<< data.GetRawData() << "\"\n";
-	// std::cerr << "Token type: \""<< data.current_.GetTokenTypeStr()
-	//		  << "\"\n";
-	std::cerr << "Event type: \""<<  data.GetEvent() << "\"\n";
-	std::cerr << "State type: \""<<  data.GetState() << "\"\n";
-	std::string result = "Syntax error: " + data.GetErrorMessage();
-	throw SyntaxError(result, LINE);
+t_parsing_state Parser::StatelessSet::SyntaxFailer(const StatefulSet &data) {
+	std::stringstream str;
+#ifdef DBG
+	str << "Raw data: \""<< data.GetRawStatefulSet() << "\"\n";
+	str << "Event type: \""<<  data.GetEvent() << "\"\n";
+	str << "State type: \""<<  data.GetState() << "\"\n";
+#endif
+	str << data.GetErrorMessage();
+	throw SyntaxError(str.str(), LINE);
 }
 
-t_parsing_state StHandler::ExpKwHandlerClose(const Data &data) {
+t_parsing_state Parser::StatelessSet::ExpKwHandlerClose
+													(const StatefulSet &data) {
 	(void)data;
-	parser_->PopContext_();
+	parser_->PopContext();
 	return Token::State::K_EXIT;
 }
 
-t_parsing_state StHandler::ExpKwHandlerKw(const Data &data) {
+t_parsing_state Parser::StatelessSet::ExpKwHandlerKw(const StatefulSet &data) {
 	if (data.GetState() < Token::State::K_SERVER
 	|| data.GetState() > Token::State::K_LIMIT_EXCEPT)
 		throw SyntaxError("Expecting keyword but found '" +
-		data.GetRawData() + "'", data.GetLineNumber());
+		data.GetRawStatefulSet() + "'", data.GetLineNumber());
 	return data.GetState();
 }
 
-t_parsing_state StHandler::AutoindexHandler(const Data &data) {
-	if (data.GetRawData() != "on"
-	&& data.GetRawData() != "off")
+t_parsing_state Parser::StatelessSet::AutoindexHandler
+													(const StatefulSet &data) {
+	if (data.GetRawStatefulSet() != "on"
+	&& data.GetRawStatefulSet() != "off")
 		throw SyntaxError("Expecting 'on'/'off' but found '" +
-		data.GetRawData()  + "'", data.GetLineNumber());
-	data.AddAutoindex(data.GetRawData());
+		data.GetRawStatefulSet()  + "'", data.GetLineNumber());
+	data.AddAutoindex(data.GetRawStatefulSet());
 	return Token::State::K_EXP_SEMIC;
 }
 
-t_parsing_state StHandler::ServerNameHandler(const Data &data) {
+t_parsing_state Parser::StatelessSet::ServerNameHandler
+													(const StatefulSet &data) {
 	if (parser_->GetArgNumber() == 0
 		&& data.GetEvent() == Token::Type::T_SEMICOLON)
 		throw Analyser::SyntaxError("Invalid number of arguments in "
@@ -240,39 +235,39 @@ t_parsing_state StHandler::ServerNameHandler(const Data &data) {
 		parser_->ResetArgNumber();
 		return Token::State::K_EXP_KW;
 	}
-	data.AddServerName(data.GetRawData());
+	data.AddServerName(data.GetRawStatefulSet());
 	parser_->IncrementArgNumber();
 	return Token::State::K_SERVER_NAME;
 }
 
 
-t_parsing_state StHandler::LocationHandler(const Data &data) {
-	data.AddLocation(data.GetRawData());
-	parser_->PushContext_(Token::State::K_LOCATION);
+t_parsing_state Parser::StatelessSet::LocationHandler(const StatefulSet &data) {
+	data.AddLocation(data.GetRawStatefulSet());
+	parser_->PushContext(Token::State::K_LOCATION);
 	parser_->SkipEvent();
 	return parser_->ParserMainLoop();
 }
 
-t_parsing_state StHandler::ListenHandler(const Data &data) {
-	data.SetListenAddress(data.GetRawData());
+t_parsing_state Parser::StatelessSet::ListenHandler(const StatefulSet &data) {
+	data.SetListenAddress(data.GetRawStatefulSet());
 	return Token::State::K_EXP_SEMIC;
 }
 
-t_parsing_state StHandler::ServerHandler(const Data &data) {
+t_parsing_state Parser::StatelessSet::ServerHandler(const StatefulSet &data) {
 	data.AddServer();
-	parser_->PushContext_(Token::State::K_SERVER);
+	parser_->PushContext(Token::State::K_SERVER);
 	return parser_->ParserMainLoop();
 }
 
-void Parser::PushContext_(const t_parsing_state &ctx) {
+void Parser::Engine::PushContext(const t_parsing_state &ctx) {
 	ctx_.push(ctx);
 }
 
-void Parser::PopContext_(void) {
+void Parser::Engine::PopContext(void) {
 	ctx_.pop();
 }
 
-t_token_type Parser::SkipEvent(void) {
+t_token_type Parser::Engine::SkipEvent(void) {
 	++itc_;
 	if (itc_ != ite_)
 		return itc_->getType();
@@ -280,47 +275,47 @@ t_token_type Parser::SkipEvent(void) {
 	, (--itc_)->GetLine());
 }
 
-t_token_type Data::GetEvent(void) const {
+t_token_type Parser::StatefulSet::GetEvent(void) const {
 	return event_;
 }
 
-t_parsing_state Data::GetState(void) const {
+t_parsing_state Parser::StatefulSet::GetState(void) const {
 	return state_;
 }
 
-const std::string &Data::GetRawData(void) const {
+const std::string &Parser::StatefulSet::GetRawStatefulSet(void) const {
 	return rawData_;
 }
 
-const std::string &Data::GetErrorMessage(void) const {
+const std::string &Parser::StatefulSet::GetErrorMessage(void) const {
 	return error_msg_;
 }
 
-size_t Data::GetLineNumber(void) const {
+size_t Parser::StatefulSet::GetLineNumber(void) const {
 	return line_;
 }
 
-t_parsing_state Parser::TopContext_(void) const {
+t_parsing_state Parser::Engine::TopContext(void) const {
 	return ctx_.top();
 }
 
-size_t Parser::GetArgNumber(void) {
+size_t Parser::Engine::GetArgNumber(void) {
 	return argNumber_;
 }
 
-void Parser::IncrementArgNumber(void) {
+void Parser::Engine::IncrementArgNumber(void) {
 	argNumber_++;
 }
 
-void Parser::ResetArgNumber(void) {
+void Parser::Engine::ResetArgNumber(void) {
 	argNumber_ = 0;
 }
 
-StHandler::StHandler(Parser *parser) :
+Parser::StatelessSet::StatelessSet(Engine *parser) :
 	parser_(parser)
 {}
 
-t_parsing_state Parser::ParserMainLoop(void) {
+t_parsing_state Parser::Engine::ParserMainLoop(void) {
 	t_parsing_state state = Token::State::K_INIT;
 	for (; itc_ != ite_ ; itc_++) {
 		t_token_type event = itc_->getType();
@@ -331,7 +326,7 @@ t_parsing_state Parser::ParserMainLoop(void) {
 				|| (Token::State::K_NONE == transitions[i].state)) {
 				if ((event == transitions[i].evt)
 					|| (Token::Type::T_NONE == transitions[i].evt)) {
-					Data data(itc_->GetLine(),
+					StatefulSet data(itc_->GetLine(),
 						itc_->getType(),
 						itc_->GetState(),
 						itc_->getRawData(),
