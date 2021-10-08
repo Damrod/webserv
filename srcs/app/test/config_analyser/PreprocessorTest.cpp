@@ -42,6 +42,7 @@ TEST_CASE("Testing the preprocessor, AKA comment remover", "[parser]") {
 								"\n"
 								"\n"
 								"\n"
+								"\n"
 								"\n");
 	std::ostringstream result;
 	try {

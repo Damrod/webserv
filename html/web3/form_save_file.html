@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Saving a file using a CGI program and POST method</h1>
+
+<form enctype="multipart/form-data" action="cgi-bin/save_file.py" method="post">
+  <label for="filename">Filename:</label>
+  <input type="file" id="filename" name="filename"><br><br>
+  <input type="submit" value="Upload">
+</form>
+
+<p>Click the "Upload" button and the form-data will be sent to a page on the 
+server called "cgi-bin/save_file.py".</p>
+
+</body>
+</html>

@@ -3,7 +3,7 @@
 #ifdef DBG
 # define LINE __LINE__
 #else
-# define LINE data.current_.GetLine()
+# define LINE data.GetLineNumber()
 #endif
 
 Parser::Parser(const std::list<Token> &token, ParserAPI *config) :
@@ -11,56 +11,91 @@ Parser::Parser(const std::list<Token> &token, ParserAPI *config) :
 	config_(config),
 	itb_(tokens_.begin()),
 	ite_(tokens_.end()),
-	itc_(itb_) {
+	itc_(itb_),
+	argNumber_(0) {
 	ctx_.push(Token::State::K_INIT);
+	parse();
 }
 
-Parser::Data::Data(Parser * const parser, const std::string &error_msg)
-	:  current_(*parser->itc_),
-	  error_msg_(error_msg),
-	  parser_(parser),
-	   ctx_(&parser->ctx_),
-	   config_(parser->config_) {
+Parser::Data::Data(Parser * const parser, const std::string &error_msg) :
+	error_msg_(error_msg),
+	line_(parser->itc_->GetLine()),
+	event_(parser->itc_->getType()),
+	state_(parser->itc_->GetState()),
+	rawData_(parser->itc_->getRawData()),
+	parser_(parser),
+	ctx_(parser->TopContext_()),
+	config_(parser->config_) {
 }
 
 // probably the context sensitiveness for the setters should be implemented
 // in here Parser.hpp/cpp, not in Config.hpp/cpp
 
-void Parser::Data::SetListenPort(uint16_t port) const {
-	config_->SetListenPort(port, ctx_->top());
-}
-
-void Parser::Data::SetListenAddress(uint32_t address) const {
-	config_->SetListenAddress(address, ctx_->top());
+void Parser::Data::SetListenAddress(const std::string &svnaddr) const {
+	const char * addressStr = svnaddr.c_str();
+	int64_t port;
+	char *endptr = NULL;
+	if (std::count(svnaddr.begin(), svnaddr.end(), '.') != 3) {
+		port = std::strtol(addressStr, &endptr, 10);
+		if (*endptr || errno || port < 1 || port > UINT16_MAX) {
+			throw std::invalid_argument("listen directive port invalid");
+		} else {
+			config_->SetListenAddress(0, static_cast<uint16_t>(port), ctx_);
+		}
+		return;
+	}
+	const char *portStr = NULL;
+	std::string addTmp;
+	std::string pTmp;
+	if (std::count(svnaddr.begin(), svnaddr.end(), ':') == 1) {
+		std::string tmp = addressStr;
+		addTmp = tmp.substr(0, tmp.find(':'));
+		pTmp = tmp.substr(tmp.find(':') + 1, tmp.length());
+		addressStr = addTmp.c_str();
+		portStr = pTmp.c_str();
+	}
+	const in_addr_t address = inet_addr(addressStr);
+	if (address == static_cast<in_addr_t>(-1)) {
+		throw std::invalid_argument("listen directive IP invalid");
+	}
+	if (portStr) {
+		port = std::strtol(portStr, &endptr, 10);
+	} else {
+		port = 8080;
+	}
+	if ((endptr && *endptr) || errno || port < 1 || port > UINT16_MAX) {
+		throw std::invalid_argument("listen directive port invalid");
+	}
+	config_->SetListenAddress(ntohl(address), static_cast<uint16_t>(port), ctx_);
 }
 
 void Parser::Data::AddLocation(const std::string &path) const {
 	// path should be in location ctor
-	config_->AddLocation(path, ctx_->top());
+	config_->AddLocation(path, ctx_);
 }
 
 void Parser::Data::AddServerName(const std::string &name) const {
-	config_->AddServerName(name, ctx_->top());
+	config_->AddServerName(name, ctx_);
 }
 
 void Parser::Data::SetRoot(const std::string &root) const {
-	config_->SetRoot(root, ctx_->top());
+	config_->SetRoot(root, ctx_);
 }
 
 void Parser::Data::AddIndex(const std::string &index) const {
-	config_->AddIndex(index, ctx_->top());
+	config_->AddIndex(index, ctx_);
 }
 
 void Parser::Data::AddAutoindex(const std::string &autoindex) const {
-	config_->AddAutoindex(autoindex == "on", ctx_->top());
+	config_->AddAutoindex(autoindex == "on", ctx_);
 }
 
 void Parser::Data::SetClientMaxSz(uint32_t size) const {
-	config_->SetClientMaxSz(size, ctx_->top());
+	config_->SetClientMaxSz(size, ctx_);
 }
 
 void Parser::Data::AddServer(void) const {
-	config_->AddServer(ctx_->top());
+	config_->AddServer(ctx_);
 }
 
 t_parsing_state Parser::StHandler::InitHandler(const Data &data) {
@@ -74,139 +109,239 @@ t_parsing_state Parser::StHandler::SemicHandler(const Data &data) {
 }
 
 t_parsing_state Parser::StHandler::SyntaxFailer(const Data &data) {
-	std::cerr << "Raw data: \""<< data.current_.getRawData() << "\"\n";
-	std::cerr << "Token type: \""<< data.current_.GetTokenTypeStr()
-			  << "\"\n";
-	std::cerr << "Event type: \""<<  data.current_.GetEvent() << "\"\n";
-	std::cerr << "State type: \""<<  data.current_.GetState() << "\"\n";
-	std::string result = "Syntax error: " + data.error_msg_;
+	std::cerr << "Raw data: \""<< data.GetRawData() << "\"\n";
+	// std::cerr << "Token type: \""<< data.current_.GetTokenTypeStr()
+	//		  << "\"\n";
+	std::cerr << "Event type: \""<<  data.GetEvent() << "\"\n";
+	std::cerr << "State type: \""<<  data.GetState() << "\"\n";
+	std::string result = "Syntax error: " + data.GetErrorMessage();
 	throw SyntaxError(result, LINE);
 }
 
 t_parsing_state Parser::StHandler::ExpKwHandlerClose(const Data &data) {
 	(void)data;
-	data.ctx_->pop();
+	data.PopContext();
 	return Token::State::K_EXIT;
 }
 
 t_parsing_state Parser::StHandler::ExpKwHandlerKw(const Data &data) {
-	return data.current_.GetState();
+	if (data.GetState() < Token::State::K_SERVER
+	|| data.GetState() > Token::State::K_LIMIT_EXCEPT)
+		throw SyntaxError("Expecting keyword but found '" +
+		data.GetRawData() + "'", data.GetLineNumber());
+	return data.GetState();
 }
 
 t_parsing_state Parser::StHandler::AutoindexHandler(const Data &data) {
-	data.AddAutoindex(data.current_.getRawData());
+	if (data.GetRawData() != "on"
+	&& data.GetRawData() != "off")
+		throw SyntaxError("Expecting 'on'/'off' but found '" +
+		data.GetRawData()  + "'", data.GetLineNumber());
+	data.AddAutoindex(data.GetRawData());
 	return Token::State::K_EXP_SEMIC;
 }
 
 t_parsing_state Parser::StHandler::ServerNameHandler(const Data &data) {
-	static size_t args = 0;
-	t_Ev event = ParsingEvents::GetEvent(data.current_);
-
-	if (args == 0 && event == ParsingEvents::SEMIC)
-		throw Analyser::SyntaxError("invalid number of arguments in "
-									"\"server_name\" directive:", LINE);
-	if (event == ParsingEvents::SEMIC) {
-		args = 0;
+	if (data.GetArgNumber() == 0 && data.GetEvent() == Token::Type::T_SEMICOLON)
+		throw Analyser::SyntaxError("Invalid number of arguments in "
+									"'server_name' directive", LINE);
+	if (data.GetEvent() == Token::Type::T_SEMICOLON) {
+		data.ResetArgNumber();
 		return Token::State::K_EXP_KW;
 	}
-	if (event != ParsingEvents::URL)
-		throw Analyser::SyntaxError("Invalid type of argument in line", LINE);
-	else
-		data.AddServerName(data.current_.getRawData());
-	args++;
+	data.AddServerName(data.GetRawData());
+	data.IncrementArgNumber();
 	return Token::State::K_SERVER_NAME;
 }
 
 
 t_parsing_state Parser::StHandler::LocationHandler(const Data &data) {
-	data.AddLocation(data.current_.getRawData());
-	data.ctx_->push(Token::State::K_LOCATION);
-	//  this should be in the Location ctor
-	//  we should have getters/setters for all needed access to data
-	data.parser_->itc_++;
-	return ParserMainLoop(data.parser_);
+	data.AddLocation(data.GetRawData());
+	data.PushContext(Token::State::K_LOCATION);
+	data.NextEvent();
+	return data.ParserLoopBack();
+}
+
+t_parsing_state Parser::StHandler::ListenHandler(const Data &data) {
+	data.SetListenAddress(data.GetRawData());
+	return Token::State::K_EXP_SEMIC;
 }
 
 t_parsing_state Parser::StHandler::ServerHandler(const Data &data) {
 	data.AddServer();
-	data.ctx_->push(Token::State::K_SERVER);
-	//  we should have getters/setters for all needed access to data
-	return ParserMainLoop(data.parser_);
+	data.PushContext(Token::State::K_SERVER);
+	return data.ParserLoopBack();
 }
 
-const struct Parser::s_trans Parser::transitions[14] = {
+void Parser::PushContext_(const t_parsing_state &ctx) {
+	ctx_.push(ctx);
+}
+
+void Parser::Data::PopContext(void) const {
+	parser_->PopContext_();
+}
+
+void Parser::Data::PushContext(const t_parsing_state &ctx) const {
+	parser_->PushContext_(ctx);
+}
+
+void Parser::PopContext_(void) {
+	ctx_.pop();
+}
+
+void Parser::Data::NextEvent(void) const {
+	parser_->NextEvent();
+}
+
+
+t_token_type Parser::NextEvent(void) {
+	++itc_;
+	if (itc_ != ite_)
+		return itc_->getType();
+	throw SyntaxError("Attempting to read the token past the end of the file"
+	, (--itc_)->GetLine());
+}
+
+t_parsing_state Parser::Data::ParserLoopBack(void) const {
+	return (*parser_).ParserMainLoop();
+}
+
+t_token_type Parser::Data::GetEvent(void) const {
+	return event_;
+}
+
+t_parsing_state Parser::Data::GetState(void) const {
+	return state_;
+}
+
+const std::string &Parser::Data::GetRawData(void) const {
+	return rawData_;
+}
+
+const std::string &Parser::Data::GetErrorMessage(void) const {
+	return error_msg_;
+}
+
+size_t Parser::Data::GetLineNumber(void) const {
+	return line_;
+}
+
+t_parsing_state Parser::TopContext_(void) const {
+	return ctx_.top();
+}
+
+void Parser::Data::IncrementArgNumber(void) const {
+	parser_->IncrementArgNumber();
+}
+
+void Parser::Data::ResetArgNumber(void) const {
+	parser_->ResetArgNumber();
+}
+
+size_t Parser::Data::GetArgNumber(void) const {
+	return parser_->GetArgNumber();
+}
+
+size_t Parser::GetArgNumber(void) {
+	return argNumber_;
+}
+
+void Parser::IncrementArgNumber(void) {
+	argNumber_++;
+}
+
+void Parser::ResetArgNumber(void) {
+	argNumber_ = 0;
+}
+const struct Parser::s_trans Parser::transitions[18] = {
 	{ .state = Token::State::K_INIT,
-	  .evt = ParsingEvents::OPEN,
-	  .apply = StHandler::InitHandler,
+	  .evt = Token::Type::T_SCOPE_OPEN,
+	  .apply = &StHandler::InitHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_INIT,
-	  .evt = ParsingEvents::EV_NONE,
-	  .apply = StHandler::SyntaxFailer,
-	  .errormess = "expected { in line"},
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "Expecting {"},
 	{ .state = Token::State::K_EXP_KW,
-	  .evt = ParsingEvents::CLOSE,
-	  .apply = StHandler::ExpKwHandlerClose,
+	  .evt = Token::Type::T_SCOPE_CLOSE,
+	  .apply = &StHandler::ExpKwHandlerClose,
 	  .errormess = ""},
 	{ .state = Token::State::K_EXP_KW,
-	  .evt = ParsingEvents::EV_NONE,
-	  .apply = StHandler::ExpKwHandlerKw,
+	  .evt = Token::Type::T_WORD,
+	  .apply = &StHandler::ExpKwHandlerKw,
 	  .errormess = ""},
 	{ .state = Token::State::K_EXP_KW,
-	  .evt = ParsingEvents::EV_NONE,  // repe
-	  .apply = StHandler::SyntaxFailer,
-	  .errormess = "expected keyword in line "},
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "Expecting keyword"},
 	{ .state = Token::State::K_EXP_SEMIC,
-	  .evt = ParsingEvents::SEMIC,
-	  .apply = StHandler::SemicHandler,
+	  .evt = Token::Type::T_SEMICOLON,
+	  .apply = &StHandler::SemicHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_EXP_SEMIC,
-	  .evt = ParsingEvents::EV_NONE,
-	  .apply = StHandler::SyntaxFailer,
-	  .errormess = "expected ; in line "},
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "Expecting ;"},
 	{ .state = Token::State::K_AUTOINDEX,
-	  .evt = ParsingEvents::ON_OFF,
-	  .apply = StHandler::AutoindexHandler,
+	  .evt = Token::Type::T_WORD,
+	  .apply = &StHandler::AutoindexHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_AUTOINDEX,
-	  .evt = ParsingEvents::EV_NONE,
-	  .apply = StHandler::SyntaxFailer,
-	  .errormess = "expected 'on' or 'off' in line "},
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "Expecting 'on' or 'off'"},
 	{ .state = Token::State::K_SERVER_NAME,
-	  .evt = ParsingEvents::EV_NONE,
-	  .apply = StHandler::ServerNameHandler,
+	  .evt = Token::Type::T_WORD,
+	  .apply = &StHandler::ServerNameHandler,
+	  .errormess = ""},
+	{ .state = Token::State::K_SERVER_NAME,
+	  .evt = Token::Type::T_SEMICOLON,
+	  .apply = &StHandler::ServerNameHandler,
+	  .errormess = ""},
+	{ .state = Token::State::K_SERVER_NAME,
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "Expecting some server names"},
+	{ .state = Token::State::K_LOCATION,
+	  .evt = Token::Type::T_WORD,
+	  .apply = &StHandler::LocationHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_LOCATION,
-	  .evt = ParsingEvents::URI,
-	  .apply = StHandler::LocationHandler,
-	  .errormess = ""},
-	{ .state = Token::State::K_LOCATION,
-	  .evt = ParsingEvents::EV_NONE,
-	  .apply = StHandler::SyntaxFailer,
-	  .errormess = "Expecting path after location directive"},
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "Expecting some location"},
 	{ .state = Token::State::K_SERVER,
-	  .evt = ParsingEvents::OPEN,
-	  .apply = StHandler::ServerHandler,
+	  .evt = Token::Type::T_SCOPE_OPEN,
+	  .apply = &StHandler::ServerHandler,
 	  .errormess = ""},
 	{ .state = Token::State::K_SERVER,
-	  .evt = ParsingEvents::EV_NONE,
-	  .apply = StHandler::SyntaxFailer,
-	  .errormess = "Expecting { after server directive"}
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "Expecting { after server directive"},
+	{ .state = Token::State::K_LISTEN,
+	  .evt = Token::Type::T_WORD,
+	  .apply = &StHandler::ListenHandler,
+	  .errormess = ""},
+	{ .state = Token::State::K_LISTEN,
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "Expecting IP in listen directive"},
 };
 
-t_parsing_state Parser::ParserMainLoop(Parser *parser) {
+t_parsing_state Parser::ParserMainLoop(void) {
 	t_parsing_state state;
 	for (state = Token::State::K_INIT;
-			 parser->itc_ != parser->ite_ ; parser->itc_++) {
-		t_Ev event = ParsingEvents::GetEvent(*parser->itc_);
+			itc_ != ite_ ; itc_++) {
+		t_token_type event = itc_->getType();
 		for (size_t i = 0;
 			 i < sizeof(transitions) / sizeof(transitions[0]);
 			 ++i) {
 			if ((state == transitions[i].state)
 				|| (Token::State::K_NONE == transitions[i].state)) {
 				if ((event == transitions[i].evt)
-					|| (ParsingEvents::EV_NONE == transitions[i].evt)) {
-					Data data(parser, transitions[i].errormess);
-					state = transitions[i].apply(data);
+					|| (Token::Type::T_NONE == transitions[i].evt)) {
+					Data data(this, transitions[i].errormess);
+					state = ((handlers_).*(transitions[i].apply))(data);
 					if (state == Token::State::K_EXIT)
 						return Token::State::K_EXP_KW;
 					break;
@@ -214,9 +349,9 @@ t_parsing_state Parser::ParserMainLoop(Parser *parser) {
 			}
 		}
 	}
-	throw SyntaxError("Unclosed scope in line", (--parser->itc_)->GetLine());
+	throw SyntaxError("Unclosed scope", (--itc_)->GetLine());
 }
 
 void Parser::parse(void) {
-	ParserMainLoop(this);
+	ParserMainLoop();
 }

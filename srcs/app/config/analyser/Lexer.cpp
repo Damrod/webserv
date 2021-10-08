@@ -2,47 +2,41 @@
 
 Lexer::~Lexer(void) {}
 
-static void addStringLit(std::list<Token> *tokens, std::string *filebuff,
-				  size_t *tokenend, size_t *line) {
+void Lexer::addStringLit(std::string *filebuff, size_t *tokenend) {
 	std::string token;
 	char cmp;
-	t_token_type type;
 
 	cmp = (*filebuff)[0];
-	type = (cmp == '\'' ?	Token::Type::T_STR_IMMEDIATE_T1:
-							Token::Type::T_STR_IMMEDIATE_T0);
 	*filebuff = filebuff->substr(1);
 	*tokenend = filebuff->find(cmp, 0);
 	if (*tokenend == filebuff->npos)
-		throw Analyser::SyntaxError("Unterminated quote in line", *line);
+		throw Analyser::SyntaxError("Unterminated quote", line_);
 	token = filebuff->substr(0, *tokenend);
-	tokens->push_back(Token(token, type, *line));
-	*line += std::count(token.begin(), token.end(), '\n');
+	tokens_.push_back(Token(token, Token::Type::T_WORD, line_));
+	line_ += std::count(token.begin(), token.end(), '\n');
 	(*tokenend)++;
 }
 
-static void addPunct(std::list<Token> *tokens, char type,
-					 size_t *tokenend, size_t line) {
+void Lexer::addPunct(char type, size_t *tokenend) {
 	char			tmp[2];
 	t_token_type	ttype;
 
 	if (type == ';')
-		ttype = Token::Type::T_END;
+		ttype = Token::Type::T_SEMICOLON;
 	else if (type == '{')
 		ttype = Token::Type::T_SCOPE_OPEN;
 	else if (type == '}')
 		ttype = Token::Type::T_SCOPE_CLOSE;
 	else
-		throw Analyser::SyntaxError("Unexpected token near line", line);
+		throw Analyser::SyntaxError("Unexpected token", line_);
 	tmp[0] = type;
 	tmp[1] = '\0';
-	tokens->push_back(Token(tmp, ttype, line));
+	tokens_.push_back(Token(tmp, ttype, line_));
 	*tokenend = 1;
 }
 
 void Lexer::lex(const std::string &fileBuff) {
 	std::string filebuff = "{" + fileBuff + "}";  // add global scope
-	size_t line = 1;
 	size_t tokenend = 0;
 	std::string token;
 
@@ -51,21 +45,21 @@ void Lexer::lex(const std::string &fileBuff) {
 		for (; filebuff[0] && kWhitespace_.find(filebuff[0], 0) != kWhitespace_.npos
 			 ; filebuff = filebuff.substr(1)) {
 			if (filebuff[0] == '\n')
-				line++;
+				line_++;
 		}
 		if (filebuff[0] == '"' || filebuff[0] == '\'') {
-			addStringLit(&tokens_, &filebuff, &tokenend, &line);
+			addStringLit(&filebuff, &tokenend);
 			continue;
 		}
 		if (kValidtokens_.find(filebuff[0], 0) != kValidtokens_.npos) {
-			addPunct(&tokens_, filebuff[0], &tokenend, line);
+			addPunct(filebuff[0], &tokenend);
 			continue;
 		}
 		tokenend = filebuff.find_first_of(kValidtokens_ + kWhitespace_, 0);
 		if (tokenend == filebuff.npos)
 			tokenend = filebuff.size();
 		if ((token = filebuff.substr(0, tokenend)) != "")
-			tokens_.push_back(Token(token, Token::Type::T_SYMBOL, line));
+			tokens_.push_back(Token(token, Token::Type::T_WORD, line_));
 	}
 }
 
@@ -75,7 +69,8 @@ std::list<Token> Lexer::GetTokens(void) const {
 
 Lexer::Lexer(const std::string &filebuff)
 	: kValidtokens_("{};"),
-	  kWhitespace_(" \t\f\n\r\t\v\n"),
+	  kWhitespace_(" \f\n\r\t\v"),
 	  tokens_() {
+	line_ = 1;
 	lex(filebuff);
 }

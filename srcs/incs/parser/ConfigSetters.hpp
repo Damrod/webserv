@@ -1,6 +1,7 @@
 #ifndef SRCS_INCS_PARSER_CONFIGSETTERS_HPP_
 #define SRCS_INCS_PARSER_CONFIGSETTERS_HPP_
 
+#include <arpa/inet.h>
 #include <sstream>
 #include <vector>
 #include <string>
@@ -16,6 +17,7 @@ class ConfigParserAPI {
 	explicit ConfigParserAPI(const std::string &path);
 	std::vector<ServerConfig> GetServersSettings(void);
  private:
+	std::vector<ServerConfig> servers_settings_;
 	std::string path_;
 };
 

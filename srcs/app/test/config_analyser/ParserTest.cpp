@@ -19,7 +19,7 @@ static std::vector<ServerConfig> getServerSettings(void) {
 
 TEST_CASE("Testing the parser", "[parser]") {
 	std::string expected = "server 0:\n"
-							"\tlisten_address : 2130706433\n"
+							"\tlisten_address : 127.0.0.1\n"
 							"\tlisten_port : 8080\n"
 							"\tserver_names :\n"
 							"\t\tserver_name 0: 42agv.com\n"
@@ -92,7 +92,7 @@ TEST_CASE("Testing the parser", "[parser]") {
 							"\t\terror_pages map : \n"
 							"\t\tcgi_assign map : \n"
 							"server 1:\n"
-							"\tlisten_address : 2130706433\n"
+							"\tlisten_address : 127.0.0.1\n"
 							"\tlisten_port : 8080\n"
 							"\tserver_names :\n"
 							"\t\tserver_name 0: 42agv.com\n"
