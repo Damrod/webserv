@@ -20,6 +20,11 @@ class Parser: public Analyser {
 	void parse(void);
 	class Data {
 	public:
+		Data(size_t line, t_token_type evt, t_parsing_state st,
+			 const std::string &rawData,
+			 t_parsing_state ctx,
+			 ParserAPI *config,
+			 const std::string &error);
 		Data(Parser * const parser, const std::string &error_msg);
 		// this should probably take a std::string, not uint16_t
 		void SetListenAddress(const std::string &svNameAddr) const;
@@ -30,18 +35,12 @@ class Parser: public Analyser {
 		void SetClientMaxSz(uint32_t size) const;
 		void AddLocation(const std::string &name) const;
 		void AddServer(void) const;
-		void PushContext(const t_parsing_state &ctx) const;
-		void PopContext(void) const;
-		void NextEvent(void) const;
-		t_parsing_state ParserLoopBack(void) const;
+		void SkipEvent(void) const;
 		t_token_type GetEvent(void) const;
 		t_parsing_state GetState(void) const;
 		const std::string &GetRawData(void) const;
 		const std::string &GetErrorMessage(void) const;
 		size_t GetLineNumber(void) const;
-		size_t GetArgNumber(void) const;
-		void IncrementArgNumber(void) const;
-		void ResetArgNumber(void) const;
 
 	private:
 		const std::string &error_msg_;
@@ -49,13 +48,13 @@ class Parser: public Analyser {
 		const t_token_type event_;
 		const t_parsing_state state_;
 		const std::string &rawData_;
-		Parser * const parser_;
 		const t_parsing_state ctx_;
 		ParserAPI *config_;
 	};
 	// ============= handlers ===================
 	class StHandler {
 	public:
+		explicit StHandler(Parser *parser);
 		t_parsing_state SyntaxFailer(const Data &data);
 		t_parsing_state ServerNameHandler(const Data &data);
 		t_parsing_state InitHandler(const Data &data);
@@ -66,13 +65,15 @@ class Parser: public Analyser {
 		t_parsing_state LocationHandler(const Data &data);
 		t_parsing_state ServerHandler(const Data &data);
 		t_parsing_state ListenHandler(const Data &data);
+	private:
+		Parser *parser_;
 	};
 	StHandler handlers_;
 	t_parsing_state ParserMainLoop(void);
 	void PushContext_(const t_parsing_state &ctx);
 	void PopContext_(void);
 	t_parsing_state TopContext_(void) const;
-	t_token_type NextEvent(void);
+	t_token_type SkipEvent(void);
 	size_t GetArgNumber(void);
 	void IncrementArgNumber(void);
 	void ResetArgNumber(void);

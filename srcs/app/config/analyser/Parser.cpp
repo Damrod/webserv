@@ -7,6 +7,7 @@
 #endif
 
 Parser::Parser(const std::list<Token> &token, ParserAPI *config) :
+	handlers_(this),
 	tokens_(token),
 	config_(config),
 	itb_(tokens_.begin()),
@@ -23,9 +24,24 @@ Parser::Data::Data(Parser * const parser, const std::string &error_msg) :
 	event_(parser->itc_->getType()),
 	state_(parser->itc_->GetState()),
 	rawData_(parser->itc_->getRawData()),
-	parser_(parser),
 	ctx_(parser->TopContext_()),
 	config_(parser->config_) {
+}
+
+Parser::Data::Data(size_t line,
+				   t_token_type evt,
+				   t_parsing_state st,
+				   const std::string &rawData,
+				   t_parsing_state ctx,
+				   ParserAPI *config,
+				   const std::string &error) :
+	error_msg_(error),
+	line_(line),
+	event_(evt),
+	state_(st),
+	rawData_(rawData),
+	ctx_(ctx),
+	config_(config) {
 }
 
 // probably the context sensitiveness for the setters should be implemented
@@ -33,40 +49,35 @@ Parser::Data::Data(Parser * const parser, const std::string &error_msg) :
 
 void Parser::Data::SetListenAddress(const std::string &svnaddr) const {
 	const char * addressStr = svnaddr.c_str();
-	int64_t port;
+	std::string addTmp;  // we need this objects lifetime to last for the entire
+						 // function
+	int64_t port = 8080;
 	char *endptr = NULL;
 	if (std::count(svnaddr.begin(), svnaddr.end(), '.') != 3) {
 		port = std::strtol(addressStr, &endptr, 10);
 		if (*endptr || errno || port < 1 || port > UINT16_MAX) {
-			throw std::invalid_argument("listen directive port invalid");
+			throw SyntaxError("Listen directive port invalid", line_);
 		} else {
 			config_->SetListenAddress(0, static_cast<uint16_t>(port), ctx_);
 		}
 		return;
 	}
-	const char *portStr = NULL;
-	std::string addTmp;
-	std::string pTmp;
 	if (std::count(svnaddr.begin(), svnaddr.end(), ':') == 1) {
-		std::string tmp = addressStr;
-		addTmp = tmp.substr(0, tmp.find(':'));
-		pTmp = tmp.substr(tmp.find(':') + 1, tmp.length());
+		addTmp = svnaddr.substr(0, svnaddr.find(':'));
+		std::string portTmp =
+			svnaddr.substr(svnaddr.find(':') + 1, svnaddr.size());
+		port = std::strtol(portTmp.c_str(), &endptr, 10);
+		if ((endptr && *endptr) || errno || port < 1 || port > UINT16_MAX) {
+			throw SyntaxError("Listen directive port invalid", line_);
+		}
 		addressStr = addTmp.c_str();
-		portStr = pTmp.c_str();
 	}
 	const in_addr_t address = inet_addr(addressStr);
 	if (address == static_cast<in_addr_t>(-1)) {
-		throw std::invalid_argument("listen directive IP invalid");
+		throw SyntaxError("listen directive IP invalid", line_);
 	}
-	if (portStr) {
-		port = std::strtol(portStr, &endptr, 10);
-	} else {
-		port = 8080;
-	}
-	if ((endptr && *endptr) || errno || port < 1 || port > UINT16_MAX) {
-		throw std::invalid_argument("listen directive port invalid");
-	}
-	config_->SetListenAddress(ntohl(address), static_cast<uint16_t>(port), ctx_);
+	config_->SetListenAddress(ntohl(address), static_cast<uint16_t>(port),
+							ctx_);
 }
 
 void Parser::Data::AddLocation(const std::string &path) const {
@@ -120,7 +131,7 @@ t_parsing_state Parser::StHandler::SyntaxFailer(const Data &data) {
 
 t_parsing_state Parser::StHandler::ExpKwHandlerClose(const Data &data) {
 	(void)data;
-	data.PopContext();
+	parser_->PopContext_();
 	return Token::State::K_EXIT;
 }
 
@@ -142,24 +153,25 @@ t_parsing_state Parser::StHandler::AutoindexHandler(const Data &data) {
 }
 
 t_parsing_state Parser::StHandler::ServerNameHandler(const Data &data) {
-	if (data.GetArgNumber() == 0 && data.GetEvent() == Token::Type::T_SEMICOLON)
+	if (parser_->GetArgNumber() == 0
+		&& data.GetEvent() == Token::Type::T_SEMICOLON)
 		throw Analyser::SyntaxError("Invalid number of arguments in "
 									"'server_name' directive", LINE);
 	if (data.GetEvent() == Token::Type::T_SEMICOLON) {
-		data.ResetArgNumber();
+		parser_->ResetArgNumber();
 		return Token::State::K_EXP_KW;
 	}
 	data.AddServerName(data.GetRawData());
-	data.IncrementArgNumber();
+	parser_->IncrementArgNumber();
 	return Token::State::K_SERVER_NAME;
 }
 
 
 t_parsing_state Parser::StHandler::LocationHandler(const Data &data) {
 	data.AddLocation(data.GetRawData());
-	data.PushContext(Token::State::K_LOCATION);
-	data.NextEvent();
-	return data.ParserLoopBack();
+	parser_->PushContext_(Token::State::K_LOCATION);
+	parser_->SkipEvent();
+	return parser_->ParserMainLoop();
 }
 
 t_parsing_state Parser::StHandler::ListenHandler(const Data &data) {
@@ -169,41 +181,24 @@ t_parsing_state Parser::StHandler::ListenHandler(const Data &data) {
 
 t_parsing_state Parser::StHandler::ServerHandler(const Data &data) {
 	data.AddServer();
-	data.PushContext(Token::State::K_SERVER);
-	return data.ParserLoopBack();
+	parser_->PushContext_(Token::State::K_SERVER);
+	return parser_->ParserMainLoop();
 }
 
 void Parser::PushContext_(const t_parsing_state &ctx) {
 	ctx_.push(ctx);
 }
 
-void Parser::Data::PopContext(void) const {
-	parser_->PopContext_();
-}
-
-void Parser::Data::PushContext(const t_parsing_state &ctx) const {
-	parser_->PushContext_(ctx);
-}
-
 void Parser::PopContext_(void) {
 	ctx_.pop();
 }
 
-void Parser::Data::NextEvent(void) const {
-	parser_->NextEvent();
-}
-
-
-t_token_type Parser::NextEvent(void) {
+t_token_type Parser::SkipEvent(void) {
 	++itc_;
 	if (itc_ != ite_)
 		return itc_->getType();
 	throw SyntaxError("Attempting to read the token past the end of the file"
 	, (--itc_)->GetLine());
-}
-
-t_parsing_state Parser::Data::ParserLoopBack(void) const {
-	return (*parser_).ParserMainLoop();
 }
 
 t_token_type Parser::Data::GetEvent(void) const {
@@ -230,18 +225,6 @@ t_parsing_state Parser::TopContext_(void) const {
 	return ctx_.top();
 }
 
-void Parser::Data::IncrementArgNumber(void) const {
-	parser_->IncrementArgNumber();
-}
-
-void Parser::Data::ResetArgNumber(void) const {
-	parser_->ResetArgNumber();
-}
-
-size_t Parser::Data::GetArgNumber(void) const {
-	return parser_->GetArgNumber();
-}
-
 size_t Parser::GetArgNumber(void) {
 	return argNumber_;
 }
@@ -253,6 +236,11 @@ void Parser::IncrementArgNumber(void) {
 void Parser::ResetArgNumber(void) {
 	argNumber_ = 0;
 }
+
+Parser::StHandler::StHandler(Parser *parser) :
+	parser_(parser)
+{}
+
 const struct Parser::s_trans Parser::transitions[18] = {
 	{ .state = Token::State::K_INIT,
 	  .evt = Token::Type::T_SCOPE_OPEN,
@@ -309,7 +297,7 @@ const struct Parser::s_trans Parser::transitions[18] = {
 	{ .state = Token::State::K_LOCATION,
 	  .evt = Token::Type::T_NONE,
 	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "Expecting some location"},
+	  .errormess = "Expecting path after location directive"},
 	{ .state = Token::State::K_SERVER,
 	  .evt = Token::Type::T_SCOPE_OPEN,
 	  .apply = &StHandler::ServerHandler,
@@ -340,7 +328,13 @@ t_parsing_state Parser::ParserMainLoop(void) {
 				|| (Token::State::K_NONE == transitions[i].state)) {
 				if ((event == transitions[i].evt)
 					|| (Token::Type::T_NONE == transitions[i].evt)) {
-					Data data(this, transitions[i].errormess);
+					Data data(itc_->GetLine(),
+						itc_->getType(),
+						itc_->GetState(),
+						itc_->getRawData(),
+						ctx_.top(),
+						config_,
+						transitions[i].errormess);
 					state = ((handlers_).*(transitions[i].apply))(data);
 					if (state == Token::State::K_EXIT)
 						return Token::State::K_EXP_KW;
