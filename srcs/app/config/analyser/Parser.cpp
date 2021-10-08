@@ -18,9 +18,84 @@ Parser::Parser(const std::list<Token> &token, ParserAPI *config) :
 	ParserMainLoop();
 }
 
-const std::vector < std::tuple <t_parsing_state,
-								t_token_type,
-								StateHandler > > Parser::trans = {};
+static std::vector < struct s_trans > transFactory(void) {
+	std::vector < struct s_trans > ret;
+	ret.push_back((struct s_trans){.state = Token::State::K_INIT,
+				   .evt = Token::Type::T_SCOPE_OPEN,
+				   .apply = &StHandler::InitHandler,
+				   .errormess = ""});
+	ret.push_back((struct s_trans){.state = Token::State::K_INIT,
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "Expecting {"});
+	ret.push_back((struct s_trans){.state = Token::State::K_EXP_KW,
+	  .evt = Token::Type::T_SCOPE_CLOSE,
+	  .apply = &StHandler::ExpKwHandlerClose,
+	  .errormess = ""});
+	ret.push_back((struct s_trans){.state = Token::State::K_EXP_KW,
+	  .evt = Token::Type::T_WORD,
+	  .apply = &StHandler::ExpKwHandlerKw,
+	  .errormess = ""});
+	ret.push_back((struct s_trans){.state = Token::State::K_EXP_KW,
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "Expecting keyword"});
+	ret.push_back((struct s_trans){.state = Token::State::K_EXP_SEMIC,
+	  .evt = Token::Type::T_SEMICOLON,
+	  .apply = &StHandler::SemicHandler,
+	  .errormess = ""});
+	ret.push_back((struct s_trans){.state = Token::State::K_EXP_SEMIC,
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "Expecting ;"});
+	ret.push_back((struct s_trans){.state = Token::State::K_AUTOINDEX,
+	  .evt = Token::Type::T_WORD,
+	  .apply = &StHandler::AutoindexHandler,
+	  .errormess = ""});
+	ret.push_back((struct s_trans){.state = Token::State::K_AUTOINDEX,
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "Expecting 'on' or 'off'"});
+	ret.push_back((struct s_trans){.state = Token::State::K_SERVER_NAME,
+	  .evt = Token::Type::T_WORD,
+	  .apply = &StHandler::ServerNameHandler,
+	  .errormess = ""});
+	ret.push_back((struct s_trans){.state = Token::State::K_SERVER_NAME,
+	  .evt = Token::Type::T_SEMICOLON,
+	  .apply = &StHandler::ServerNameHandler,
+	  .errormess = ""});
+	ret.push_back((struct s_trans){.state = Token::State::K_SERVER_NAME,
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "Expecting some server names"});
+	ret.push_back((struct s_trans){.state = Token::State::K_LOCATION,
+	  .evt = Token::Type::T_WORD,
+	  .apply = &StHandler::LocationHandler,
+	  .errormess = ""});
+	ret.push_back((struct s_trans){.state = Token::State::K_LOCATION,
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "Expecting path after location directive"});
+	ret.push_back((struct s_trans){.state = Token::State::K_SERVER,
+	  .evt = Token::Type::T_SCOPE_OPEN,
+	  .apply = &StHandler::ServerHandler,
+	  .errormess = ""});
+	ret.push_back((struct s_trans){.state = Token::State::K_SERVER,
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "Expecting { after server directive"});
+	ret.push_back((struct s_trans){.state = Token::State::K_LISTEN,
+	  .evt = Token::Type::T_WORD,
+	  .apply = &StHandler::ListenHandler,
+	  .errormess = ""});
+	ret.push_back((struct s_trans){.state = Token::State::K_LISTEN,
+	  .evt = Token::Type::T_NONE,
+	  .apply = &StHandler::SyntaxFailer,
+	  .errormess = "Expecting IP in listen directive"});
+	return ret;
+}
+
+const std::vector < struct s_trans > Parser::transitions = transFactory();
 
 // Data::Data(Parser * const parser, const std::string &error_msg) :
 // 	error_msg_(error_msg),
@@ -245,88 +320,12 @@ StHandler::StHandler(Parser *parser) :
 	parser_(parser)
 {}
 
-const struct s_trans Parser::transitions[18] = {
-	{ .state = Token::State::K_INIT,
-	  .evt = Token::Type::T_SCOPE_OPEN,
-	  .apply = &StHandler::InitHandler,
-	  .errormess = ""},
-	{ .state = Token::State::K_INIT,
-	  .evt = Token::Type::T_NONE,
-	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "Expecting {"},
-	{ .state = Token::State::K_EXP_KW,
-	  .evt = Token::Type::T_SCOPE_CLOSE,
-	  .apply = &StHandler::ExpKwHandlerClose,
-	  .errormess = ""},
-	{ .state = Token::State::K_EXP_KW,
-	  .evt = Token::Type::T_WORD,
-	  .apply = &StHandler::ExpKwHandlerKw,
-	  .errormess = ""},
-	{ .state = Token::State::K_EXP_KW,
-	  .evt = Token::Type::T_NONE,
-	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "Expecting keyword"},
-	{ .state = Token::State::K_EXP_SEMIC,
-	  .evt = Token::Type::T_SEMICOLON,
-	  .apply = &StHandler::SemicHandler,
-	  .errormess = ""},
-	{ .state = Token::State::K_EXP_SEMIC,
-	  .evt = Token::Type::T_NONE,
-	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "Expecting ;"},
-	{ .state = Token::State::K_AUTOINDEX,
-	  .evt = Token::Type::T_WORD,
-	  .apply = &StHandler::AutoindexHandler,
-	  .errormess = ""},
-	{ .state = Token::State::K_AUTOINDEX,
-	  .evt = Token::Type::T_NONE,
-	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "Expecting 'on' or 'off'"},
-	{ .state = Token::State::K_SERVER_NAME,
-	  .evt = Token::Type::T_WORD,
-	  .apply = &StHandler::ServerNameHandler,
-	  .errormess = ""},
-	{ .state = Token::State::K_SERVER_NAME,
-	  .evt = Token::Type::T_SEMICOLON,
-	  .apply = &StHandler::ServerNameHandler,
-	  .errormess = ""},
-	{ .state = Token::State::K_SERVER_NAME,
-	  .evt = Token::Type::T_NONE,
-	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "Expecting some server names"},
-	{ .state = Token::State::K_LOCATION,
-	  .evt = Token::Type::T_WORD,
-	  .apply = &StHandler::LocationHandler,
-	  .errormess = ""},
-	{ .state = Token::State::K_LOCATION,
-	  .evt = Token::Type::T_NONE,
-	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "Expecting path after location directive"},
-	{ .state = Token::State::K_SERVER,
-	  .evt = Token::Type::T_SCOPE_OPEN,
-	  .apply = &StHandler::ServerHandler,
-	  .errormess = ""},
-	{ .state = Token::State::K_SERVER,
-	  .evt = Token::Type::T_NONE,
-	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "Expecting { after server directive"},
-	{ .state = Token::State::K_LISTEN,
-	  .evt = Token::Type::T_WORD,
-	  .apply = &StHandler::ListenHandler,
-	  .errormess = ""},
-	{ .state = Token::State::K_LISTEN,
-	  .evt = Token::Type::T_NONE,
-	  .apply = &StHandler::SyntaxFailer,
-	  .errormess = "Expecting IP in listen directive"},
-};
-
 t_parsing_state Parser::ParserMainLoop(void) {
-	t_parsing_state state;
-	for (state = Token::State::K_INIT;
-			itc_ != ite_ ; itc_++) {
+	t_parsing_state state = Token::State::K_INIT;
+	for (; itc_ != ite_ ; itc_++) {
 		t_token_type event = itc_->getType();
 		for (size_t i = 0;
-			 i < sizeof(transitions) / sizeof(transitions[0]);
+			 i < transitions.size();
 			 ++i) {
 			if ((state == transitions[i].state)
 				|| (Token::State::K_NONE == transitions[i].state)) {

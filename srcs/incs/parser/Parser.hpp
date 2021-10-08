@@ -9,7 +9,7 @@
 #include <queue>
 #include <vector>
 #include <stack>
-#include <tuple>
+// #include <tuple>
 #include <parser/Lexer.hpp>
 #include <parser/ParserAPI.hpp>
 
@@ -33,14 +33,15 @@ class StHandler : public Analyser {
 	Parser *parser_;
 };
 
+typedef t_parsing_state (StHandler::*StateHandler)(const Data &data);
+
 struct s_trans {
 	t_parsing_state state;
 	t_token_type evt;
-	t_parsing_state (StHandler::*apply)(const Data &data);
+	StateHandler apply;
 	std::string errormess;
 };
 
-typedef t_parsing_state (StHandler::*StateHandler)(const Data &data);
 
 class Parser: public Analyser {
  public:
@@ -62,11 +63,7 @@ class Parser: public Analyser {
 	const std::list<Token>::const_iterator itb_;
 	const std::list<Token>::const_iterator ite_;
 	std::list<Token>::const_iterator itc_;
-	static const s_trans transitions[18];
-	static const std::vector < std::tuple <
-		t_parsing_state,
-		t_token_type,
-		StateHandler > > trans;
+	static const std::vector < struct s_trans > transitions;
 	size_t argNumber_;
 };
 

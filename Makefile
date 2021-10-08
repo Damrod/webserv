@@ -31,6 +31,7 @@ include $(SRC_DIR)/target/generaterules.mk
 
 .PHONY: test
 test:
+	make
 	make -C srcs/app/test
 	$(BLD_DIR)/utest_app
 
