@@ -11,7 +11,7 @@ Parser::Engine::Engine(const std::list<Token> &token, ParserAPI *config) :
 	ite_(token.end()),
 	itc_(token.begin()),
 	transitions_(TransitionFactory_()),
-	argNumber_(0) {
+	args_() {
 	line_ = 1;
 	ctx_.push(Token::State::K_INIT);
 	ParserMainLoop();
@@ -54,7 +54,7 @@ std::vector < Parser::s_trans > Parser::Engine::TransitionFactory_(void) {
 	ret.push_back((Parser::s_trans){.state = Token::State::K_AUTOINDEX,
 	  .evt = Token::Type::T_NONE,
 	  .apply = &Parser::StatelessSet::SyntaxFailer,
-	  .errormess = "Expecting 'on' or 'off'"});
+	  .errormess = "Expecting `on' or `off' after autoindex directive"});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_SERVER_NAME,
 	  .evt = Token::Type::T_WORD,
 	  .apply = &Parser::StatelessSet::ServerNameHandler,
@@ -66,7 +66,7 @@ std::vector < Parser::s_trans > Parser::Engine::TransitionFactory_(void) {
 	ret.push_back((Parser::s_trans){.state = Token::State::K_SERVER_NAME,
 	  .evt = Token::Type::T_NONE,
 	  .apply = &Parser::StatelessSet::SyntaxFailer,
-	  .errormess = "Expecting some server names"});
+	  .errormess = "Expecting at least one word after server_name directive"});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_LOCATION,
 	  .evt = Token::Type::T_WORD,
 	  .apply = &Parser::StatelessSet::LocationHandler,
@@ -244,7 +244,7 @@ t_parsing_state Parser::StatelessSet::ExpKwHandlerKw(const StatefulSet &data) {
 		throw SyntaxError("Expecting keyword but found `" +
 		data.GetRawData() + "'", data.GetLineNumber());
 	if (!Parser::Helpers::isKwAllowedInCtx(data.GetState(), data.GetCtx()))
-		throw SyntaxError("Keyword '" + data.GetRawData() + "' "
+		throw SyntaxError("Keyword `" + data.GetRawData() + "' "
 						  "not allowed in context `" +
 						  Token::State::GetParsingStateTypeStr(data.GetCtx())
 						  + "'", data.GetLineNumber());
@@ -255,7 +255,7 @@ t_parsing_state Parser::StatelessSet::AutoindexHandler
 													(const StatefulSet &data) {
 	if (data.GetRawData() != "on"
 	&& data.GetRawData() != "off")
-		throw SyntaxError("Expecting 'on'/'off' but found '" +
+		throw SyntaxError("Expecting `on'/`off' but found `" +
 		data.GetRawData()  + "'", data.GetLineNumber());
 	AddAutoindex(data.GetRawData(), data.GetCtx());
 	return Token::State::K_EXP_SEMIC;
@@ -266,16 +266,15 @@ t_parsing_state Parser::StatelessSet::ServerNameHandler
 	if (data.GetArgNumber() == 0
 		&& data.GetEvent() == Token::Type::T_SEMICOLON)
 		throw Analyser::SyntaxError("Invalid number of arguments in "
-									"'server_name' directive", LINE);
+									"`server_name' directive", LINE);
 	if (data.GetEvent() == Token::Type::T_SEMICOLON) {
 		parser_->ResetArgNumber();
 		return Token::State::K_EXP_KW;
 	}
 	AddServerName(data.GetRawData(), data.GetCtx());
-	parser_->IncrementArgNumber();
+	parser_->IncrementArgNumber(data.GetRawData());
 	return Token::State::K_SERVER_NAME;
 }
-
 
 t_parsing_state Parser::StatelessSet::LocationHandler(const StatefulSet &data) {
 	AddLocation(data.GetRawData(), data.GetCtx());
@@ -340,12 +339,12 @@ size_t Parser::StatefulSet::GetArgNumber(void) const {
 	return argNumber_;
 }
 
-void Parser::Engine::IncrementArgNumber(void) {
-	argNumber_++;
+void Parser::Engine::IncrementArgNumber(const std::string &arg) {
+	args_.push_back(arg);
 }
 
 void Parser::Engine::ResetArgNumber(void) {
-	argNumber_ = 0;
+	args_.clear();
 }
 
 Parser::StatelessSet::StatelessSet(Engine *parser, ParserAPI *config) :
@@ -369,7 +368,7 @@ t_parsing_state Parser::Engine::ParserMainLoop(void) {
 						itc_->getRawData(),
 						ctx_.top(),
 						transitions_[i].errormess,
-						argNumber_);
+						 args_.size());
 					state = ((handlers_).*(transitions_[i].apply))(data);
 					if (state == Token::State::K_EXIT)
 						return Token::State::K_EXP_KW;

@@ -71,7 +71,7 @@ class Engine: public Analyser {
 	void PushContext(const t_parsing_state &ctx);
 	void PopContext(void);
 	t_token_type SkipEvent(void);
-	void IncrementArgNumber(void);
+	void IncrementArgNumber(const std::string &arg);
 	void ResetArgNumber(void);
 
  private:
@@ -81,8 +81,7 @@ class Engine: public Analyser {
 	const std::list<Token>::const_iterator ite_;
 	std::list<Token>::const_iterator itc_;
 	const std::vector < struct s_trans > transitions_;
-	// std::vector<std::string> args_;
-	size_t argNumber_;
+	std::vector<std::string> args_;
 };
 
 class StatefulSet : public Analyser {
