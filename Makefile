@@ -31,12 +31,16 @@ include $(SRC_DIR)/target/generaterules.mk
 
 .PHONY: test
 test:
+	make
 	make -C srcs/app/test
 	$(BLD_DIR)/utest_app
 
 .PHONY: lint
 lint:
 	$(LINT) $(LINTFLAGS) .
+
+ngxsyntax:
+	cd $(SRC_DIR)/app/test/config_analyser/nginx_docker && docker-compose up
 
 .PHONY: clean
 clean:
