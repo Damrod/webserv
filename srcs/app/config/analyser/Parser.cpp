@@ -324,6 +324,22 @@ t_parsing_state Parser::StatelessSet::ServerNameHandler
 	return Token::State::K_SERVER_NAME;
 }
 
+t_parsing_state Parser::StatelessSet::LimitExceptHandler
+(const StatefulSet &data) {
+	if (data.GetArgNumber() == 0
+		&& data.GetEvent() == Token::Type::T_SEMICOLON)
+		throw Analyser::SyntaxError("Invalid number of arguments in "
+									"`limit_except' directive", LINE);
+	if (data.GetEvent() == Token::Type::T_SEMICOLON) {
+		config_->AddLimitExcept(parser_->GetArgs(), data.GetCtx(),
+							   data.GetLineNumber());
+		parser_->ResetArgNumber();
+		return Token::State::K_EXP_KW;
+	}
+	parser_->IncrementArgNumber(data.GetRawData());
+	return Token::State::K_LIMIT_EXCEPT;
+}
+
 t_parsing_state Parser::StatelessSet::CgiAssignHandler
 													(const StatefulSet &data) {
 	switch (data.GetArgNumber()) {
@@ -447,6 +463,24 @@ t_parsing_state Parser::StatelessSet::ErrorPageHandler
 									"error_page directive", LINE);
 	}
 	}
+}
+
+t_parsing_state Parser::StatelessSet::ClientMaxBodySizeHandler(
+	const StatefulSet &data) {
+	char *endptr = NULL;
+	int64_t result = std::strtol(data.GetRawData().c_str(), &endptr, 10);
+	if ((endptr && *endptr) || result < 0 || UINT32_MAX < result || errno)
+		throw SyntaxError("Bad client max body size" , LINE);
+	config_->SetClientMaxSz(static_cast<uint32_t>(result), data.GetCtx(),
+							data.GetLineNumber());
+	return Token::State::K_EXP_SEMIC;
+}
+
+t_parsing_state Parser::StatelessSet::UploadStoreHandler(
+	const StatefulSet &data) {
+	config_->AddUploadStore(data.GetRawData(), data.GetCtx(),
+					 data.GetLineNumber());
+	return Token::State::K_EXP_SEMIC;
 }
 
 t_parsing_state Parser::StatelessSet::RootHandler(const StatefulSet &data) {
