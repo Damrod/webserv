@@ -3,6 +3,7 @@
 
 #include <arpa/inet.h>
 #include <cerrno>
+#include <cstdlib>
 #include <iterator>
 #include <string>
 #include <list>
@@ -10,7 +11,9 @@
 #include <sstream>
 #include <vector>
 #include <stack>
-#include <parser/Lexer.hpp>
+#include <algorithm>
+#include <parser/Analyser.hpp>
+#include <parser/Token.hpp>
 
 struct ServerConfig;
 
@@ -52,7 +55,7 @@ class ParserAPI : public Analyser {
 
  public:
 	explicit ParserAPI(std::vector<ServerConfig> *server_settings);
-	std::vector<ServerConfig>	&GetServersSettings(void);
+	std::vector<ServerConfig> &GetServersSettings(void);
 	void SetServersSettings(std::vector<ServerConfig> *server_settings);
 	virtual ~ParserAPI(void) {}
 	void SetListenAddress(uint32_t address, uint16_t port, t_parsing_state ctx,
