@@ -105,7 +105,8 @@ class StatelessSet : public Analyser {
 	t_parsing_state IndexHandler(const StatefulSet &data);
 	t_parsing_state ClientMaxBodySizeHandler(const StatefulSet &data);
 	t_parsing_state ReturnHandler(const StatefulSet &data);
-	t_parsing_state LimitExcept(const StatefulSet &data);
+	t_parsing_state LimitExceptHandler(const StatefulSet &data);
+	t_parsing_state UploadStoreHandler(const StatefulSet &data);
 
  private:
 	// helpers

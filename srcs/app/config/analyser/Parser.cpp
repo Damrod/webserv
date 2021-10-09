@@ -122,7 +122,7 @@ std::vector < Parser::s_trans > Parser::Engine::TransitionFactory_(void) {
 			.errormess = ""});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_ROOT,
 			.evt = Token::Type::T_NONE,
-			.apply = &Parser::StatelessSet::RootHandler,
+			.apply = &Parser::StatelessSet::SyntaxFailer,
 			.errormess = "Unexpected token after root directive"});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_INDEX,
 			.evt = Token::Type::T_WORD,
@@ -130,8 +130,48 @@ std::vector < Parser::s_trans > Parser::Engine::TransitionFactory_(void) {
 			.errormess = ""});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_INDEX,
 			.evt = Token::Type::T_NONE,
-			.apply = &Parser::StatelessSet::IndexHandler,
+			.apply = &Parser::StatelessSet::SyntaxFailer,
 			.errormess = "Unexpected token after index directive"});
+	ret.push_back((Parser::s_trans){.state = Token::State::K_CLIENT_MAX_BODY_SIZE,
+			.evt = Token::Type::T_WORD,
+			.apply = &Parser::StatelessSet::ClientMaxBodySizeHandler,
+			.errormess = ""});
+	ret.push_back((Parser::s_trans){.state = Token::State::K_CLIENT_MAX_BODY_SIZE,
+			.evt = Token::Type::T_NONE,
+			.apply = &Parser::StatelessSet::SyntaxFailer,
+			.errormess = "Unexpected token after client_max_body_size directive"});
+	ret.push_back((Parser::s_trans){.state = Token::State::K_LIMIT_EXCEPT,
+			.evt = Token::Type::T_WORD,
+			.apply = &Parser::StatelessSet::LimitExceptHandler,
+			.errormess = ""});
+	ret.push_back((Parser::s_trans){.state = Token::State::K_LIMIT_EXCEPT,
+			.evt = Token::Type::T_SEMICOLON,
+			.apply = &Parser::StatelessSet::LimitExceptHandler,
+			.errormess = ""});
+	ret.push_back((Parser::s_trans){.state = Token::State::K_LIMIT_EXCEPT,
+			.evt = Token::Type::T_NONE,
+			.apply = &Parser::StatelessSet::SyntaxFailer,
+			.errormess = "Unexpected token after limit_except directive"});
+	ret.push_back((Parser::s_trans){.state = Token::State::K_RETURN,
+			.evt = Token::Type::T_WORD,
+			.apply = &Parser::StatelessSet::ReturnHandler,
+			.errormess = ""});
+	ret.push_back((Parser::s_trans){.state = Token::State::K_RETURN,
+			.evt = Token::Type::T_SEMICOLON,
+			.apply = &Parser::StatelessSet::ReturnHandler,
+			.errormess = ""});
+	ret.push_back((Parser::s_trans){.state = Token::State::K_RETURN,
+			.evt = Token::Type::T_NONE,
+			.apply = &Parser::StatelessSet::SyntaxFailer,
+			.errormess = "Unexpected token after return directive"});
+	ret.push_back((Parser::s_trans){.state = Token::State::K_UPLOAD_STORE,
+			.evt = Token::Type::T_WORD,
+			.apply = &Parser::StatelessSet::UploadStoreHandler,
+			.errormess = ""});
+	ret.push_back((Parser::s_trans){.state = Token::State::K_UPLOAD_STORE,
+			.evt = Token::Type::T_NONE,
+			.apply = &Parser::StatelessSet::SyntaxFailer,
+			.errormess = "Unexpected token after upload_store directive"});
 	return ret;
 }
 
@@ -319,6 +359,50 @@ t_parsing_state Parser::StatelessSet::CgiAssignHandler
 	default : {
 		throw Analyser::SyntaxError("Invalid number of arguments in "
 									"cgi_assign directive", LINE);
+	}
+	}
+}
+
+t_parsing_state Parser::StatelessSet::ReturnHandler
+(const StatefulSet &data) {
+	switch (data.GetArgNumber()) {
+	case 0:
+	case 1: {
+		switch (data.GetEvent()) {
+		case Token::Type::T_WORD: {
+			parser_->IncrementArgNumber(data.GetRawData());
+			return Token::State::K_RETURN;
+		}
+		default: {
+			throw Analyser::SyntaxError("Unexpected token after "
+										"return directive", LINE);
+		}
+		}
+	}
+	case 2: {
+		switch (data.GetEvent()) {
+		case Token::Type::T_SEMICOLON: {
+			char *endptr = NULL;
+			int64_t status = std::strtol(parser_->GetArgs()[0].c_str(),
+										  &endptr,
+										  10);
+			if ((endptr && *endptr) || errno || status < 0 || UINT16_MAX < status)
+				throw Analyser::SyntaxError("Bad return status", LINE);
+			config_->AddReturn(static_cast<uint16_t>(status),
+							   parser_->GetArgs()[1],
+								data.GetCtx(), data.GetLineNumber());
+			parser_->ResetArgNumber();
+			return Token::State::K_EXP_KW;
+		}
+		default: {
+			throw Analyser::SyntaxError("Invalid number of arguments in "
+										"return directive", LINE);
+		}
+		}
+	}
+	default : {
+		throw Analyser::SyntaxError("Invalid number of arguments in "
+									"return directive", LINE);
 	}
 	}
 }
