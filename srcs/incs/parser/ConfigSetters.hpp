@@ -9,7 +9,6 @@
 #include <parser/Lexer.hpp>
 #include <parser/Preprocessor.hpp>
 #include <parser/Parser.hpp>
-#include <parser/ParserAPI.hpp>
 #include <ServerConfig.hpp>
 
 class ConfigParserAPI {
@@ -20,5 +19,8 @@ class ConfigParserAPI {
 	std::vector<ServerConfig> servers_settings_;
 	std::string path_;
 };
+
+std::ostream &operator<<(std::ostream &o,
+						 const std::vector<ServerConfig> &server_settings);
 
 #endif  // SRCS_INCS_PARSER_CONFIGSETTERS_HPP_

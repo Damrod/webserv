@@ -1,14 +1,14 @@
 #include <parser/ConfigSetters.hpp>
 
-ParserAPI::ParserAPI(std::vector<ServerConfig> *server_settings) :
+Parser::ParserAPI::ParserAPI(std::vector<ServerConfig> *server_settings) :
 	servers_settings_(server_settings) {
 }
 
-std::vector<ServerConfig>	&ParserAPI::GetServersSettings(void) {
+std::vector<ServerConfig>	&Parser::ParserAPI::GetServersSettings(void) {
 	return *servers_settings_;
 }
 
-bool ParserAPI::canAddServer(uint32_t address, uint16_t port) {
+bool Parser::ParserAPI::canAddServer(uint32_t address, uint16_t port) {
 // std::vector<ServerConfig>::const_iterator it = servers_settings_->begin();
 	// for (; it != servers_settings_->end(); ++it) {
 	//  if (it->listen_address == address && it->listen_port == port) {
@@ -21,7 +21,7 @@ bool ParserAPI::canAddServer(uint32_t address, uint16_t port) {
 	return true;
 }
 
-bool ParserAPI::canAddLocation(const std::string &path) {
+bool Parser::ParserAPI::canAddLocation(const std::string &path) {
 	// std::vector<Location>::const_iterator it = servers_settings_->
 	// back().locations.begin();
 	// for (; it != servers_settings_->back().locations.end(); ++it) {
@@ -34,7 +34,7 @@ bool ParserAPI::canAddLocation(const std::string &path) {
 }
 
 
-void ParserAPI::SetListenAddress(uint32_t address, uint16_t port,
+void Parser::ParserAPI::SetListenAddress(uint32_t address, uint16_t port,
 t_parsing_state ctx_) {
 	if (ctx_ != Token::State::K_SERVER)
 		throw std::invalid_argument("Invalid context for listen address");
@@ -46,13 +46,14 @@ t_parsing_state ctx_) {
 	}
 }
 
-void ParserAPI::AddServerName(const std::string &name, t_parsing_state ctx_) {
+void Parser::ParserAPI::AddServerName(const std::string &name,
+									  t_parsing_state ctx_) {
 	if (ctx_ != Token::State::K_SERVER)
 		throw std::invalid_argument("Invalid context for server name");
 	servers_settings_->back().server_name.push_back(name);
 }
 
-void ParserAPI::SetRoot(const std::string &root, t_parsing_state ctx_) {
+void Parser::ParserAPI::SetRoot(const std::string &root, t_parsing_state ctx_) {
 	if (ctx_ == Token::State::K_SERVER) {
 		servers_settings_->back().common.root = root;
 	} else {
@@ -63,7 +64,8 @@ void ParserAPI::SetRoot(const std::string &root, t_parsing_state ctx_) {
 	}
 }
 
-void ParserAPI::AddIndex(const std::string &index, t_parsing_state ctx_) {
+void Parser::ParserAPI::AddIndex(const std::string &index,
+								 t_parsing_state ctx_) {
 	if (ctx_ == Token::State::K_SERVER) {
 		servers_settings_->back().common.index = index;
 	} else {
@@ -74,7 +76,7 @@ void ParserAPI::AddIndex(const std::string &index, t_parsing_state ctx_) {
 	}
 }
 
-void ParserAPI::AddAutoindex(bool autoindex, t_parsing_state ctx_) {
+void Parser::ParserAPI::AddAutoindex(bool autoindex, t_parsing_state ctx_) {
 	if (ctx_ == Token::State::K_SERVER) {
 		servers_settings_->back().common.autoindex = autoindex;
 	} else {
@@ -86,7 +88,7 @@ void ParserAPI::AddAutoindex(bool autoindex, t_parsing_state ctx_) {
 	}
 }
 
-void ParserAPI::SetClientMaxSz(uint32_t size, t_parsing_state ctx_) {
+void Parser::ParserAPI::SetClientMaxSz(uint32_t size, t_parsing_state ctx_) {
 	if (ctx_ == Token::State::K_SERVER) {
 		servers_settings_->back().common.client_max_body_size = size;
 	} else {
@@ -99,7 +101,7 @@ void ParserAPI::SetClientMaxSz(uint32_t size, t_parsing_state ctx_) {
 	}
 }
 
-void ParserAPI::AddErrorPage(uint16_t code, const std::string &uri,
+void Parser::ParserAPI::AddErrorPage(uint16_t code, const std::string &uri,
 							t_parsing_state ctx_) {
 	if (ctx_ == Token::State::K_SERVER) {
 		servers_settings_->back().common.error_pages[code] = uri;
@@ -112,11 +114,12 @@ void ParserAPI::AddErrorPage(uint16_t code, const std::string &uri,
 	}
 }
 
-void ParserAPI::AddCgiAssign(const std::string &extension,
+void Parser::ParserAPI::AddCgiAssign(const std::string &extension,
 							 const std::string &binaryHandlerPath,
 							 t_parsing_state ctx_) {
 	if (ctx_ == Token::State::K_SERVER) {
-		servers_settings_->back().common.cgi_assign[extension] = binaryHandlerPath;
+		servers_settings_->back().common.cgi_assign[extension] =
+			binaryHandlerPath;
 	} else {
 		if (ctx_ == Token::State::K_LOCATION)
 			servers_settings_->back().locations.back().common.
@@ -126,7 +129,7 @@ void ParserAPI::AddCgiAssign(const std::string &extension,
 	}
 }
 
-void ParserAPI::AddServer(t_parsing_state ctx_) {
+void Parser::ParserAPI::AddServer(t_parsing_state ctx_) {
 	if (ctx_ != Token::State::K_INIT)
 		throw std::invalid_argument("Invalid context for server");
 	ServerConfig server;
@@ -149,7 +152,8 @@ static CommonConfig GetLastCommonCfg(std::vector<ServerConfig>
 	return config;
 }
 
-void ParserAPI::AddLocation(const std::string &path, t_parsing_state ctx_) {
+void Parser::ParserAPI::AddLocation(const std::string &path,
+									t_parsing_state ctx_) {
 	if (ctx_ != Token::State::K_SERVER)
 		throw std::invalid_argument("Invalid context for location");
 	if (canAddLocation(path)) {
@@ -157,23 +161,24 @@ void ParserAPI::AddLocation(const std::string &path, t_parsing_state ctx_) {
 		Location location(path, common);
 		servers_settings_->back().locations.push_back(location);
 	} else {
-		throw std::invalid_argument("duplicate location for path '" + path + "'");
+		throw std::invalid_argument("duplicate location for path '" +
+									path + "'");
 	}
 }
 
 static std::string printCommon(const CommonConfig &common, uint8_t lvl) {
 	std::stringstream o;
-	o << toStrIndented(lvl, "root", common.root);
-	o << toStrIndented(lvl, "client_max_body_size",
+	o << Parser::toStrIndented(lvl, "root", common.root);
+	o << Parser::toStrIndented(lvl, "client_max_body_size",
 					   common.client_max_body_size);
-	o << toStrIndented(lvl, "autoindex", common.autoindex);
-	o << toStrIndented(lvl, "index", common.index);
-	o << toStrIndented(lvl, "upload_store", common.upload_store);
-	o << toStrIndented(lvl, "return_status", common.return_status);
-	o << toStrIndented(lvl, "return_url", common.return_url);
-	o << MapToStrIndented(lvl, "error_pages map", common.error_pages,
+	o << Parser::toStrIndented(lvl, "autoindex", common.autoindex);
+	o << Parser::toStrIndented(lvl, "index", common.index);
+	o << Parser::toStrIndented(lvl, "upload_store", common.upload_store);
+	o << Parser::toStrIndented(lvl, "return_status", common.return_status);
+	o << Parser::toStrIndented(lvl, "return_url", common.return_url);
+	o << Parser::MapToStrIndented(lvl, "error_pages map", common.error_pages,
 	"error code", "error URI");
-	o << MapToStrIndented(lvl, "cgi_assign map", common.cgi_assign,
+	o << Parser::MapToStrIndented(lvl, "cgi_assign map", common.cgi_assign,
 	"file extension", "binary handler path");
 	return o.str();
 }
@@ -185,8 +190,8 @@ std::ostream &operator<<(std::ostream &o,
 	for(size_t j = 0; it != server_settings.end(); ++it, ++j) {
 		o << "server " << j << ":\n";
 		struct in_addr addr = { .s_addr = htonl(it->listen_address)};
-		o << toStrIndented(1, "listen_address", inet_ntoa(addr));
-		o << toStrIndented(1, "listen_port", it->listen_port);
+		o << Parser::toStrIndented(1, "listen_address", inet_ntoa(addr));
+		o << Parser::toStrIndented(1, "listen_port", it->listen_port);
 		o << "\tserver_names :" << "\n";
 		std::vector<std::string>::const_iterator itn = it->server_name.begin();
 		for(size_t i = 0; itn != it->server_name.end(); ++itn, ++i) {
