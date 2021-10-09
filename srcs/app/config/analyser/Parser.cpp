@@ -115,7 +115,7 @@ std::vector < Parser::s_trans > Parser::Engine::TransitionFactory_(void) {
 	ret.push_back((Parser::s_trans){.state = Token::State::K_CGI_ASSIGN,
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
-			.errormess = "Unexpected token after error_page directive"});
+			.errormess = "Unexpected token after cgi_assign directive"});
 	return ret;
 }
 
