@@ -91,6 +91,18 @@ std::vector < Parser::s_trans > Parser::Engine::TransitionFactory_(void) {
 	  .evt = Token::Type::T_NONE,
 	  .apply = &Parser::StatelessSet::SyntaxFailer,
 	  .errormess = "Expecting IP in listen directive"});
+	ret.push_back((Parser::s_trans){.state = Token::State::K_ERROR_PAGE,
+			.evt = Token::Type::T_WORD,
+			.apply = &Parser::StatelessSet::ErrorPageHandler,
+			.errormess = ""});
+	ret.push_back((Parser::s_trans){.state = Token::State::K_ERROR_PAGE,
+			.evt = Token::Type::T_SEMICOLON,
+			.apply = &Parser::StatelessSet::ErrorPageHandler,
+			.errormess = ""});
+	ret.push_back((Parser::s_trans){.state = Token::State::K_ERROR_PAGE,
+			.evt = Token::Type::T_NONE,
+			.apply = &Parser::StatelessSet::SyntaxFailer,
+			.errormess = "Expecting code in error_page directive"});
 	return ret;
 }
 
@@ -111,6 +123,19 @@ Parser::StatefulSet::StatefulSet(size_t line,
 	ctx_(ctx),
 	argNumber_(argNumber) {
 	line_ = line;
+}
+
+bool Parser::StatelessSet::ParserErrorPage_(
+					 const std::vector<std::string> &input,
+					 uint16_t *code, std::string *uri) {
+	char *endptr = NULL;
+	if (input.size() != 2)
+		return EXIT_FAILURE;
+	*code = std::strtol(input[0].c_str(), &endptr, 10);
+	if ((endptr && *endptr) || errno || *code < 100 || *code > 505)
+		return EXIT_FAILURE;
+	*uri = input[1];
+	return EXIT_SUCCESS;
 }
 
 bool Parser::StatelessSet::ParseIpAddressPort_(const std::string &input,
@@ -231,6 +256,48 @@ t_parsing_state Parser::StatelessSet::ServerNameHandler
 	}
 	parser_->IncrementArgNumber(data.GetRawData());
 	return Token::State::K_SERVER_NAME;
+}
+
+t_parsing_state Parser::StatelessSet::ErrorPageHandler
+													(const StatefulSet &data) {
+	switch (data.GetArgNumber()) {
+	case 0:
+	case 1: {
+		switch (data.GetEvent()) {
+		case Token::Type::T_WORD: {
+			parser_->IncrementArgNumber(data.GetRawData());
+			return Token::State::K_ERROR_PAGE;
+		}
+		default: {
+			throw Analyser::SyntaxError("Invalid number of arguments in "
+										"`server_name' directive", LINE);
+		}
+		}
+	}
+	case 2: {
+		switch (data.GetEvent()) {
+		case Token::Type::T_SEMICOLON: {
+			uint16_t code;
+			std::string uri;
+			if (ParserErrorPage_(parser_->GetArgs(), &code, &uri))
+				throw SyntaxError("Failed to parse error_page directive "
+								  "arguments", data.GetLineNumber());
+			config_->AddErrorPage(code, uri, data.GetCtx(),
+								  data.GetLineNumber());
+			parser_->ResetArgNumber();
+			return Token::State::K_EXP_KW;
+		}
+		default: {
+			throw Analyser::SyntaxError("Invalid number of arguments in "
+										"error_page directive", LINE);
+		}
+		}
+	}
+	default : {
+		throw Analyser::SyntaxError("Invalid number of arguments in "
+									"error_page directive", LINE);
+	}
+	}
 }
 
 t_parsing_state Parser::StatelessSet::LocationHandler(const StatefulSet &data) {

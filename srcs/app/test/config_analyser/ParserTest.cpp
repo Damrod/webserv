@@ -144,8 +144,8 @@ TEST_CASE("Testing the parser", "[parser]") {
 		std::vector<ServerConfig> cnf = getServerSettings();
 		result << cnf;
 		std::cout << cnf;
-		std::cout << "=================  VS =================\n";
-		std::cout << expected;
+		// std::cout << "=================  VS =================\n";
+		// std::cout << expected;
 		REQUIRE_FALSE(memcmp(result.str().c_str(), expected.c_str(),
 							 expected.size()));
 		// std::cout << config;

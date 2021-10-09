@@ -92,8 +92,12 @@ class StatelessSet : public Analyser {
 	t_parsing_state LocationHandler(const StatefulSet &data);
 	t_parsing_state ServerHandler(const StatefulSet &data);
 	t_parsing_state ListenHandler(const StatefulSet &data);
+	t_parsing_state ErrorPageHandler(const StatefulSet &data);
+
  private:
 	// helpers
+	bool ParserErrorPage_(const std::vector<std::string> &input,
+						 uint16_t *code, std::string *uri);
 	bool ParseIpAddressPort_(const std::string &input,
 						   std::string *errorThrow,
 						   uint16_t *port, uint32_t *address);
