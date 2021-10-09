@@ -20,77 +20,78 @@ Parser::Engine::Engine(const std::list<Token> &token, ParserAPI *config) :
 std::vector < Parser::s_trans > Parser::Engine::TransitionFactory_(void) {
 	std::vector < Parser::s_trans > ret;
 	ret.push_back((Parser::s_trans){.state = Token::State::K_INIT,
-				   .evt = Token::Type::T_SCOPE_OPEN,
-				   .apply = &Parser::StatelessSet::InitHandler,
-				   .errormess = ""});
+			.evt = Token::Type::T_SCOPE_OPEN,
+			.apply = &Parser::StatelessSet::InitHandler,
+			.errormess = ""});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_INIT,
-	  .evt = Token::Type::T_NONE,
-	  .apply = &Parser::StatelessSet::SyntaxFailer,
-	  .errormess = "Expecting {"});
+			.evt = Token::Type::T_NONE,
+			.apply = &Parser::StatelessSet::SyntaxFailer,
+			.errormess = "Expecting `{'"});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_EXP_KW,
-	  .evt = Token::Type::T_SCOPE_CLOSE,
-	  .apply = &Parser::StatelessSet::ExpKwHandlerClose,
-	  .errormess = ""});
+			.evt = Token::Type::T_SCOPE_CLOSE,
+			.apply = &Parser::StatelessSet::ExpKwHandlerClose,
+			.errormess = ""});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_EXP_KW,
-	  .evt = Token::Type::T_WORD,
-	  .apply = &Parser::StatelessSet::ExpKwHandlerKw,
-	  .errormess = ""});
+			.evt = Token::Type::T_WORD,
+			.apply = &Parser::StatelessSet::ExpKwHandlerKw,
+			.errormess = ""});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_EXP_KW,
-	  .evt = Token::Type::T_NONE,
-	  .apply = &Parser::StatelessSet::SyntaxFailer,
-	  .errormess = "Expecting keyword"});
+			.evt = Token::Type::T_NONE,
+			.apply = &Parser::StatelessSet::SyntaxFailer,
+			.errormess = "Expecting keyword"});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_EXP_SEMIC,
-	  .evt = Token::Type::T_SEMICOLON,
-	  .apply = &Parser::StatelessSet::SemicHandler,
-	  .errormess = ""});
+			.evt = Token::Type::T_SEMICOLON,
+			.apply = &Parser::StatelessSet::SemicHandler,
+			.errormess = ""});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_EXP_SEMIC,
-	  .evt = Token::Type::T_NONE,
-	  .apply = &Parser::StatelessSet::SyntaxFailer,
-	  .errormess = "Expecting ;"});
+			.evt = Token::Type::T_NONE,
+			.apply = &Parser::StatelessSet::SyntaxFailer,
+			.errormess = "Expecting ;"});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_AUTOINDEX,
-	  .evt = Token::Type::T_WORD,
-	  .apply = &Parser::StatelessSet::AutoindexHandler,
-	  .errormess = ""});
+			.evt = Token::Type::T_WORD,
+			.apply = &Parser::StatelessSet::AutoindexHandler,
+			.errormess = ""});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_AUTOINDEX,
-	  .evt = Token::Type::T_NONE,
-	  .apply = &Parser::StatelessSet::SyntaxFailer,
-	  .errormess = "Expecting `on' or `off' after autoindex directive"});
+			.evt = Token::Type::T_NONE,
+			.apply = &Parser::StatelessSet::SyntaxFailer,
+			.errormess = "Expecting `on' or `off' after autoindex directive"});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_SERVER_NAME,
-	  .evt = Token::Type::T_WORD,
-	  .apply = &Parser::StatelessSet::ServerNameHandler,
-	  .errormess = ""});
+			.evt = Token::Type::T_WORD,
+			.apply = &Parser::StatelessSet::ServerNameHandler,
+			.errormess = ""});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_SERVER_NAME,
-	  .evt = Token::Type::T_SEMICOLON,
-	  .apply = &Parser::StatelessSet::ServerNameHandler,
-	  .errormess = ""});
+			.evt = Token::Type::T_SEMICOLON,
+			.apply = &Parser::StatelessSet::ServerNameHandler,
+			.errormess = ""});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_SERVER_NAME,
-	  .evt = Token::Type::T_NONE,
-	  .apply = &Parser::StatelessSet::SyntaxFailer,
-	  .errormess = "Expecting at least one word after server_name directive"});
+			.evt = Token::Type::T_NONE,
+			.apply = &Parser::StatelessSet::SyntaxFailer,
+			.errormess = "Expecting at least one word after server_name "
+			"directive"});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_LOCATION,
-	  .evt = Token::Type::T_WORD,
-	  .apply = &Parser::StatelessSet::LocationHandler,
-	  .errormess = ""});
+			.evt = Token::Type::T_WORD,
+			.apply = &Parser::StatelessSet::LocationHandler,
+			.errormess = ""});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_LOCATION,
-	  .evt = Token::Type::T_NONE,
-	  .apply = &Parser::StatelessSet::SyntaxFailer,
-	  .errormess = "Expecting path after location directive"});
+			.evt = Token::Type::T_NONE,
+			.apply = &Parser::StatelessSet::SyntaxFailer,
+			.errormess = "Expecting path after location directive"});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_SERVER,
-	  .evt = Token::Type::T_SCOPE_OPEN,
-	  .apply = &Parser::StatelessSet::ServerHandler,
-	  .errormess = ""});
+			.evt = Token::Type::T_SCOPE_OPEN,
+			.apply = &Parser::StatelessSet::ServerHandler,
+			.errormess = ""});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_SERVER,
-	  .evt = Token::Type::T_NONE,
-	  .apply = &Parser::StatelessSet::SyntaxFailer,
-	  .errormess = "Expecting { after server directive"});
+			.evt = Token::Type::T_NONE,
+			.apply = &Parser::StatelessSet::SyntaxFailer,
+			.errormess = "Expecting { after server directive"});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_LISTEN,
-	  .evt = Token::Type::T_WORD,
-	  .apply = &Parser::StatelessSet::ListenHandler,
-	  .errormess = ""});
+			.evt = Token::Type::T_WORD,
+			.apply = &Parser::StatelessSet::ListenHandler,
+			.errormess = ""});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_LISTEN,
-	  .evt = Token::Type::T_NONE,
-	  .apply = &Parser::StatelessSet::SyntaxFailer,
-	  .errormess = "Expecting IP in listen directive"});
+			.evt = Token::Type::T_NONE,
+			.apply = &Parser::StatelessSet::SyntaxFailer,
+			.errormess = "Expecting IP in listen directive"});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_ERROR_PAGE,
 			.evt = Token::Type::T_WORD,
 			.apply = &Parser::StatelessSet::ErrorPageHandler,
@@ -102,12 +103,21 @@ std::vector < Parser::s_trans > Parser::Engine::TransitionFactory_(void) {
 	ret.push_back((Parser::s_trans){.state = Token::State::K_ERROR_PAGE,
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
-			.errormess = "Expecting code in error_page directive"});
+			.errormess = "Unexpected token after error_page directive"});
+	ret.push_back((Parser::s_trans){.state = Token::State::K_CGI_ASSIGN,
+			.evt = Token::Type::T_WORD,
+			.apply = &Parser::StatelessSet::CgiAssignHandler,
+			.errormess = ""});
+	ret.push_back((Parser::s_trans){.state = Token::State::K_CGI_ASSIGN,
+			.evt = Token::Type::T_SEMICOLON,
+			.apply = &Parser::StatelessSet::CgiAssignHandler,
+			.errormess = ""});
+	ret.push_back((Parser::s_trans){.state = Token::State::K_CGI_ASSIGN,
+			.evt = Token::Type::T_NONE,
+			.apply = &Parser::StatelessSet::SyntaxFailer,
+			.errormess = "Unexpected token after error_page directive"});
 	return ret;
 }
-
-//  const std::vector < Parser::s_trans > Parser::Engine::transitions =
-//												  TransitionFactory_();
 
 Parser::StatefulSet::StatefulSet(size_t line,
 				   t_token_type evt,
@@ -143,7 +153,7 @@ bool Parser::StatelessSet::ParseIpAddressPort_(const std::string &input,
 										 uint16_t *outPort,
 										 uint32_t *outAddress) {
 	const char * addressStr = input.c_str();
-	std::string addTmp;  // we need this objects lifetime to last for the
+	std::string addTmp;  // we need this object's lifetime to last for the
 						 // entire function
 	int64_t port = 8080;
 	char *endptr = NULL;
@@ -258,6 +268,45 @@ t_parsing_state Parser::StatelessSet::ServerNameHandler
 	return Token::State::K_SERVER_NAME;
 }
 
+t_parsing_state Parser::StatelessSet::CgiAssignHandler
+													(const StatefulSet &data) {
+	switch (data.GetArgNumber()) {
+	case 0:
+	case 1: {
+		switch (data.GetEvent()) {
+		case Token::Type::T_WORD: {
+			parser_->IncrementArgNumber(data.GetRawData());
+			return Token::State::K_CGI_ASSIGN;
+		}
+		default: {
+			throw Analyser::SyntaxError("Unexpected token after "
+										"cgi_assign directive", LINE);
+		}
+		}
+	}
+	case 2: {
+		switch (data.GetEvent()) {
+		case Token::Type::T_SEMICOLON: {
+			config_->AddCgiAssign(parser_->GetArgs()[0],
+								  parser_->GetArgs()[1],
+								  data.GetCtx(),
+								  data.GetLineNumber());
+			parser_->ResetArgNumber();
+			return Token::State::K_EXP_KW;
+		}
+		default: {
+			throw Analyser::SyntaxError("Invalid number of arguments in "
+										"cgi_assign directive", LINE);
+		}
+		}
+	}
+	default : {
+		throw Analyser::SyntaxError("Invalid number of arguments in "
+									"cgi_assign directive", LINE);
+	}
+	}
+}
+
 t_parsing_state Parser::StatelessSet::ErrorPageHandler
 													(const StatefulSet &data) {
 	switch (data.GetArgNumber()) {
@@ -269,8 +318,8 @@ t_parsing_state Parser::StatelessSet::ErrorPageHandler
 			return Token::State::K_ERROR_PAGE;
 		}
 		default: {
-			throw Analyser::SyntaxError("Invalid number of arguments in "
-										"`server_name' directive", LINE);
+			throw Analyser::SyntaxError("Unexpected token after "
+										"error_page directive", LINE);
 		}
 		}
 	}

@@ -93,6 +93,7 @@ class StatelessSet : public Analyser {
 	t_parsing_state ServerHandler(const StatefulSet &data);
 	t_parsing_state ListenHandler(const StatefulSet &data);
 	t_parsing_state ErrorPageHandler(const StatefulSet &data);
+	t_parsing_state CgiAssignHandler(const StatefulSet &data);
 
  private:
 	// helpers
