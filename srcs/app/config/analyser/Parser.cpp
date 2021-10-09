@@ -224,11 +224,11 @@ t_parsing_state Parser::StatelessSet::ServerNameHandler
 		throw Analyser::SyntaxError("Invalid number of arguments in "
 									"`server_name' directive", LINE);
 	if (data.GetEvent() == Token::Type::T_SEMICOLON) {
+		config_->AddServerName(parser_->GetArgs(), data.GetCtx(),
+							   data.GetLineNumber());
 		parser_->ResetArgNumber();
 		return Token::State::K_EXP_KW;
 	}
-	config_->AddServerName(data.GetRawData(), data.GetCtx(),
-						   data.GetLineNumber());
 	parser_->IncrementArgNumber(data.GetRawData());
 	return Token::State::K_SERVER_NAME;
 }
@@ -306,6 +306,10 @@ size_t Parser::StatefulSet::GetArgNumber(void) const {
 
 void Parser::Engine::IncrementArgNumber(const std::string &arg) {
 	args_.push_back(arg);
+}
+
+const std::vector<std::string> &Parser::Engine::GetArgs(void) const {
+	return args_;
 }
 
 void Parser::Engine::ResetArgNumber(void) {

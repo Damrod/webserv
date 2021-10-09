@@ -49,6 +49,7 @@ class ParserAPI : public Analyser {
 	std::vector<ServerConfig>	*servers_settings_;
 	bool canAddServer(uint32_t address, uint16_t port);
 	bool canAddLocation(const std::string &path);
+
  public:
 	explicit ParserAPI(std::vector<ServerConfig> *server_settings);
 	std::vector<ServerConfig>	&GetServersSettings(void);
@@ -56,7 +57,8 @@ class ParserAPI : public Analyser {
 	virtual ~ParserAPI(void) {}
 	void SetListenAddress(uint32_t address, uint16_t port, t_parsing_state ctx,
 						  size_t line);
-	void AddServerName(const std::string &name, t_parsing_state ctx, size_t line);
+	void AddServerName(const std::vector<std::string> &args, t_parsing_state ctx,
+					   size_t line);
 	void SetRoot(const std::string &root, t_parsing_state ctx, size_t line);
 	void AddIndex(const std::string &index, t_parsing_state ctx, size_t line);
 	void AddAutoindex(bool autoindex, t_parsing_state ctx, size_t line);
@@ -118,6 +120,7 @@ class Engine: public Analyser {
 	void PushContext(const t_parsing_state &ctx);
 	void PopContext(void);
 	t_token_type SkipEvent(void);
+	const std::vector<std::string> &GetArgs(void) const;
 	void IncrementArgNumber(const std::string &arg);
 	void ResetArgNumber(void);
 

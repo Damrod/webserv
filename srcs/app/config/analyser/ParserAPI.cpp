@@ -46,11 +46,11 @@ t_parsing_state ctx, size_t line) {
 	}
 }
 
-void Parser::ParserAPI::AddServerName(const std::string &name,
+void Parser::ParserAPI::AddServerName(const std::vector<std::string> &args,
 									  t_parsing_state ctx, size_t line) {
 	if (ctx != Token::State::K_SERVER)
 		throw SyntaxError("Invalid context for server name", line);
-	servers_settings_->back().server_name.push_back(name);
+	servers_settings_->back().server_name = args;
 }
 
 void Parser::ParserAPI::SetRoot(const std::string &root, t_parsing_state ctx,
