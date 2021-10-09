@@ -92,8 +92,12 @@ class StatelessSet : public Analyser {
 	t_parsing_state LocationHandler(const StatefulSet &data);
 	t_parsing_state ServerHandler(const StatefulSet &data);
 	t_parsing_state ListenHandler(const StatefulSet &data);
-// setters
  private:
+	// helpers
+	bool ParseIpAddressPort_(const std::string &input,
+						   std::string *errorThrow,
+						   uint16_t *port, uint32_t *address);
+	bool isKwAllowedInCtx_(t_parsing_state kw, t_parsing_state ctx);
 	ParserAPI *config_;
 	Engine *parser_;
 };
@@ -106,14 +110,6 @@ struct s_trans {
 	t_token_type evt;
 	StateHandler apply;
 	std::string errormess;
-};
-
-class Helpers {
- public:
-	static bool ParseIpAddressPort(const std::string &input,
-								   std::string *errorThrow,
-								   uint16_t *port, uint32_t *address);
-	static bool isKwAllowedInCtx(t_parsing_state kw, t_parsing_state ctx);
 };
 
 class Engine: public Analyser {

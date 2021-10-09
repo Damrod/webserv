@@ -113,7 +113,7 @@ Parser::StatefulSet::StatefulSet(size_t line,
 	line_ = line;
 }
 
-bool Parser::Helpers::ParseIpAddressPort(const std::string &input,
+bool Parser::StatelessSet::ParseIpAddressPort_(const std::string &input,
 										 std::string *errorThrow,
 										 uint16_t *outPort,
 										 uint32_t *outAddress) {
@@ -181,7 +181,7 @@ t_parsing_state Parser::StatelessSet::ExpKwHandlerClose
 	return Token::State::K_EXIT;
 }
 
-bool Parser::Helpers::isKwAllowedInCtx(t_parsing_state kw,
+bool Parser::StatelessSet::isKwAllowedInCtx_(t_parsing_state kw,
 										t_parsing_state ctx) {
 	if ((ctx != Token::State::K_LOCATION && ctx != Token::State::K_SERVER
 		&& ctx != Token::State::K_INIT)
@@ -198,7 +198,7 @@ t_parsing_state Parser::StatelessSet::ExpKwHandlerKw(const StatefulSet &data) {
 	|| data.GetState() > Token::State::K_LIMIT_EXCEPT)
 		throw SyntaxError("Expecting keyword but found `" +
 		data.GetRawData() + "'", data.GetLineNumber());
-	if (!Parser::Helpers::isKwAllowedInCtx(data.GetState(), data.GetCtx()))
+	if (!isKwAllowedInCtx_(data.GetState(), data.GetCtx()))
 		throw SyntaxError("Keyword `" + data.GetRawData() + "' "
 						  "not allowed in context `" +
 						  Token::State::GetParsingStateTypeStr(data.GetCtx())
@@ -245,7 +245,7 @@ t_parsing_state Parser::StatelessSet::ListenHandler(const StatefulSet &data) {
 	std::string errorThrow;
 	uint16_t port;
 	uint32_t address;
-	if (Parser::Helpers::ParseIpAddressPort(data.GetRawData(), &errorThrow,
+	if (ParseIpAddressPort_(data.GetRawData(), &errorThrow,
 											&port, &address))
 		throw SyntaxError(errorThrow, line_);
 	config_->SetListenAddress(address, port, data.GetCtx(),
