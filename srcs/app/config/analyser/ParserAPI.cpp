@@ -42,7 +42,7 @@ t_parsing_state ctx, size_t line) {
 		servers_settings_->back().listen_address = address;
 		servers_settings_->back().listen_port = port;
 	} else {
-		throw SyntaxError("duplicate default server for ", line);
+		throw SyntaxError("Duplicate default server for TODO ", line);
 	}
 }
 
@@ -75,6 +75,27 @@ void Parser::ParserAPI::AddIndex(const std::string &index,
 		else
 			throw SyntaxError("Invalid context for index", line);
 	}
+}
+
+void Parser::ParserAPI::AddUploadStore(const std::string &store,
+									   t_parsing_state ctx,
+									 size_t line) {
+	if (ctx == Token::State::K_SERVER) {
+		servers_settings_->back().common.upload_store = store;
+	} else {
+		if (ctx == Token::State::K_LOCATION)
+			servers_settings_->back().locations.back().common.upload_store =
+				store;
+		else
+			throw SyntaxError("Invalid context for upload_store", line);
+	}
+}
+
+void Parser::ParserAPI::AddLimitExcept(const std::vector<std::string> &httpMeth,
+									   t_parsing_state ctx, size_t line) {
+	if (ctx != Token::State::K_LOCATION)
+		throw SyntaxError("Invalid context for limit_except", line);
+	servers_settings_->back().locations.back().limit_except = httpMeth;
 }
 
 void Parser::ParserAPI::AddAutoindex(bool autoindex, t_parsing_state ctx,
@@ -113,7 +134,7 @@ void Parser::ParserAPI::AddErrorPage(uint16_t code, const std::string &uri,
 			servers_settings_->back().locations.back().common.
 				error_pages[code] = uri;
 		else
-			throw SyntaxError("Invalid context for autoindex", line);
+			throw SyntaxError("Invalid context for error_page", line);
 	}
 }
 
@@ -128,7 +149,25 @@ void Parser::ParserAPI::AddCgiAssign(const std::string &extension,
 			servers_settings_->back().locations.back().common.
 				cgi_assign[extension] = binaryHandlerPath;
 		else
-			throw SyntaxError("Invalid context for autoindex", line);
+			throw SyntaxError("Invalid context for cgi_assign", line);
+	}
+}
+
+void Parser::ParserAPI::AddReturn(uint16_t status, const std::string &url,
+								  t_parsing_state ctx, size_t line) {
+	if (ctx == Token::State::K_SERVER) {
+		servers_settings_->back().common.return_status = status;
+		servers_settings_->back().common.return_url = url;
+	} else {
+		if (ctx == Token::State::K_LOCATION) {
+			servers_settings_->back().
+				locations.back().common.return_status = status;
+			servers_settings_->back().
+				locations.back().common.return_url = url;
+		} else {
+			throw SyntaxError(
+				"Invalid context for return statement", line);
+		}
 	}
 }
 

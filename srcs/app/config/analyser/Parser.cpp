@@ -116,6 +116,22 @@ std::vector < Parser::s_trans > Parser::Engine::TransitionFactory_(void) {
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
 			.errormess = "Unexpected token after cgi_assign directive"});
+	ret.push_back((Parser::s_trans){.state = Token::State::K_ROOT,
+			.evt = Token::Type::T_WORD,
+			.apply = &Parser::StatelessSet::RootHandler,
+			.errormess = ""});
+	ret.push_back((Parser::s_trans){.state = Token::State::K_ROOT,
+			.evt = Token::Type::T_NONE,
+			.apply = &Parser::StatelessSet::RootHandler,
+			.errormess = "Unexpected token after root directive"});
+	ret.push_back((Parser::s_trans){.state = Token::State::K_INDEX,
+			.evt = Token::Type::T_WORD,
+			.apply = &Parser::StatelessSet::IndexHandler,
+			.errormess = ""});
+	ret.push_back((Parser::s_trans){.state = Token::State::K_INDEX,
+			.evt = Token::Type::T_NONE,
+			.apply = &Parser::StatelessSet::IndexHandler,
+			.errormess = "Unexpected token after index directive"});
 	return ret;
 }
 
@@ -347,6 +363,18 @@ t_parsing_state Parser::StatelessSet::ErrorPageHandler
 									"error_page directive", LINE);
 	}
 	}
+}
+
+t_parsing_state Parser::StatelessSet::RootHandler(const StatefulSet &data) {
+	config_->SetRoot(data.GetRawData(), data.GetCtx(),
+					 data.GetLineNumber());
+	return Token::State::K_EXP_SEMIC;
+}
+
+t_parsing_state Parser::StatelessSet::IndexHandler(const StatefulSet &data) {
+	config_->AddIndex(data.GetRawData(), data.GetCtx(),
+						 data.GetLineNumber());
+	return Token::State::K_EXP_SEMIC;
 }
 
 t_parsing_state Parser::StatelessSet::LocationHandler(const StatefulSet &data) {

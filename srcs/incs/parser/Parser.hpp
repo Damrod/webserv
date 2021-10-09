@@ -60,7 +60,8 @@ class ParserAPI : public Analyser {
 	virtual ~ParserAPI(void) {}
 	void SetListenAddress(uint32_t address, uint16_t port, t_parsing_state ctx,
 						  size_t line);
-	void AddServerName(const std::vector<std::string> &args, t_parsing_state ctx,
+	void AddServerName(const std::vector<std::string> &args,
+					   t_parsing_state ctx,
 					   size_t line);
 	void SetRoot(const std::string &root, t_parsing_state ctx, size_t line);
 	void AddIndex(const std::string &index, t_parsing_state ctx, size_t line);
@@ -73,6 +74,12 @@ class ParserAPI : public Analyser {
 					  t_parsing_state ctx, size_t line);
 	void AddServer(t_parsing_state ctx, size_t line);
 	void AddLocation(const std::string &path, t_parsing_state ctx, size_t line);
+	void AddReturn(uint16_t status, const std::string &url,
+				   t_parsing_state ctx, size_t line);
+	void AddUploadStore(const std::string &store,
+						t_parsing_state ctx, size_t line);
+	void AddLimitExcept(const std::vector<std::string> &httpMethods,
+						t_parsing_state ctx, size_t line);
 };
 
 class StatefulSet;
@@ -94,6 +101,11 @@ class StatelessSet : public Analyser {
 	t_parsing_state ListenHandler(const StatefulSet &data);
 	t_parsing_state ErrorPageHandler(const StatefulSet &data);
 	t_parsing_state CgiAssignHandler(const StatefulSet &data);
+	t_parsing_state RootHandler(const StatefulSet &data);
+	t_parsing_state IndexHandler(const StatefulSet &data);
+	t_parsing_state ClientMaxBodySizeHandler(const StatefulSet &data);
+	t_parsing_state ReturnHandler(const StatefulSet &data);
+	t_parsing_state LimitExcept(const StatefulSet &data);
 
  private:
 	// helpers
