@@ -56,6 +56,13 @@ struct s_trans {
 	std::string errormess;
 };
 
+class Helpers {
+ public:
+	static bool ParseIpAddressPort(const std::string &input,
+								   std::string *errorThrow,
+								   uint16_t *port, uint32_t *address);
+	static bool isKwAllowedInCtx(t_parsing_state kw, t_parsing_state ctx);
+};
 
 class Engine: public Analyser {
  public:
@@ -74,6 +81,7 @@ class Engine: public Analyser {
 	const std::list<Token>::const_iterator ite_;
 	std::list<Token>::const_iterator itc_;
 	const std::vector < struct s_trans > transitions_;
+	// std::vector<std::string> args_;
 	size_t argNumber_;
 };
 

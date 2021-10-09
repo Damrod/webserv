@@ -113,43 +113,59 @@ Parser::StatefulSet::StatefulSet(size_t line,
 	line_ = line;
 }
 
-void Parser::StatelessSet::SetListenAddress(const std::string &svnaddr,
-											t_parsing_state ctx) const {
-	const char * addressStr = svnaddr.c_str();
-	std::string addTmp;  // we need this objects lifetime to last for the entire
-						 // function
+bool Parser::Helpers::ParseIpAddressPort(const std::string &input,
+										 std::string *errorThrow,
+										 uint16_t *outPort,
+										 uint32_t *outAddress) {
+	const char * addressStr = input.c_str();
+	std::string addTmp;  // we need this objects lifetime to last for the
+						 // entire function
 	int64_t port = 8080;
 	char *endptr = NULL;
-	if (std::count(svnaddr.begin(), svnaddr.end(), '.') != 3) {
+	if (std::count(input.begin(), input.end(), '.') != 3) {
 		port = std::strtol(addressStr, &endptr, 10);
 		if (*endptr || errno || port < 1 || port > UINT16_MAX) {
-			throw SyntaxError("Listen directive port invalid", line_);
-		} else {
-			config_->SetListenAddress(0, static_cast<uint16_t>(port), ctx);
+			*errorThrow = "Listen directive port invalid";
+			return EXIT_FAILURE;
 		}
-		return;
+		*outAddress = 0;
+		*outPort = static_cast<uint16_t>(port);
+		return EXIT_SUCCESS;
 	}
-	if (std::count(svnaddr.begin(), svnaddr.end(), ':') == 1) {
-		addTmp = svnaddr.substr(0, svnaddr.find(':'));
+	if (std::count(input.begin(), input.end(), ':') == 1) {
+		addTmp = input.substr(0, input.find(':'));
 		std::string portTmp =
-			svnaddr.substr(svnaddr.find(':') + 1, svnaddr.size());
+			input.substr(input.find(':') + 1, input.size());
 		port = std::strtol(portTmp.c_str(), &endptr, 10);
 		if ((endptr && *endptr) || errno || port < 1 || port > UINT16_MAX) {
-			throw SyntaxError("Listen directive port invalid", line_);
+			*errorThrow = "Listen directive port invalid";
+			return EXIT_FAILURE;
 		}
 		addressStr = addTmp.c_str();
 	}
 	const in_addr_t address = inet_addr(addressStr);
 	if (address == static_cast<in_addr_t>(-1)) {
-		throw SyntaxError("listen directive IP invalid", line_);
+		*errorThrow = "listen directive IP invalid";
+		return EXIT_FAILURE;
 	}
-	config_->SetListenAddress(ntohl(address), static_cast<uint16_t>(port),
-							ctx);
+	*outAddress = ntohl(address);
+	*outPort = static_cast<uint16_t>(port);
+	return EXIT_SUCCESS;
+}
+
+void Parser::StatelessSet::SetListenAddress(const std::string &svnaddr,
+											t_parsing_state ctx) const {
+	std::string errorThrow;
+	uint16_t port;
+	uint32_t address;
+	if (Parser::Helpers::ParseIpAddressPort(svnaddr, &errorThrow,
+											 &port, &address))
+		throw SyntaxError(errorThrow, line_);
+	config_->SetListenAddress(address, port, ctx);
 }
 
 void Parser::StatelessSet::AddLocation(const std::string &path,
 									   t_parsing_state ctx) const {
-	// path should be in location ctor
 	config_->AddLocation(path, ctx);
 }
 
@@ -210,20 +226,26 @@ t_parsing_state Parser::StatelessSet::ExpKwHandlerClose
 	return Token::State::K_EXIT;
 }
 
-static bool isKwAllowedInCtx_(t_parsing_state kw, t_parsing_state ctx) {
-	(void)kw;  // mocking
-	(void)ctx;
+bool Parser::Helpers::isKwAllowedInCtx(t_parsing_state kw,
+										t_parsing_state ctx) {
+	if ((ctx != Token::State::K_LOCATION && ctx != Token::State::K_SERVER
+		&& ctx != Token::State::K_INIT)
+	|| (ctx == Token::State::K_INIT && kw != Token::State::K_SERVER)
+	|| (ctx == Token::State::K_SERVER && kw == Token::State::K_LIMIT_EXCEPT)
+	|| (ctx == Token::State::K_LOCATION && (kw == Token::State::K_LISTEN
+									|| kw == Token::State::K_SERVER_NAME)))
+		return false;
 	return true;
 }
 
 t_parsing_state Parser::StatelessSet::ExpKwHandlerKw(const StatefulSet &data) {
 	if (data.GetState() < Token::State::K_SERVER
 	|| data.GetState() > Token::State::K_LIMIT_EXCEPT)
-		throw SyntaxError("Expecting keyword but found '" +
+		throw SyntaxError("Expecting keyword but found `" +
 		data.GetRawData() + "'", data.GetLineNumber());
-	if (!isKwAllowedInCtx_(data.GetState(), data.GetCtx()))
+	if (!Parser::Helpers::isKwAllowedInCtx(data.GetState(), data.GetCtx()))
 		throw SyntaxError("Keyword '" + data.GetRawData() + "' "
-						  "not allowed in context '" +
+						  "not allowed in context `" +
 						  Token::State::GetParsingStateTypeStr(data.GetCtx())
 						  + "'", data.GetLineNumber());
 	return data.GetState();
