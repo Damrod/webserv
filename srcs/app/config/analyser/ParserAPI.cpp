@@ -35,103 +35,106 @@ bool Parser::ParserAPI::canAddLocation(const std::string &path) {
 
 
 void Parser::ParserAPI::SetListenAddress(uint32_t address, uint16_t port,
-t_parsing_state ctx_) {
-	if (ctx_ != Token::State::K_SERVER)
-		throw std::invalid_argument("Invalid context for listen address");
+t_parsing_state ctx, size_t line) {
+	if (ctx != Token::State::K_SERVER)
+		throw SyntaxError("Invalid context for listen address", line);
 	if (canAddServer(address, port)) {
 		servers_settings_->back().listen_address = address;
 		servers_settings_->back().listen_port = port;
 	} else {
-		throw std::invalid_argument("duplicate default server for ");
+		throw SyntaxError("duplicate default server for ", line);
 	}
 }
 
 void Parser::ParserAPI::AddServerName(const std::string &name,
-									  t_parsing_state ctx_) {
-	if (ctx_ != Token::State::K_SERVER)
-		throw std::invalid_argument("Invalid context for server name");
+									  t_parsing_state ctx, size_t line) {
+	if (ctx != Token::State::K_SERVER)
+		throw SyntaxError("Invalid context for server name", line);
 	servers_settings_->back().server_name.push_back(name);
 }
 
-void Parser::ParserAPI::SetRoot(const std::string &root, t_parsing_state ctx_) {
-	if (ctx_ == Token::State::K_SERVER) {
+void Parser::ParserAPI::SetRoot(const std::string &root, t_parsing_state ctx,
+								size_t line) {
+	if (ctx == Token::State::K_SERVER) {
 		servers_settings_->back().common.root = root;
 	} else {
-		if (ctx_ == Token::State::K_LOCATION)
+		if (ctx == Token::State::K_LOCATION)
 			servers_settings_->back().locations.back().common.root = root;
 		else
-			throw std::invalid_argument("Invalid context for root");
+			throw SyntaxError("Invalid context for root", line);
 	}
 }
 
 void Parser::ParserAPI::AddIndex(const std::string &index,
-								 t_parsing_state ctx_) {
-	if (ctx_ == Token::State::K_SERVER) {
+								 t_parsing_state ctx, size_t line) {
+	if (ctx == Token::State::K_SERVER) {
 		servers_settings_->back().common.index = index;
 	} else {
-		if (ctx_ == Token::State::K_LOCATION)
+		if (ctx == Token::State::K_LOCATION)
 			servers_settings_->back().locations.back().common.index = index;
 		else
-			throw std::invalid_argument("Invalid context for index");
+			throw SyntaxError("Invalid context for index", line);
 	}
 }
 
-void Parser::ParserAPI::AddAutoindex(bool autoindex, t_parsing_state ctx_) {
-	if (ctx_ == Token::State::K_SERVER) {
+void Parser::ParserAPI::AddAutoindex(bool autoindex, t_parsing_state ctx,
+									 size_t line) {
+	if (ctx == Token::State::K_SERVER) {
 		servers_settings_->back().common.autoindex = autoindex;
 	} else {
-		if (ctx_ == Token::State::K_LOCATION)
+		if (ctx == Token::State::K_LOCATION)
 			servers_settings_->back().locations.back().common.autoindex =
 				autoindex;
 		else
-			throw std::invalid_argument("Invalid context for autoindex");
+			throw SyntaxError("Invalid context for autoindex", line);
 	}
 }
 
-void Parser::ParserAPI::SetClientMaxSz(uint32_t size, t_parsing_state ctx_) {
-	if (ctx_ == Token::State::K_SERVER) {
+void Parser::ParserAPI::SetClientMaxSz(uint32_t size, t_parsing_state ctx,
+									   size_t line) {
+	if (ctx == Token::State::K_SERVER) {
 		servers_settings_->back().common.client_max_body_size = size;
 	} else {
-		if (ctx_ == Token::State::K_LOCATION)
+		if (ctx == Token::State::K_LOCATION)
 			servers_settings_->back().
 				locations.back().common.client_max_body_size = size;
 		else
-			throw std::invalid_argument(
-				"Invalid context for client_max_body_size");
+			throw SyntaxError(
+				"Invalid context for client_max_body_size", line);
 	}
 }
 
 void Parser::ParserAPI::AddErrorPage(uint16_t code, const std::string &uri,
-							t_parsing_state ctx_) {
-	if (ctx_ == Token::State::K_SERVER) {
+							t_parsing_state ctx, size_t line) {
+	if (ctx == Token::State::K_SERVER) {
 		servers_settings_->back().common.error_pages[code] = uri;
 	} else {
-		if (ctx_ == Token::State::K_LOCATION)
+		if (ctx == Token::State::K_LOCATION)
 			servers_settings_->back().locations.back().common.
 				error_pages[code] = uri;
 		else
-			throw std::invalid_argument("Invalid context for autoindex");
+			throw SyntaxError("Invalid context for autoindex", line);
 	}
 }
 
 void Parser::ParserAPI::AddCgiAssign(const std::string &extension,
 							 const std::string &binaryHandlerPath,
-							 t_parsing_state ctx_) {
-	if (ctx_ == Token::State::K_SERVER) {
+							 t_parsing_state ctx, size_t line) {
+	if (ctx == Token::State::K_SERVER) {
 		servers_settings_->back().common.cgi_assign[extension] =
 			binaryHandlerPath;
 	} else {
-		if (ctx_ == Token::State::K_LOCATION)
+		if (ctx == Token::State::K_LOCATION)
 			servers_settings_->back().locations.back().common.
 				cgi_assign[extension] = binaryHandlerPath;
 		else
-			throw std::invalid_argument("Invalid context for autoindex");
+			throw SyntaxError("Invalid context for autoindex", line);
 	}
 }
 
-void Parser::ParserAPI::AddServer(t_parsing_state ctx_) {
-	if (ctx_ != Token::State::K_INIT)
-		throw std::invalid_argument("Invalid context for server");
+void Parser::ParserAPI::AddServer(t_parsing_state ctx, size_t line) {
+	if (ctx != Token::State::K_INIT)
+		throw SyntaxError("Invalid context for server", line);
 	ServerConfig server;
 	servers_settings_->push_back(server);
 }
@@ -153,16 +156,16 @@ static CommonConfig GetLastCommonCfg(std::vector<ServerConfig>
 }
 
 void Parser::ParserAPI::AddLocation(const std::string &path,
-									t_parsing_state ctx_) {
-	if (ctx_ != Token::State::K_SERVER)
-		throw std::invalid_argument("Invalid context for location");
+									t_parsing_state ctx, size_t line) {
+	if (ctx != Token::State::K_SERVER)
+		throw SyntaxError("Invalid context for location", line);
 	if (canAddLocation(path)) {
 		CommonConfig common = GetLastCommonCfg(servers_settings_);
 		Location location(path, common);
 		servers_settings_->back().locations.push_back(location);
 	} else {
-		throw std::invalid_argument("duplicate location for path '" +
-									path + "'");
+		throw SyntaxError("duplicate location for path '" +
+									path + "'", line);
 	}
 }
 

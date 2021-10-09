@@ -44,7 +44,7 @@ std::map<T, U>map, const std::string &key, const std::string &value) {
 	return o.str();
 }
 
-class ParserAPI {
+class ParserAPI : public Analyser {
  private:
 	std::vector<ServerConfig>	*servers_settings_;
 	bool canAddServer(uint32_t address, uint16_t port);
@@ -54,19 +54,20 @@ class ParserAPI {
 	std::vector<ServerConfig>	&GetServersSettings(void);
 	void SetServersSettings(std::vector<ServerConfig> *server_settings);
 	virtual ~ParserAPI(void) {}
-	void SetListenAddress(uint32_t address, uint16_t port, t_parsing_state ctx);
-	void AddServerName(const std::string &name, t_parsing_state ctx);
-	void SetRoot(const std::string &root, t_parsing_state ctx);
-	void AddIndex(const std::string &index, t_parsing_state ctx);
-	void AddAutoindex(bool autoindex, t_parsing_state ctx);
-	void SetClientMaxSz(uint32_t size, t_parsing_state ctx);
+	void SetListenAddress(uint32_t address, uint16_t port, t_parsing_state ctx,
+						  size_t line);
+	void AddServerName(const std::string &name, t_parsing_state ctx, size_t line);
+	void SetRoot(const std::string &root, t_parsing_state ctx, size_t line);
+	void AddIndex(const std::string &index, t_parsing_state ctx, size_t line);
+	void AddAutoindex(bool autoindex, t_parsing_state ctx, size_t line);
+	void SetClientMaxSz(uint32_t size, t_parsing_state ctx, size_t line);
 	void AddErrorPage(uint16_t code, const std::string &uri,
-								t_parsing_state ctx_);
+					  t_parsing_state ctx, size_t line);
 	void AddCgiAssign(const std::string &extension,
 								const std::string &binaryHandlerPath,
-								t_parsing_state ctx_);
-	void AddServer(t_parsing_state ctx);
-	void AddLocation(const std::string &path, t_parsing_state ctx);
+					  t_parsing_state ctx, size_t line);
+	void AddServer(t_parsing_state ctx, size_t line);
+	void AddLocation(const std::string &path, t_parsing_state ctx, size_t line);
 };
 
 class StatefulSet;
@@ -88,15 +89,6 @@ class StatelessSet : public Analyser {
 	t_parsing_state ListenHandler(const StatefulSet &data);
 // setters
  private:
-	void SetListenAddress(const std::string &svNameAddr,
-						  t_parsing_state ctx) const;
-	void AddServerName(const std::string &name, t_parsing_state ctx) const;
-	void SetRoot(const std::string &root, t_parsing_state ctx) const;
-	void AddIndex(const std::string &index, t_parsing_state ctx) const;
-	void AddAutoindex(const std::string &autoindex, t_parsing_state ctx) const;
-	void SetClientMaxSz(uint32_t size, t_parsing_state ctx) const;
-	void AddLocation(const std::string &name, t_parsing_state ctx) const;
-	void AddServer(t_parsing_state ctx) const;
 	ParserAPI *config_;
 	Engine *parser_;
 };

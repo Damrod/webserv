@@ -153,51 +153,6 @@ bool Parser::Helpers::ParseIpAddressPort(const std::string &input,
 	return EXIT_SUCCESS;
 }
 
-void Parser::StatelessSet::SetListenAddress(const std::string &svnaddr,
-											t_parsing_state ctx) const {
-	std::string errorThrow;
-	uint16_t port;
-	uint32_t address;
-	if (Parser::Helpers::ParseIpAddressPort(svnaddr, &errorThrow,
-											 &port, &address))
-		throw SyntaxError(errorThrow, line_);
-	config_->SetListenAddress(address, port, ctx);
-}
-
-void Parser::StatelessSet::AddLocation(const std::string &path,
-									   t_parsing_state ctx) const {
-	config_->AddLocation(path, ctx);
-}
-
-void Parser::StatelessSet::AddServerName(const std::string &name,
-										 t_parsing_state ctx) const {
-	config_->AddServerName(name, ctx);
-}
-
-void Parser::StatelessSet::SetRoot(const std::string &root,
-								   t_parsing_state ctx) const {
-	config_->SetRoot(root, ctx);
-}
-
-void Parser::StatelessSet::AddIndex(const std::string &index,
-									t_parsing_state ctx) const {
-	config_->AddIndex(index, ctx);
-}
-
-void Parser::StatelessSet::AddAutoindex(const std::string &autoindex,
-										t_parsing_state ctx) const {
-	config_->AddAutoindex(autoindex == "on", ctx);
-}
-
-void Parser::StatelessSet::SetClientMaxSz(uint32_t size,
-										  t_parsing_state ctx) const {
-	config_->SetClientMaxSz(size, ctx);
-}
-
-void Parser::StatelessSet::AddServer(t_parsing_state ctx) const {
-	config_->AddServer(ctx);
-}
-
 t_parsing_state Parser::StatelessSet::InitHandler(const StatefulSet &data) {
 	(void) data;
 	return Token::State::K_EXP_KW;
@@ -257,7 +212,8 @@ t_parsing_state Parser::StatelessSet::AutoindexHandler
 	&& data.GetRawData() != "off")
 		throw SyntaxError("Expecting `on'/`off' but found `" +
 		data.GetRawData()  + "'", data.GetLineNumber());
-	AddAutoindex(data.GetRawData(), data.GetCtx());
+	config_->AddAutoindex(data.GetRawData() == "on", data.GetCtx(),
+						  data.GetLineNumber());
 	return Token::State::K_EXP_SEMIC;
 }
 
@@ -271,26 +227,35 @@ t_parsing_state Parser::StatelessSet::ServerNameHandler
 		parser_->ResetArgNumber();
 		return Token::State::K_EXP_KW;
 	}
-	AddServerName(data.GetRawData(), data.GetCtx());
+	config_->AddServerName(data.GetRawData(), data.GetCtx(),
+						   data.GetLineNumber());
 	parser_->IncrementArgNumber(data.GetRawData());
 	return Token::State::K_SERVER_NAME;
 }
 
 t_parsing_state Parser::StatelessSet::LocationHandler(const StatefulSet &data) {
-	AddLocation(data.GetRawData(), data.GetCtx());
+	config_->AddLocation(data.GetRawData(), data.GetCtx(),
+						 data.GetLineNumber());
 	parser_->PushContext(Token::State::K_LOCATION);
 	parser_->SkipEvent();
 	return parser_->ParserMainLoop();
 }
 
 t_parsing_state Parser::StatelessSet::ListenHandler(const StatefulSet &data) {
-	SetListenAddress(data.GetRawData(), data.GetCtx());
+	std::string errorThrow;
+	uint16_t port;
+	uint32_t address;
+	if (Parser::Helpers::ParseIpAddressPort(data.GetRawData(), &errorThrow,
+											&port, &address))
+		throw SyntaxError(errorThrow, line_);
+	config_->SetListenAddress(address, port, data.GetCtx(),
+							  data.GetLineNumber());
 	return Token::State::K_EXP_SEMIC;
 }
 
 t_parsing_state Parser::StatelessSet::ServerHandler(const StatefulSet &data) {
 	(void)data;
-	AddServer(data.GetCtx());
+	config_->AddServer(data.GetCtx(), data.GetLineNumber());
 	parser_->PushContext(Token::State::K_SERVER);
 	return parser_->ParserMainLoop();
 }
