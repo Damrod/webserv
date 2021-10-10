@@ -93,6 +93,7 @@ class StatelessSet : public Analyser {
 //  state handlers
 	t_parsing_state SyntaxFailer(const StatefulSet &data);
 	t_parsing_state ServerNameHandler(const StatefulSet &data);
+	t_parsing_state ServerNameHandlerSemic(const StatefulSet &data);
 	t_parsing_state InitHandler(const StatefulSet &data);
 	t_parsing_state SemicHandler(const StatefulSet &data);
 	t_parsing_state ExpKwHandlerClose(const StatefulSet &data);
@@ -108,6 +109,7 @@ class StatelessSet : public Analyser {
 	t_parsing_state ClientMaxBodySizeHandler(const StatefulSet &data);
 	t_parsing_state ReturnHandler(const StatefulSet &data);
 	t_parsing_state LimitExceptHandler(const StatefulSet &data);
+	t_parsing_state LimitExceptHandlerSemic(const StatefulSet &data);
 	t_parsing_state UploadStoreHandler(const StatefulSet &data);
 
  private:
@@ -156,13 +158,11 @@ class Engine: public Analyser {
 class StatefulSet : public Analyser {
  public:
 	StatefulSet(size_t line,
-				t_token_type evt,
 				t_parsing_state st,
 				const std::string &rawData,
 				t_parsing_state ctx,
 				const std::string &error,
 				size_t argNumber);
-	t_token_type GetEvent(void) const;
 	t_parsing_state GetCtx(void) const;
 	t_parsing_state GetState(void) const;
 	const std::string &GetRawData(void) const;
@@ -172,7 +172,6 @@ class StatefulSet : public Analyser {
 
  private:
 	const std::string &error_msg_;
-	const t_token_type event_;
 	const t_parsing_state state_;
 	const std::string &rawData_;
 	const t_parsing_state ctx_;
