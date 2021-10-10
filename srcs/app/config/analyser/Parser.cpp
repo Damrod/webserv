@@ -335,7 +335,7 @@ t_parsing_state Parser::StatelessSet::CgiAssignHandler
 		return Token::State::K_CGI_ASSIGN;
 	} else if (data.GetArgNumber() == 1) {
 		config_->AddCgiAssign(parser_->GetArgs()[0],
-							  data.GetRawData().c_str(),
+							  data.GetRawData(),
 							  data.GetCtx(),
 							  LINE);
 		parser_->ResetArgNumber();
@@ -360,7 +360,7 @@ t_parsing_state Parser::StatelessSet::ReturnHandler
 			|| UINT16_MAX < status)
 			throw Analyser::SyntaxError("Bad `return' status", LINE);
 		config_->AddReturn(static_cast<uint16_t>(status),
-						   data.GetRawData().c_str(),
+						   data.GetRawData(),
 						   data.GetCtx(), LINE);
 		parser_->ResetArgNumber();
 		return Token::State::K_EXP_SEMIC;
