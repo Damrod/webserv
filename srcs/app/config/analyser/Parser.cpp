@@ -46,7 +46,7 @@ std::vector < Parser::s_trans > Parser::Engine::TransitionFactory_(void) {
 	ret.push_back((Parser::s_trans){.state = Token::State::K_EXP_SEMIC,
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
-			.errormess = "Expecting ;"});
+			.errormess = "Expecting `;'"});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_AUTOINDEX,
 			.evt = Token::Type::T_WORD,
 			.apply = &Parser::StatelessSet::AutoindexHandler,
