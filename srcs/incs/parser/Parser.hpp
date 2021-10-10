@@ -41,7 +41,7 @@ std::map<T, U>map, const std::string &key, const std::string &value) {
 	for(typename std::map<T, U>::const_iterator iter = map.begin();
 		iter != map.end();
 		++iter, ++i) {
-		for (size_t i = 0; i < static_cast<size_t>(level + 1); ++i)
+		for (size_t j = 0; j < static_cast<size_t>(level + 1); ++j)
 			o << "\t";
 		o << i << ": " << key << ": " << iter->first << ", "<< value << ":"
 		  << iter->second << "\n";
