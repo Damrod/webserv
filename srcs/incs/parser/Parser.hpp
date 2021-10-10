@@ -33,15 +33,17 @@ template <typename T, typename U>
 std::string MapToStrIndented(uint8_t level, const std::string &title,
 std::map<T, U>map, const std::string &key, const std::string &value) {
 	std::stringstream o;
-	for (size_t i = 0; i < level; ++i)
+	size_t i;
+	for (i = 0; i < level; ++i)
 		o << "\t";
 	o << title << " : \n";
+	i = 0;
 	for(typename std::map<T, U>::const_iterator iter = map.begin();
 		iter != map.end();
-		++iter) {
+		++iter, ++i) {
 		for (size_t i = 0; i < static_cast<size_t>(level + 1); ++i)
 			o << "\t";
-		o << key << ": " << iter->first << ", "<< value << ":"
+		o << i << ": " << key << ": " << iter->first << ", "<< value << ":"
 		  << iter->second << "\n";
 	}
 	return o.str();

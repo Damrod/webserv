@@ -249,7 +249,7 @@ std::ostream &operator<<(std::ostream &o,
 				itl->limit_except.begin();
 			for (size_t k = 0; itle != itl->limit_except.end();
 				 ++itle, ++k)
-				o << k << "\t\t\t" << *itle << "\n";
+				o << "\t\t\t" << k << ": " << *itle << "\n";
 			o << printCommon(itl->common, 2);
 		}
 	}
