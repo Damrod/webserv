@@ -97,19 +97,11 @@ std::vector < Parser::s_trans > Parser::Engine::TransitionFactory_(void) {
 			.apply = &Parser::StatelessSet::ErrorPageHandler,
 			.errormess = ""});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_ERROR_PAGE,
-			.evt = Token::Type::T_SEMICOLON,
-			.apply = &Parser::StatelessSet::ErrorPageHandler,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_ERROR_PAGE,
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
 			.errormess = "Unexpected token after error_page directive"});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_CGI_ASSIGN,
 			.evt = Token::Type::T_WORD,
-			.apply = &Parser::StatelessSet::CgiAssignHandler,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_CGI_ASSIGN,
-			.evt = Token::Type::T_SEMICOLON,
 			.apply = &Parser::StatelessSet::CgiAssignHandler,
 			.errormess = ""});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_CGI_ASSIGN,
@@ -154,10 +146,6 @@ std::vector < Parser::s_trans > Parser::Engine::TransitionFactory_(void) {
 			.errormess = "Unexpected token after limit_except directive"});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_RETURN,
 			.evt = Token::Type::T_WORD,
-			.apply = &Parser::StatelessSet::ReturnHandler,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_RETURN,
-			.evt = Token::Type::T_SEMICOLON,
 			.apply = &Parser::StatelessSet::ReturnHandler,
 			.errormess = ""});
 	ret.push_back((Parser::s_trans){.state = Token::State::K_RETURN,
@@ -342,126 +330,65 @@ t_parsing_state Parser::StatelessSet::LimitExceptHandler
 
 t_parsing_state Parser::StatelessSet::CgiAssignHandler
 													(const StatefulSet &data) {
-	switch (data.GetArgNumber()) {
-	case 0:
-	case 1: {
-		switch (data.GetEvent()) {
-		case Token::Type::T_WORD: {
-			parser_->IncrementArgNumber(data.GetRawData());
-			return Token::State::K_CGI_ASSIGN;
-		}
-		default: {
-			throw Analyser::SyntaxError("Unexpected token after "
-										"cgi_assign directive", LINE);
-		}
-		}
-	}
-	case 2: {
-		switch (data.GetEvent()) {
-		case Token::Type::T_SEMICOLON: {
-			config_->AddCgiAssign(parser_->GetArgs()[0],
-								  parser_->GetArgs()[1],
-								  data.GetCtx(),
-								  data.GetLineNumber());
-			parser_->ResetArgNumber();
-			return Token::State::K_EXP_KW;
-		}
-		default: {
-			throw Analyser::SyntaxError("Invalid number of arguments in "
-										"cgi_assign directive", LINE);
-		}
-		}
-	}
-	default : {
+	if (data.GetArgNumber() == 0) {
+		parser_->IncrementArgNumber(data.GetRawData());
+		return Token::State::K_CGI_ASSIGN;
+	} else if (data.GetArgNumber() == 1) {
+		config_->AddCgiAssign(parser_->GetArgs()[0],
+							  data.GetRawData().c_str(),
+							  data.GetCtx(),
+							  data.GetLineNumber());
+		parser_->ResetArgNumber();
+		return Token::State::K_EXP_SEMIC;
+	} else {
 		throw Analyser::SyntaxError("Invalid number of arguments in "
 									"cgi_assign directive", LINE);
-	}
 	}
 }
 
 t_parsing_state Parser::StatelessSet::ReturnHandler
 (const StatefulSet &data) {
-	switch (data.GetArgNumber()) {
-	case 0:
-	case 1: {
-		switch (data.GetEvent()) {
-		case Token::Type::T_WORD: {
-			parser_->IncrementArgNumber(data.GetRawData());
-			return Token::State::K_RETURN;
-		}
-		default: {
-			throw Analyser::SyntaxError("Unexpected token after "
-										"return directive", LINE);
-		}
-		}
-	}
-	case 2: {
-		switch (data.GetEvent()) {
-		case Token::Type::T_SEMICOLON: {
-			char *endptr = NULL;
-			int64_t status = std::strtol(parser_->GetArgs()[0].c_str(),
-										  &endptr,
-										  10);
-			if ((endptr && *endptr) || errno || status < 0 || UINT16_MAX < status)
-				throw Analyser::SyntaxError("Bad return status", LINE);
-			config_->AddReturn(static_cast<uint16_t>(status),
-							   parser_->GetArgs()[1],
-								data.GetCtx(), data.GetLineNumber());
-			parser_->ResetArgNumber();
-			return Token::State::K_EXP_KW;
-		}
-		default: {
-			throw Analyser::SyntaxError("Invalid number of arguments in "
-										"return directive", LINE);
-		}
-		}
-	}
-	default : {
+	if (data.GetArgNumber() == 0) {
+		parser_->IncrementArgNumber(data.GetRawData());
+		return Token::State::K_RETURN;
+	} else if (data.GetArgNumber() == 1) {
+		char *endptr = NULL;
+		int64_t status = std::strtol(parser_->GetArgs()[0].c_str(),
+									 &endptr,
+									 10);
+		if ((endptr && *endptr) || errno || status < 0
+			|| UINT16_MAX < status)
+			throw Analyser::SyntaxError("Bad return status", LINE);
+		config_->AddReturn(static_cast<uint16_t>(status),
+						   data.GetRawData().c_str(),
+						   data.GetCtx(), data.GetLineNumber());
+		parser_->ResetArgNumber();
+		return Token::State::K_EXP_SEMIC;
+	} else {
 		throw Analyser::SyntaxError("Invalid number of arguments in "
 									"return directive", LINE);
-	}
 	}
 }
 
 t_parsing_state Parser::StatelessSet::ErrorPageHandler
 													(const StatefulSet &data) {
-	switch (data.GetArgNumber()) {
-	case 0:
-	case 1: {
-		switch (data.GetEvent()) {
-		case Token::Type::T_WORD: {
-			parser_->IncrementArgNumber(data.GetRawData());
-			return Token::State::K_ERROR_PAGE;
-		}
-		default: {
-			throw Analyser::SyntaxError("Unexpected token after "
-										"error_page directive", LINE);
-		}
-		}
-	}
-	case 2: {
-		switch (data.GetEvent()) {
-		case Token::Type::T_SEMICOLON: {
-			uint16_t code;
-			std::string uri;
-			if (ParserErrorPage_(parser_->GetArgs(), &code, &uri))
-				throw SyntaxError("Failed to parse error_page directive "
-								  "arguments", data.GetLineNumber());
-			config_->AddErrorPage(code, uri, data.GetCtx(),
-								  data.GetLineNumber());
-			parser_->ResetArgNumber();
-			return Token::State::K_EXP_KW;
-		}
-		default: {
-			throw Analyser::SyntaxError("Invalid number of arguments in "
-										"error_page directive", LINE);
-		}
-		}
-	}
-	default : {
+	if (data.GetArgNumber() == 0) {
+		parser_->IncrementArgNumber(data.GetRawData());
+		return Token::State::K_ERROR_PAGE;
+	} else if (data.GetArgNumber() == 1) {
+		uint16_t code;
+		std::string uri;
+		parser_->IncrementArgNumber(data.GetRawData());
+		if (ParserErrorPage_(parser_->GetArgs(), &code, &uri))
+			throw SyntaxError("Failed to parse error_page directive "
+							  "arguments", data.GetLineNumber());
+		config_->AddErrorPage(code, uri, data.GetCtx(),
+							  data.GetLineNumber());
+		parser_->ResetArgNumber();
+		return Token::State::K_EXP_SEMIC;
+	} else {
 		throw Analyser::SyntaxError("Invalid number of arguments in "
 									"error_page directive", LINE);
-	}
 	}
 }
 
