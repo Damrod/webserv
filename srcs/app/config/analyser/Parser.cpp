@@ -265,7 +265,7 @@ bool Parser::StatelessSet::isKwAllowedInCtx_(t_parsing_state kw,
 										t_parsing_state ctx) {
 	if ((ctx != Token::State::K_LOCATION && ctx != Token::State::K_SERVER
 		&& ctx != Token::State::K_INIT)
-	|| (ctx == Token::State::K_INIT && kw != Token::State::K_SERVER)
+	|| (ctx != Token::State::K_INIT && kw == Token::State::K_SERVER)
 	|| (ctx == Token::State::K_SERVER && kw == Token::State::K_LIMIT_EXCEPT)
 	|| (ctx == Token::State::K_LOCATION && (kw == Token::State::K_LISTEN
 									|| kw == Token::State::K_SERVER_NAME)))
