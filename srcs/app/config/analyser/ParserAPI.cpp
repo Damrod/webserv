@@ -22,14 +22,13 @@ bool Parser::ParserAPI::canAddServer(uint32_t address, uint16_t port) {
 }
 
 bool Parser::ParserAPI::canAddLocation(const std::string &path) {
-	// std::vector<Location>::const_iterator it = servers_settings_->
-	// back().locations.begin();
-	// for (; it != servers_settings_->back().locations.end(); ++it) {
-	// 	if (it->path == path) {
-	// 		return false;
-	// 	}
-	// }
-	(void)path;
+	std::vector<Location>::const_iterator it = servers_settings_->
+	back().locations.begin();
+	for (; it != servers_settings_->back().locations.end(); ++it) {
+		if (it->path == path) {
+			return false;
+		}
+	}
 	return true;
 }
 
