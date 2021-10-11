@@ -252,13 +252,6 @@ void	HttpRequestHandler::MovedPermanently_(const HttpRequest &request) {
 }
 
 void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
-	if (!request_location_->common.return_url.empty()) {
-		DoRedirection_();
-		return;
-	}
-	if (!HasAcceptedFormat_(request)) {
-		return;
-	}
 	const std::string full_path =
 							request_location_->common.root + request.GetPath();
 	if (!IsValidPath_(full_path)) {
