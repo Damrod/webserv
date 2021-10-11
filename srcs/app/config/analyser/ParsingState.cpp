@@ -1,7 +1,8 @@
 #include <parser/Parser.hpp>
 
-std::map<std::string, t_parsing_state> Parser::State::KeywordMapFactory_(void) {
-	std::map<std::string, enum e_id> ret;
+std::map<const std::string, t_parsing_state>
+								Parser::State::KeywordMapFactory_(void) {
+	std::map<const std::string, enum e_id> ret;
 	ret.insert(std::make_pair("server", Parser::State::K_SERVER));
 	ret.insert(std::make_pair("listen", Parser::State::K_LISTEN));
 	ret.insert(std::make_pair("server_name", Parser::State::K_SERVER_NAME));
@@ -30,8 +31,8 @@ std::string Parser::State::GetParsingStateTypeStr(t_parsing_state type) {
 	return "";
 }
 
-const std::map<std::string, t_parsing_state> Parser::State::keyword_to_str =
-	Parser::State::KeywordMapFactory_();
+const std::map<const std::string, t_parsing_state> Parser::State::
+keyword_to_str = Parser::State::KeywordMapFactory_();
 
 t_parsing_state Parser::State::GetParsingStateTypeEnum(const Token &token) {
 	if (token.getType() == Token::Type::T_SEMICOLON

@@ -74,14 +74,10 @@ class State {
 	};
 	static std::string GetParsingStateTypeStr(enum e_id type);
 	static enum e_id GetParsingStateTypeEnum(const Token &token);
-	typedef struct keyword_to_str {
-		enum e_id state;
-		std::string	data;
-	} t_kw2str;
 
  private:
-	static std::map<std::string, enum e_id> KeywordMapFactory_(void);
-	static const std::map<std::string, enum e_id> keyword_to_str;
+	static std::map<const std::string, enum e_id> KeywordMapFactory_(void);
+	static const std::map<const std::string, enum e_id> keyword_to_str;
 };
 
 class ParserAPI : public Analyser {
@@ -95,27 +91,25 @@ class ParserAPI : public Analyser {
 	std::vector<ServerConfig> &GetServersSettings(void);
 	void SetServersSettings(std::vector<ServerConfig> *server_settings);
 	virtual ~ParserAPI(void) {}
-	void SetListenAddress(uint32_t address, uint16_t port,
-						  State::e_id ctx, size_t line);
-	void AddServerName(const std::vector<std::string> &args,
-					   State::e_id ctx, size_t line);
+	void SetListenAddress(uint32_t address, uint16_t port, State::e_id ctx,
+						  size_t line);
+	void AddServerName(const std::vector<std::string> &args, State::e_id ctx,
+					   size_t line);
 	void SetRoot(const std::string &root, State::e_id ctx, size_t line);
-	void AddIndex(const std::string &index, State::e_id ctx,
-				  size_t line);
+	void AddIndex(const std::string &index, State::e_id ctx,  size_t line);
 	void AddAutoindex(bool autoindex, State::e_id ctx, size_t line);
 	void SetClientMaxSz(uint32_t size, State::e_id ctx, size_t line);
-	void AddErrorPage(uint16_t code, const std::string &uri,
-					  State::e_id ctx, size_t line);
+	void AddErrorPage(uint16_t code, const std::string &uri, State::e_id ctx,
+					  size_t line);
 	void AddCgiAssign(const std::string &extension,
-					  const std::string &binaryHandlerPath,
-					  State::e_id ctx, size_t line);
+					  const std::string &binaryHandlerPath, State::e_id ctx,
+					  size_t line);
 	void AddServer(State::e_id ctx, size_t line);
 	void AddLocation(const std::string &path, State::e_id ctx,
 					 size_t line);
 	void AddReturn(uint16_t status, const std::string &url,
 				   State::e_id ctx, size_t line);
-	void AddUploadStore(const std::string &store,
-						State::e_id ctx, size_t line);
+	void AddUploadStore(const std::string &store, State::e_id ctx, size_t line);
 	void AddLimitExcept(const std::vector<std::string> &httpMethods,
 						State::e_id ctx, size_t line);
 };
