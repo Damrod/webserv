@@ -1,51 +1,48 @@
 #include <parser/Parser.hpp>
 
-const Parser::State::t_kw2str Parser::State::kw2strmap[14] = {
-		{.state = Parser::State::K_SERVER,
-		.data = "server"},
-		{.state = Parser::State::K_LISTEN,
-		.data = "listen"},
-		{.state = Parser::State::K_SERVER_NAME,
-		.data = "server_name"},
-		{.state = Parser::State::K_ROOT,
-		.data = "root"},
-		{.state = Parser::State::K_CLIENT_MAX_BODY_SIZE,
-		.data = "client_max_body_size"},
-		{.state = Parser::State::K_ERROR_PAGE,
-		.data = "error_page"},
-		{.state = Parser::State::K_RETURN,
-		.data = "return"},
-		{.state = Parser::State::K_AUTOINDEX,
-		.data = "autoindex"},
-		{.state = Parser::State::K_INDEX,
-		.data = "index"},
-		{.state = Parser::State::K_UPLOAD_STORE,
-		.data = "upload_store"},
-		{.state = Parser::State::K_SERVER_NAME,
-		.data = "server_name"},
-		{.state = Parser::State::K_CGI_ASSIGN,
-		.data = "cgi_assign"},
-		{.state = Parser::State::K_LOCATION,
-		.data = "location"},
-		{.state = Parser::State::K_LIMIT_EXCEPT,
-		.data = "limit_except"}};
+std::map<std::string, t_parsing_state> Parser::State::KeywordMapFactory_(void) {
+	std::map<std::string, enum e_id> ret;
+	ret.insert(std::make_pair("server", Parser::State::K_SERVER));
+	ret.insert(std::make_pair("server", Parser::State::K_SERVER));
+	ret.insert(std::make_pair("listen", Parser::State::K_LISTEN));
+	ret.insert(std::make_pair("server_name", Parser::State::K_SERVER_NAME));
+	ret.insert(std::make_pair("root", Parser::State::K_ROOT));
+	ret.insert(std::make_pair("client_max_body_size",
+							  Parser::State::K_CLIENT_MAX_BODY_SIZE));
+	ret.insert(std::make_pair("error_page", Parser::State::K_ERROR_PAGE));
+	ret.insert(std::make_pair("return", Parser::State::K_RETURN));
+	ret.insert(std::make_pair("autoindex", Parser::State::K_AUTOINDEX));
+	ret.insert(std::make_pair("index", Parser::State::K_INDEX));
+	ret.insert(std::make_pair("upload_store", Parser::State::K_UPLOAD_STORE));
+	ret.insert(std::make_pair("server_name", Parser::State::K_SERVER_NAME));
+	ret.insert(std::make_pair("cgi_assign", Parser::State::K_CGI_ASSIGN));
+	ret.insert(std::make_pair("location", Parser::State::K_LOCATION));
+	ret.insert(std::make_pair("limit_except", Parser::State::K_LIMIT_EXCEPT));
+	return ret;
+}
 
-std::string Parser::State::GetParsingStateTypeStr(enum e_id type) {
-	for (size_t i = 0; i < sizeof(kw2strmap)/sizeof(kw2strmap[0]); ++i) {
-		if(type == kw2strmap[i].state)
-			return kw2strmap[i].data;
+
+std::string Parser::State::GetParsingStateTypeStr(t_parsing_state type) {
+	std::map<std::string, t_parsing_state>::const_iterator itb =
+		keyword_to_str.begin();
+	for (; itb != keyword_to_str.end(); ++itb) {
+		if(type == itb->second)
+			return itb->first;
 	}
 	return "";
 }
+
+const std::map<std::string, t_parsing_state> Parser::State::keyword_to_str =
+	Parser::State::KeywordMapFactory_();
 
 t_parsing_state Parser::State::GetParsingStateTypeEnum(const Token &token) {
 	if (token.getType() == Token::Type::T_SEMICOLON
 		|| token.getType() == Token::Type::T_SCOPE_OPEN
 		|| token.getType() == Token::Type::T_SCOPE_CLOSE)
 		return K_EXP_KW;
-	for (size_t i = 0; i < sizeof(kw2strmap)/sizeof(kw2strmap[0]); ++i) {
-		if(token.getRawData() == kw2strmap[i].data)
-			return kw2strmap[i].state;
-	}
+	std::map<std::string, t_parsing_state>::const_iterator found =
+		keyword_to_str.find(token.getRawData());
+	if (found != keyword_to_str.end())
+		return found->second;
 	return Parser::State::K_NONE;
 }
