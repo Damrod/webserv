@@ -1,5 +1,5 @@
-#ifndef SRCS_INCS_PARSER_CONFIGSETTERS_HPP_
-#define SRCS_INCS_PARSER_CONFIGSETTERS_HPP_
+#ifndef SRCS_INCS_PARSER_PARSERMANAGER_HPP_
+#define SRCS_INCS_PARSER_PARSERMANAGER_HPP_
 
 #include <arpa/inet.h>
 #include <sstream>
@@ -23,4 +23,4 @@ class ParserManager {
 std::ostream &operator<<(std::ostream &o,
 						 const std::vector<ServerConfig> &server_settings);
 
-#endif  // SRCS_INCS_PARSER_CONFIGSETTERS_HPP_
+#endif  // SRCS_INCS_PARSER_PARSERMANAGER_HPP_
