@@ -11,8 +11,8 @@ Parser::Engine::Engine(const std::list<Token> &token, ParserAPI *config) :
 	ParserMainLoop();
 }
 
-Parser::t_evt Parser::Event::GetEventTypeEnum(const Token &token) {
-	return static_cast<Parser::t_evt>(token.getType());
+t_evt Parser::Event::GetEventTypeEnum(const Token &token) {
+	return static_cast<t_evt>(token.getType());
 }
 
 void Parser::Engine::PushContext(const t_parsing_state &ctx) {
@@ -23,7 +23,7 @@ void Parser::Engine::PopContext(void) {
 	ctx_.pop();
 }
 
-Parser::t_evt Parser::Engine::SkipEvent(void) {
+t_evt Parser::Engine::SkipEvent(void) {
 	++itc_;
 	if (itc_ != ite_)
 		return Event::GetEventTypeEnum(*itc_);

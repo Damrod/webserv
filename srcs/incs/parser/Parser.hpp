@@ -176,11 +176,9 @@ class StatelessSet : public Analyser {
 typedef State::e_id (Parser::StatelessSet::*StateHandler)
 	(const StatefulSet &data);
 
-typedef Event::e_id t_evt;
-
 struct s_trans {
 	State::e_id state;
-	t_evt evt;
+	Event::e_id evt;
 	StateHandler apply;
 	std::string errormess;
 };
@@ -191,7 +189,7 @@ class Engine: public Analyser {
 	State::e_id ParserMainLoop(void);
 	void PushContext(const State::e_id &ctx);
 	void PopContext(void);
-	t_evt SkipEvent(void);
+	Event::e_id SkipEvent(void);
 	const std::vector<std::string> &GetArgs(void) const;
 	void IncrementArgNumber(const std::string &arg);
 	void ResetArgNumber(void);
@@ -232,5 +230,6 @@ class StatefulSet : public Analyser {
 }  // namespace Parser
 
 typedef enum Parser::State::e_id t_parsing_state;
+typedef Parser::Event::e_id t_evt;
 
 #endif  // SRCS_INCS_PARSER_PARSER_HPP_
