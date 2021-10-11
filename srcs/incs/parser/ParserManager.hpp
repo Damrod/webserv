@@ -4,6 +4,7 @@
 #include <arpa/inet.h>
 #include <sstream>
 #include <vector>
+#include <list>
 #include <string>
 #include <parser/Token.hpp>
 #include <parser/Lexer.hpp>
@@ -18,6 +19,13 @@ class ParserManager {
  private:
 	std::vector<ServerConfig> servers_settings_;
 	std::string path_;
+	Preprocessor preprocessor_;
+	std::string filebuff_;
+	Lexer lexer_;
+	std::list<Token> tokens_;
+	Parser::ParserAPI api_;
+	Parser::Engine parser_;
+	std::vector<ServerConfig> parse_(const std::string &path);
 };
 
 std::ostream &operator<<(std::ostream &o,
