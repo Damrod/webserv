@@ -296,8 +296,8 @@ bool	HttpRequest::ParseBody_(const std::string &raw_request) {
 		return true;
 	errno = 0;
 	char *endptr;
-	std::size_t content_length = std::strtoul(
-			GetHeaderValue("Content-Length").c_str(), &endptr, 10);
+	std::string content_length_str = GetHeaderValue("Content-Length");
+	std::size_t content_length = std::strtoul(content_length_str.c_str(), &endptr, 10);
 	return !errno && *endptr == '\0' && content_length == body_.size();
 }
 
