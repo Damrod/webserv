@@ -95,22 +95,23 @@ class ParserAPI : public Analyser {
 	std::vector<ServerConfig> &GetServersSettings(void);
 	void SetServersSettings(std::vector<ServerConfig> *server_settings);
 	virtual ~ParserAPI(void) {}
-	void SetListenAddress(uint32_t address, uint16_t port, Parser::State::e_id ctx,
-						  size_t line);
+	void SetListenAddress(uint32_t address, uint16_t port,
+						  Parser::State::e_id ctx, size_t line);
 	void AddServerName(const std::vector<std::string> &args,
-					   Parser::State::e_id ctx,
-					   size_t line);
+					   Parser::State::e_id ctx, size_t line);
 	void SetRoot(const std::string &root, Parser::State::e_id ctx, size_t line);
-	void AddIndex(const std::string &index, Parser::State::e_id ctx, size_t line);
+	void AddIndex(const std::string &index, Parser::State::e_id ctx,
+				  size_t line);
 	void AddAutoindex(bool autoindex, Parser::State::e_id ctx, size_t line);
 	void SetClientMaxSz(uint32_t size, Parser::State::e_id ctx, size_t line);
 	void AddErrorPage(uint16_t code, const std::string &uri,
 					  Parser::State::e_id ctx, size_t line);
 	void AddCgiAssign(const std::string &extension,
-								const std::string &binaryHandlerPath,
+					  const std::string &binaryHandlerPath,
 					  Parser::State::e_id ctx, size_t line);
 	void AddServer(Parser::State::e_id ctx, size_t line);
-	void AddLocation(const std::string &path, Parser::State::e_id ctx, size_t line);
+	void AddLocation(const std::string &path, Parser::State::e_id ctx,
+					 size_t line);
 	void AddReturn(uint16_t status, const std::string &url,
 				   Parser::State::e_id ctx, size_t line);
 	void AddUploadStore(const std::string &store,
