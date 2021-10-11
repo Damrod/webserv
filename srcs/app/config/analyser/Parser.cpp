@@ -187,9 +187,10 @@ bool Parser::StatelessSet::ParserErrorPage_(
 	char *endptr = NULL;
 	if (input.size() != 2)
 		return EXIT_FAILURE;
-	*code = std::strtol(input[0].c_str(), &endptr, 10);
-	if ((endptr && *endptr) || errno || *code < 100 || *code > 505)
+	int64_t result = std::strtol(input[0].c_str(), &endptr, 10);
+	if ((endptr && endptr[0] != '\0') || errno || result < 100 || result > 505)
 		return EXIT_FAILURE;
+	*code = result;
 	*uri = input[1];
 	return EXIT_SUCCESS;
 }
