@@ -13,153 +13,153 @@ Parser::Engine::Engine(const std::list<Token> &token, ParserAPI *config) :
 	transitions_(TransitionFactory_()),
 	args_() {
 	line_ = 1;
-	ctx_.push(Token::State::K_INIT);
+	ctx_.push(Parser::State::K_INIT);
 	ParserMainLoop();
 }
 
 std::vector < Parser::s_trans > Parser::Engine::TransitionFactory_(void) {
 	std::vector < Parser::s_trans > ret;
-	ret.push_back((Parser::s_trans){.state = Token::State::K_INIT,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_INIT,
 			.evt = Token::Type::T_SCOPE_OPEN,
 			.apply = &Parser::StatelessSet::InitHandler,
 			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_INIT,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_INIT,
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
 			.errormess = "Expecting `{'"});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_EXP_KW,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_EXP_KW,
 			.evt = Token::Type::T_SCOPE_CLOSE,
 			.apply = &Parser::StatelessSet::ExpKwHandlerClose,
 			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_EXP_KW,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_EXP_KW,
 			.evt = Token::Type::T_WORD,
 			.apply = &Parser::StatelessSet::ExpKwHandlerKw,
 			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_EXP_KW,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_EXP_KW,
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
 			.errormess = "Expecting keyword"});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_EXP_SEMIC,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_EXP_SEMIC,
 			.evt = Token::Type::T_SEMICOLON,
 			.apply = &Parser::StatelessSet::SemicHandler,
 			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_EXP_SEMIC,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_EXP_SEMIC,
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
 			.errormess = "Expecting `;'"});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_AUTOINDEX,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_AUTOINDEX,
 			.evt = Token::Type::T_WORD,
 			.apply = &Parser::StatelessSet::AutoindexHandler,
 			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_AUTOINDEX,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_AUTOINDEX,
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
 			.errormess = "Expecting `on' or `off' after `autoindex'"
 			" directive"});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_SERVER_NAME,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_SERVER_NAME,
 			.evt = Token::Type::T_WORD,
 			.apply = &Parser::StatelessSet::ServerNameHandler,
 			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_SERVER_NAME,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_SERVER_NAME,
 			.evt = Token::Type::T_SEMICOLON,
 			.apply = &Parser::StatelessSet::ServerNameHandlerSemic,
 			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_SERVER_NAME,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_SERVER_NAME,
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
 			.errormess = "Unexpected token after `server_name' "
 			"directive"});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_LOCATION,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_LOCATION,
 			.evt = Token::Type::T_WORD,
 			.apply = &Parser::StatelessSet::LocationHandler,
 			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_LOCATION,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_LOCATION,
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
 			.errormess = "Expecting path after `location' directive"});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_SERVER,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_SERVER,
 			.evt = Token::Type::T_SCOPE_OPEN,
 			.apply = &Parser::StatelessSet::ServerHandler,
 			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_SERVER,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_SERVER,
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
 			.errormess = "Expecting `{' after `server' directive"});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_LISTEN,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_LISTEN,
 			.evt = Token::Type::T_WORD,
 			.apply = &Parser::StatelessSet::ListenHandler,
 			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_LISTEN,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_LISTEN,
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
 			.errormess = "Unexpected token after `listen' directive"});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_ERROR_PAGE,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_ERROR_PAGE,
 			.evt = Token::Type::T_WORD,
 			.apply = &Parser::StatelessSet::ErrorPageHandler,
 			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_ERROR_PAGE,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_ERROR_PAGE,
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
 			.errormess = "Unexpected token after `error_page' directive"});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_CGI_ASSIGN,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_CGI_ASSIGN,
 			.evt = Token::Type::T_WORD,
 			.apply = &Parser::StatelessSet::CgiAssignHandler,
 			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_CGI_ASSIGN,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_CGI_ASSIGN,
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
 			.errormess = "Unexpected token after `cgi_assign' directive"});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_ROOT,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_ROOT,
 			.evt = Token::Type::T_WORD,
 			.apply = &Parser::StatelessSet::RootHandler,
 			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_ROOT,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_ROOT,
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
 			.errormess = "Unexpected token after `root' directive"});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_INDEX,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_INDEX,
 			.evt = Token::Type::T_WORD,
 			.apply = &Parser::StatelessSet::IndexHandler,
 			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_INDEX,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_INDEX,
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
 			.errormess = "Unexpected token after `index' directive"});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_LIMIT_EXCEPT,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_LIMIT_EXCEPT,
 			.evt = Token::Type::T_WORD,
 			.apply = &Parser::StatelessSet::LimitExceptHandler,
 			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_LIMIT_EXCEPT,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_LIMIT_EXCEPT,
 			.evt = Token::Type::T_SEMICOLON,
 			.apply = &Parser::StatelessSet::LimitExceptHandlerSemic,
 			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_LIMIT_EXCEPT,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_LIMIT_EXCEPT,
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
 			.errormess = "Unexpected token after `limit_except' directive"});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_RETURN,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_RETURN,
 			.evt = Token::Type::T_WORD,
 			.apply = &Parser::StatelessSet::ReturnHandler,
 			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_RETURN,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_RETURN,
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
 			.errormess = "Unexpected token after `return' directive"});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_UPLOAD_STORE,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_UPLOAD_STORE,
 			.evt = Token::Type::T_WORD,
 			.apply = &Parser::StatelessSet::UploadStoreHandler,
 			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Token::State::K_UPLOAD_STORE,
+	ret.push_back((Parser::s_trans){.state = Parser::State::K_UPLOAD_STORE,
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
 			.errormess = "Unexpected token after `upload_store' directive"});
 	ret.push_back((Parser::s_trans){.state =
-			Token::State::K_CLIENT_MAX_BODY_SIZE,
+			Parser::State::K_CLIENT_MAX_BODY_SIZE,
 			.evt = Token::Type::T_WORD,
 			.apply = &Parser::StatelessSet::ClientMaxBodySizeHandler,
 			.errormess = ""});
 	ret.push_back((Parser::s_trans){.state =
-			Token::State::K_CLIENT_MAX_BODY_SIZE,
+			Parser::State::K_CLIENT_MAX_BODY_SIZE,
 			.evt = Token::Type::T_NONE,
 			.apply = &Parser::StatelessSet::SyntaxFailer,
 			.errormess = "Unexpected token after `client_max_body_size'"
@@ -236,12 +236,12 @@ bool Parser::StatelessSet::ParseIpAddressPort_(const std::string &input,
 
 t_parsing_state Parser::StatelessSet::InitHandler(const StatefulSet &data) {
 	(void) data;
-	return Token::State::K_EXP_KW;
+	return Parser::State::K_EXP_KW;
 }
 
 t_parsing_state Parser::StatelessSet::SemicHandler(const StatefulSet &data) {
 	(void) data;
-	return Token::State::K_EXP_KW;
+	return Parser::State::K_EXP_KW;
 }
 
 t_parsing_state Parser::StatelessSet::SyntaxFailer(const StatefulSet &data) {
@@ -258,30 +258,30 @@ t_parsing_state Parser::StatelessSet::ExpKwHandlerClose
 													(const StatefulSet &data) {
 	(void)data;
 	parser_->PopContext();
-	return Token::State::K_EXIT;
+	return Parser::State::K_EXIT;
 }
 
 bool Parser::StatelessSet::isKwAllowedInCtx_(t_parsing_state kw,
 										t_parsing_state ctx) {
-	if ((ctx != Token::State::K_LOCATION && ctx != Token::State::K_SERVER
-		&& ctx != Token::State::K_INIT)
-	|| (ctx != Token::State::K_INIT && kw == Token::State::K_SERVER)
-	|| (ctx == Token::State::K_SERVER && kw == Token::State::K_LIMIT_EXCEPT)
-	|| (ctx == Token::State::K_LOCATION && (kw == Token::State::K_LISTEN
-									|| kw == Token::State::K_SERVER_NAME)))
+	if ((ctx != Parser::State::K_LOCATION && ctx != Parser::State::K_SERVER
+		&& ctx != Parser::State::K_INIT)
+	|| (ctx != Parser::State::K_INIT && kw == Parser::State::K_SERVER)
+	|| (ctx == Parser::State::K_SERVER && kw == Parser::State::K_LIMIT_EXCEPT)
+	|| (ctx == Parser::State::K_LOCATION && (kw == Parser::State::K_LISTEN
+									|| kw == Parser::State::K_SERVER_NAME)))
 		return false;
 	return true;
 }
 
 t_parsing_state Parser::StatelessSet::ExpKwHandlerKw(const StatefulSet &data) {
-	if (data.GetState() < Token::State::K_SERVER
-	|| data.GetState() > Token::State::K_LIMIT_EXCEPT)
+	if (data.GetState() < Parser::State::K_SERVER
+	|| data.GetState() > Parser::State::K_LIMIT_EXCEPT)
 		throw SyntaxError("Expecting keyword but found `" +
 		data.GetRawData() + "'", LINE);
 	if (!isKwAllowedInCtx_(data.GetState(), data.GetCtx()))
 		throw SyntaxError("Keyword `" + data.GetRawData() + "' "
 						  "not allowed in context `" +
-						  Token::State::GetParsingStateTypeStr(data.GetCtx())
+						  Parser::State::GetParsingStateTypeStr(data.GetCtx())
 						  + "'", LINE);
 	return data.GetState();
 }
@@ -292,7 +292,7 @@ t_parsing_state Parser::StatelessSet::AutoindexHandler
 		throw SyntaxError("Expecting `on' or `off' but found `" +
 		data.GetRawData()  + "'", LINE);
 	config_->AddAutoindex(data.GetRawData() == "on", data.GetCtx(), LINE);
-	return Token::State::K_EXP_SEMIC;
+	return Parser::State::K_EXP_SEMIC;
 }
 
 t_parsing_state Parser::StatelessSet::ServerNameHandlerSemic
@@ -302,13 +302,13 @@ t_parsing_state Parser::StatelessSet::ServerNameHandlerSemic
 									"`server_name' directive", LINE);
 	config_->AddServerName(parser_->GetArgs(), data.GetCtx(), LINE);
 	parser_->ResetArgNumber();
-	return Token::State::K_EXP_KW;
+	return Parser::State::K_EXP_KW;
 }
 
 t_parsing_state Parser::StatelessSet::ServerNameHandler
 													(const StatefulSet &data) {
 	parser_->IncrementArgNumber(data.GetRawData());
-	return Token::State::K_SERVER_NAME;
+	return Parser::State::K_SERVER_NAME;
 }
 
 static const char valid_http_methods[3][7] = {"GET", "POST", "DELETE"};
@@ -319,39 +319,40 @@ t_parsing_state Parser::StatelessSet::LimitExceptHandlerSemic
 		throw Analyser::SyntaxError("Invalid number of arguments in "
 									"`limit_except' directive", LINE);
 	for (unsigned int i = 0; i < parser_->GetArgs().size(); ++i) {
-		bool result = true;
+		bool notValidMethod = true;
 		for (unsigned j = 0;
 			 j < sizeof(valid_http_methods)/sizeof(valid_http_methods[0]);
 			 ++j )
-			result = result && (valid_http_methods[j] != parser_->GetArgs()[i]);
-		if (result)
+			notValidMethod = notValidMethod
+				&& (valid_http_methods[j] != parser_->GetArgs()[i]);
+		if (notValidMethod)
 			throw Analyser::SyntaxError("`" + parser_->GetArgs()[i] + "' is not"
 				" a valid http method for `limit_except' directive", LINE);
 	}
 	config_->AddLimitExcept(parser_->GetArgs(), data.GetCtx(), LINE);
 	parser_->ResetArgNumber();
-	return Token::State::K_EXP_KW;
+	return Parser::State::K_EXP_KW;
 }
 
 
 t_parsing_state Parser::StatelessSet::LimitExceptHandler
 (const StatefulSet &data) {
 	parser_->IncrementArgNumber(data.GetRawData());
-	return Token::State::K_LIMIT_EXCEPT;
+	return Parser::State::K_LIMIT_EXCEPT;
 }
 
 t_parsing_state Parser::StatelessSet::CgiAssignHandler
 													(const StatefulSet &data) {
 	if (data.GetArgNumber() == 0) {
 		parser_->IncrementArgNumber(data.GetRawData());
-		return Token::State::K_CGI_ASSIGN;
+		return Parser::State::K_CGI_ASSIGN;
 	} else if (data.GetArgNumber() == 1) {
 		config_->AddCgiAssign(parser_->GetArgs()[0],
 							  data.GetRawData(),
 							  data.GetCtx(),
 							  LINE);
 		parser_->ResetArgNumber();
-		return Token::State::K_EXP_SEMIC;
+		return Parser::State::K_EXP_SEMIC;
 	} else {
 		throw Analyser::SyntaxError("Invalid number of arguments in "
 									"`cgi_assign' directive", LINE);
@@ -362,7 +363,7 @@ t_parsing_state Parser::StatelessSet::ReturnHandler
 (const StatefulSet &data) {
 	if (data.GetArgNumber() == 0) {
 		parser_->IncrementArgNumber(data.GetRawData());
-		return Token::State::K_RETURN;
+		return Parser::State::K_RETURN;
 	} else if (data.GetArgNumber() == 1) {
 		char *endptr = NULL;
 		int64_t status = std::strtol(parser_->GetArgs()[0].c_str(),
@@ -375,7 +376,7 @@ t_parsing_state Parser::StatelessSet::ReturnHandler
 						   data.GetRawData(),
 						   data.GetCtx(), LINE);
 		parser_->ResetArgNumber();
-		return Token::State::K_EXP_SEMIC;
+		return Parser::State::K_EXP_SEMIC;
 	} else {
 		throw Analyser::SyntaxError("Invalid number of arguments in "
 									"`return' directive", LINE);
@@ -386,7 +387,7 @@ t_parsing_state Parser::StatelessSet::ErrorPageHandler
 													(const StatefulSet &data) {
 	if (data.GetArgNumber() == 0) {
 		parser_->IncrementArgNumber(data.GetRawData());
-		return Token::State::K_ERROR_PAGE;
+		return Parser::State::K_ERROR_PAGE;
 	} else if (data.GetArgNumber() == 1) {
 		uint16_t code;
 		std::string uri;
@@ -396,7 +397,7 @@ t_parsing_state Parser::StatelessSet::ErrorPageHandler
 							  "arguments", LINE);
 		config_->AddErrorPage(code, uri, data.GetCtx(), LINE);
 		parser_->ResetArgNumber();
-		return Token::State::K_EXP_SEMIC;
+		return Parser::State::K_EXP_SEMIC;
 	} else {
 		throw Analyser::SyntaxError("Invalid number of arguments in "
 									"`error_page' directive", LINE);
@@ -411,31 +412,31 @@ t_parsing_state Parser::StatelessSet::ClientMaxBodySizeHandler(
 		throw SyntaxError("Invalid `client_max_body_size' directive "
 						  "argument" , LINE);
 	config_->SetClientMaxSz(static_cast<uint32_t>(result), data.GetCtx(), LINE);
-	return Token::State::K_EXP_SEMIC;
+	return Parser::State::K_EXP_SEMIC;
 }
 
 t_parsing_state Parser::StatelessSet::UploadStoreHandler(
 	const StatefulSet &data) {
 	config_->AddUploadStore(data.GetRawData(), data.GetCtx(),
 							LINE);
-	return Token::State::K_EXP_SEMIC;
+	return Parser::State::K_EXP_SEMIC;
 }
 
 t_parsing_state Parser::StatelessSet::RootHandler(const StatefulSet &data) {
 	config_->SetRoot(data.GetRawData(), data.GetCtx(),
 					 LINE);
-	return Token::State::K_EXP_SEMIC;
+	return Parser::State::K_EXP_SEMIC;
 }
 
 t_parsing_state Parser::StatelessSet::IndexHandler(const StatefulSet &data) {
 	config_->AddIndex(data.GetRawData(), data.GetCtx(),
 						 LINE);
-	return Token::State::K_EXP_SEMIC;
+	return Parser::State::K_EXP_SEMIC;
 }
 
 t_parsing_state Parser::StatelessSet::LocationHandler(const StatefulSet &data) {
 	config_->AddLocation(data.GetRawData(), data.GetCtx(), LINE);
-	parser_->PushContext(Token::State::K_LOCATION);
+	parser_->PushContext(Parser::State::K_LOCATION);
 	parser_->SkipEvent();
 	return parser_->ParserMainLoop();
 }
@@ -447,13 +448,13 @@ t_parsing_state Parser::StatelessSet::ListenHandler(const StatefulSet &data) {
 	if (ParseIpAddressPort_(data.GetRawData(), &errorThrow, &port, &address))
 		throw SyntaxError(errorThrow, LINE);
 	config_->SetListenAddress(address, port, data.GetCtx(), LINE);
-	return Token::State::K_EXP_SEMIC;
+	return Parser::State::K_EXP_SEMIC;
 }
 
 t_parsing_state Parser::StatelessSet::ServerHandler(const StatefulSet &data) {
 	(void)data;
 	config_->AddServer(data.GetCtx(), LINE);
-	parser_->PushContext(Token::State::K_SERVER);
+	parser_->PushContext(Parser::State::K_SERVER);
 	return parser_->ParserMainLoop();
 }
 
@@ -514,25 +515,25 @@ Parser::StatelessSet::StatelessSet(Engine *parser, ParserAPI *config) :
 	parser_(parser) {}
 
 t_parsing_state Parser::Engine::ParserMainLoop(void) {
-	t_parsing_state state = Token::State::K_INIT;
+	t_parsing_state state = Parser::State::K_INIT;
 	for (; itc_ != ite_ ; itc_++) {
 		t_token_type event = itc_->getType();
 		for (size_t i = 0;
 			 i < transitions_.size();
 			 ++i) {
 			if ((state == transitions_[i].state)
-				|| (Token::State::K_NONE == transitions_[i].state)) {
+				|| (Parser::State::K_NONE == transitions_[i].state)) {
 				if ((event == transitions_[i].evt)
 					|| (Token::Type::T_NONE == transitions_[i].evt)) {
 					StatefulSet data(itc_->GetLine(),
-						itc_->GetState(),
+						Parser::State::GetParsingStateTypeEnum(*itc_),
 						itc_->getRawData(),
 						ctx_.top(),
 						transitions_[i].errormess,
 						 args_.size());
 					state = ((handlers_).*(transitions_[i].apply))(data);
-					if (state == Token::State::K_EXIT)
-						return Token::State::K_EXP_KW;
+					if (state == Parser::State::K_EXIT)
+						return Parser::State::K_EXP_KW;
 					break;
 				}
 			}

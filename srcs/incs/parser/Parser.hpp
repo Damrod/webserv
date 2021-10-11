@@ -49,6 +49,41 @@ std::map<T, U>map, const std::string &key, const std::string &value) {
 	return o.str();
 }
 
+class State {
+ public:
+	enum e_id {
+		K_NONE = -1,
+		K_EXIT,
+		K_INIT,
+		K_SERVER,
+		K_LISTEN,		  // S pero no Loc
+		K_SERVER_NAME,	  // S pero no Loc
+		K_ROOT,
+		K_CLIENT_MAX_BODY_SIZE,
+		K_ERROR_PAGE,
+		K_RETURN,
+		K_AUTOINDEX,
+		K_INDEX,
+		K_UPLOAD_STORE,
+		K_CGI_ASSIGN,  // dependiendo de la extension del path
+		K_LOCATION,    // ejecuta la peticion con un binario distinto
+		K_LIMIT_EXCEPT,  // Solo location
+		K_EXP_SEMIC,
+		K_EXP_KW,
+		K_LAST_INVALID_STATE
+	};
+	static std::string GetParsingStateTypeStr(enum e_id type);
+	static enum e_id GetParsingStateTypeEnum(const Token &token);
+	typedef struct keyword_to_str {
+		enum e_id  state;
+		std::string	data;
+	} t_kw2str;
+	static const t_kw2str kw2strmap[14];
+
+ private:
+	static const char *keyword_to_str[18];
+};
+
 class ParserAPI : public Analyser {
  private:
 	std::vector<ServerConfig>	*servers_settings_;
@@ -60,28 +95,28 @@ class ParserAPI : public Analyser {
 	std::vector<ServerConfig> &GetServersSettings(void);
 	void SetServersSettings(std::vector<ServerConfig> *server_settings);
 	virtual ~ParserAPI(void) {}
-	void SetListenAddress(uint32_t address, uint16_t port, t_parsing_state ctx,
+	void SetListenAddress(uint32_t address, uint16_t port, Parser::State::e_id ctx,
 						  size_t line);
 	void AddServerName(const std::vector<std::string> &args,
-					   t_parsing_state ctx,
+					   Parser::State::e_id ctx,
 					   size_t line);
-	void SetRoot(const std::string &root, t_parsing_state ctx, size_t line);
-	void AddIndex(const std::string &index, t_parsing_state ctx, size_t line);
-	void AddAutoindex(bool autoindex, t_parsing_state ctx, size_t line);
-	void SetClientMaxSz(uint32_t size, t_parsing_state ctx, size_t line);
+	void SetRoot(const std::string &root, Parser::State::e_id ctx, size_t line);
+	void AddIndex(const std::string &index, Parser::State::e_id ctx, size_t line);
+	void AddAutoindex(bool autoindex, Parser::State::e_id ctx, size_t line);
+	void SetClientMaxSz(uint32_t size, Parser::State::e_id ctx, size_t line);
 	void AddErrorPage(uint16_t code, const std::string &uri,
-					  t_parsing_state ctx, size_t line);
+					  Parser::State::e_id ctx, size_t line);
 	void AddCgiAssign(const std::string &extension,
 								const std::string &binaryHandlerPath,
-					  t_parsing_state ctx, size_t line);
-	void AddServer(t_parsing_state ctx, size_t line);
-	void AddLocation(const std::string &path, t_parsing_state ctx, size_t line);
+					  Parser::State::e_id ctx, size_t line);
+	void AddServer(Parser::State::e_id ctx, size_t line);
+	void AddLocation(const std::string &path, Parser::State::e_id ctx, size_t line);
 	void AddReturn(uint16_t status, const std::string &url,
-				   t_parsing_state ctx, size_t line);
+				   Parser::State::e_id ctx, size_t line);
 	void AddUploadStore(const std::string &store,
-						t_parsing_state ctx, size_t line);
+						Parser::State::e_id ctx, size_t line);
 	void AddLimitExcept(const std::vector<std::string> &httpMethods,
-						t_parsing_state ctx, size_t line);
+						Parser::State::e_id ctx, size_t line);
 };
 
 class StatefulSet;
@@ -91,26 +126,26 @@ class StatelessSet : public Analyser {
  public:
 	StatelessSet(Engine *parser, ParserAPI *config);
 //  state handlers
-	t_parsing_state SyntaxFailer(const StatefulSet &data);
-	t_parsing_state ServerNameHandler(const StatefulSet &data);
-	t_parsing_state ServerNameHandlerSemic(const StatefulSet &data);
-	t_parsing_state InitHandler(const StatefulSet &data);
-	t_parsing_state SemicHandler(const StatefulSet &data);
-	t_parsing_state ExpKwHandlerClose(const StatefulSet &data);
-	t_parsing_state ExpKwHandlerKw(const StatefulSet &data);
-	t_parsing_state AutoindexHandler(const StatefulSet &data);
-	t_parsing_state LocationHandler(const StatefulSet &data);
-	t_parsing_state ServerHandler(const StatefulSet &data);
-	t_parsing_state ListenHandler(const StatefulSet &data);
-	t_parsing_state ErrorPageHandler(const StatefulSet &data);
-	t_parsing_state CgiAssignHandler(const StatefulSet &data);
-	t_parsing_state RootHandler(const StatefulSet &data);
-	t_parsing_state IndexHandler(const StatefulSet &data);
-	t_parsing_state ClientMaxBodySizeHandler(const StatefulSet &data);
-	t_parsing_state ReturnHandler(const StatefulSet &data);
-	t_parsing_state LimitExceptHandler(const StatefulSet &data);
-	t_parsing_state LimitExceptHandlerSemic(const StatefulSet &data);
-	t_parsing_state UploadStoreHandler(const StatefulSet &data);
+	Parser::State::e_id SyntaxFailer(const StatefulSet &data);
+	Parser::State::e_id ServerNameHandler(const StatefulSet &data);
+	Parser::State::e_id ServerNameHandlerSemic(const StatefulSet &data);
+	Parser::State::e_id InitHandler(const StatefulSet &data);
+	Parser::State::e_id SemicHandler(const StatefulSet &data);
+	Parser::State::e_id ExpKwHandlerClose(const StatefulSet &data);
+	Parser::State::e_id ExpKwHandlerKw(const StatefulSet &data);
+	Parser::State::e_id AutoindexHandler(const StatefulSet &data);
+	Parser::State::e_id LocationHandler(const StatefulSet &data);
+	Parser::State::e_id ServerHandler(const StatefulSet &data);
+	Parser::State::e_id ListenHandler(const StatefulSet &data);
+	Parser::State::e_id ErrorPageHandler(const StatefulSet &data);
+	Parser::State::e_id CgiAssignHandler(const StatefulSet &data);
+	Parser::State::e_id RootHandler(const StatefulSet &data);
+	Parser::State::e_id IndexHandler(const StatefulSet &data);
+	Parser::State::e_id ClientMaxBodySizeHandler(const StatefulSet &data);
+	Parser::State::e_id ReturnHandler(const StatefulSet &data);
+	Parser::State::e_id LimitExceptHandler(const StatefulSet &data);
+	Parser::State::e_id LimitExceptHandlerSemic(const StatefulSet &data);
+	Parser::State::e_id UploadStoreHandler(const StatefulSet &data);
 
  private:
 	// helpers
@@ -119,16 +154,16 @@ class StatelessSet : public Analyser {
 	bool ParseIpAddressPort_(const std::string &input,
 						   std::string *errorThrow,
 						   uint16_t *port, uint32_t *address);
-	bool isKwAllowedInCtx_(t_parsing_state kw, t_parsing_state ctx);
+	bool isKwAllowedInCtx_(Parser::State::e_id kw, Parser::State::e_id ctx);
 	ParserAPI *config_;
 	Engine *parser_;
 };
 
-typedef t_parsing_state (Parser::StatelessSet::*StateHandler)
+typedef Parser::State::e_id (Parser::StatelessSet::*StateHandler)
 	(const StatefulSet &data);
 
 struct s_trans {
-	t_parsing_state state;
+	Parser::State::e_id state;
 	t_token_type evt;
 	StateHandler apply;
 	std::string errormess;
@@ -137,8 +172,8 @@ struct s_trans {
 class Engine: public Analyser {
  public:
 	Engine(const std::list<Token> &token, ParserAPI *config);
-	t_parsing_state ParserMainLoop(void);
-	void PushContext(const t_parsing_state &ctx);
+	Parser::State::e_id ParserMainLoop(void);
+	void PushContext(const Parser::State::e_id &ctx);
 	void PopContext(void);
 	t_token_type SkipEvent(void);
 	const std::vector<std::string> &GetArgs(void) const;
@@ -148,7 +183,7 @@ class Engine: public Analyser {
  private:
 	virtual std::vector < Parser::s_trans > TransitionFactory_(void);
 	StatelessSet handlers_;
-	std::stack<t_parsing_state> ctx_;
+	std::stack<Parser::State::e_id> ctx_;
 	const std::list<Token>::const_iterator ite_;
 	std::list<Token>::const_iterator itc_;
 	const std::vector < struct s_trans > transitions_;
@@ -158,13 +193,13 @@ class Engine: public Analyser {
 class StatefulSet : public Analyser {
  public:
 	StatefulSet(size_t line,
-				t_parsing_state st,
+				Parser::State::e_id st,
 				const std::string &rawData,
-				t_parsing_state ctx,
+				Parser::State::e_id ctx,
 				const std::string &error,
 				size_t argNumber);
-	t_parsing_state GetCtx(void) const;
-	t_parsing_state GetState(void) const;
+	Parser::State::e_id GetCtx(void) const;
+	Parser::State::e_id GetState(void) const;
 	const std::string &GetRawData(void) const;
 	const std::string &GetErrorMessage(void) const;
 	size_t GetLineNumber(void) const;
@@ -172,12 +207,14 @@ class StatefulSet : public Analyser {
 
  private:
 	const std::string &error_msg_;
-	const t_parsing_state state_;
+	const Parser::State::e_id state_;
 	const std::string &rawData_;
-	const t_parsing_state ctx_;
+	const Parser::State::e_id ctx_;
 	const size_t argNumber_;
 };
 
 }  // namespace Parser
+
+typedef enum Parser::State::e_id t_parsing_state;
 
 #endif  // SRCS_INCS_PARSER_PARSER_HPP_
