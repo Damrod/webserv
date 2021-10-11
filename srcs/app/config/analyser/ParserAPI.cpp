@@ -177,8 +177,8 @@ void Parser::ParserAPI::AddServer(t_parsing_state ctx, size_t line) {
 	servers_settings_->push_back(server);
 }
 
-static CommonConfig GetLastCommonCfg(std::vector<ServerConfig>
-									 *servers_settings_) {
+CommonConfig Parser::ParserAPI::GetLastCommonCfg_(std::vector<ServerConfig>
+												  *servers_settings_) {
 	CommonConfig config;
 	config.root = servers_settings_->back().common.root;
 	config.autoindex = servers_settings_->back().common.autoindex;
@@ -198,7 +198,7 @@ void Parser::ParserAPI::AddLocation(const std::string &path,
 	if (ctx != Parser::State::K_SERVER)
 		throw SyntaxError("Invalid context for location", line);
 	if (canAddLocation(path)) {
-		CommonConfig common = GetLastCommonCfg(servers_settings_);
+		CommonConfig common = GetLastCommonCfg_(servers_settings_);
 		Location location(path, common);
 		servers_settings_->back().locations.push_back(location);
 	} else {

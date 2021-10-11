@@ -22,6 +22,7 @@
 #endif
 
 struct ServerConfig;
+struct CommonConfig;
 
 namespace Parser {
 
@@ -104,6 +105,8 @@ class ParserAPI : public Analyser {
 	std::vector<ServerConfig>	*servers_settings_;
 	bool canAddServer(uint32_t address, uint16_t port);
 	bool canAddLocation(const std::string &path);
+	CommonConfig GetLastCommonCfg_(std::vector<ServerConfig>
+													  *servers_settings_);
 
  public:
 	explicit ParserAPI(std::vector<ServerConfig> *server_settings);
