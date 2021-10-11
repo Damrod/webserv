@@ -3,7 +3,6 @@
 std::map<std::string, t_parsing_state> Parser::State::KeywordMapFactory_(void) {
 	std::map<std::string, enum e_id> ret;
 	ret.insert(std::make_pair("server", Parser::State::K_SERVER));
-	ret.insert(std::make_pair("server", Parser::State::K_SERVER));
 	ret.insert(std::make_pair("listen", Parser::State::K_LISTEN));
 	ret.insert(std::make_pair("server_name", Parser::State::K_SERVER_NAME));
 	ret.insert(std::make_pair("root", Parser::State::K_ROOT));
@@ -14,7 +13,6 @@ std::map<std::string, t_parsing_state> Parser::State::KeywordMapFactory_(void) {
 	ret.insert(std::make_pair("autoindex", Parser::State::K_AUTOINDEX));
 	ret.insert(std::make_pair("index", Parser::State::K_INDEX));
 	ret.insert(std::make_pair("upload_store", Parser::State::K_UPLOAD_STORE));
-	ret.insert(std::make_pair("server_name", Parser::State::K_SERVER_NAME));
 	ret.insert(std::make_pair("cgi_assign", Parser::State::K_CGI_ASSIGN));
 	ret.insert(std::make_pair("location", Parser::State::K_LOCATION));
 	ret.insert(std::make_pair("limit_except", Parser::State::K_LIMIT_EXCEPT));
