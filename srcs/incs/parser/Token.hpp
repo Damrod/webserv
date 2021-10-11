@@ -11,7 +11,6 @@ class Token {
 	class Type {
 	public:
 		enum e_id {
-			T_NONE = -1,  // Unknown, invalid
 			T_SCOPE_OPEN,  // {
 			T_SCOPE_CLOSE,  // }
 			T_SEMICOLON,  //;

@@ -2,7 +2,7 @@
 
 std::string Token::Type::GetTokenTypeStr(enum e_id type) {
 	std::string retval("NONE");
-	if (type > T_NONE && type < T_INVALID)
+	if (type >= 0 && type < T_INVALID)
 		return str_map[type];
 	return retval;
 }

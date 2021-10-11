@@ -55,10 +55,23 @@ std::map<T, U>map, const std::string &key, const std::string &value) {
 	return o.str();
 }
 
+class Event {
+ public:
+	enum e_id {
+		EVT_NONE = -1,  // Wildcard event
+		EVT_SCOPE_OPEN,  // {
+		EVT_SCOPE_CLOSE,  // }
+		EVT_SEMICOLON,  //;
+		EVT_WORD,
+		EVT_INVALID
+	};
+	static e_id GetEventTypeEnum(const Token &token);
+};
+
 class State {
  public:
 	enum e_id {
-		K_NONE = -1,
+		K_NONE = -1,  // Wildcard state
 		K_EXIT,
 		K_INIT,
 		K_SERVER,
@@ -163,9 +176,11 @@ class StatelessSet : public Analyser {
 typedef State::e_id (Parser::StatelessSet::*StateHandler)
 	(const StatefulSet &data);
 
+typedef Event::e_id t_evt;
+
 struct s_trans {
 	State::e_id state;
-	t_token_type evt;
+	t_evt evt;
 	StateHandler apply;
 	std::string errormess;
 };
@@ -176,7 +191,7 @@ class Engine: public Analyser {
 	State::e_id ParserMainLoop(void);
 	void PushContext(const State::e_id &ctx);
 	void PopContext(void);
-	t_token_type SkipEvent(void);
+	t_evt SkipEvent(void);
 	const std::vector<std::string> &GetArgs(void) const;
 	void IncrementArgNumber(const std::string &arg);
 	void ResetArgNumber(void);
