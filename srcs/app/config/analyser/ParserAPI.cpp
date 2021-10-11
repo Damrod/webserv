@@ -1,14 +1,14 @@
 #include <parser/ParserManager.hpp>
 
-Parser::ParserAPI::ParserAPI(std::vector<ServerConfig> *server_settings) :
+Parser::API::API(std::vector<ServerConfig> *server_settings) :
 	servers_settings_(server_settings) {
 }
 
-std::vector<ServerConfig>	&Parser::ParserAPI::GetServersSettings(void) {
+std::vector<ServerConfig>	&Parser::API::GetServersSettings(void) {
 	return *servers_settings_;
 }
 
-bool Parser::ParserAPI::canAddServer(uint32_t address, uint16_t port) {
+bool Parser::API::canAddServer_(uint32_t address, uint16_t port) {
 // std::vector<ServerConfig>::const_iterator it = servers_settings_->begin();
 	// for (; it != servers_settings_->end(); ++it) {
 	//  if (it->listen_address == address && it->listen_port == port) {
@@ -21,7 +21,7 @@ bool Parser::ParserAPI::canAddServer(uint32_t address, uint16_t port) {
 	return true;
 }
 
-bool Parser::ParserAPI::canAddLocation(const std::string &path) {
+bool Parser::API::canAddLocation_(const std::string &path) {
 	std::vector<Location>::const_iterator it = servers_settings_->
 	back().locations.begin();
 	for (; it != servers_settings_->back().locations.end(); ++it) {
@@ -33,11 +33,11 @@ bool Parser::ParserAPI::canAddLocation(const std::string &path) {
 }
 
 
-void Parser::ParserAPI::SetListenAddress(uint32_t address, uint16_t port,
+void Parser::API::SetListenAddress(uint32_t address, uint16_t port,
 t_parsing_state ctx, size_t line) {
 	if (ctx != Parser::State::K_SERVER)
 		throw SyntaxError("Invalid context for listen address", line);
-	if (canAddServer(address, port)) {
+	if (canAddServer_(address, port)) {
 		servers_settings_->back().listen_address = address;
 		servers_settings_->back().listen_port = port;
 	} else {
@@ -45,14 +45,14 @@ t_parsing_state ctx, size_t line) {
 	}
 }
 
-void Parser::ParserAPI::AddServerName(const std::vector<std::string> &args,
+void Parser::API::AddServerName(const std::vector<std::string> &args,
 									  t_parsing_state ctx, size_t line) {
 	if (ctx != Parser::State::K_SERVER)
 		throw SyntaxError("Invalid context for server name", line);
 	servers_settings_->back().server_name = args;
 }
 
-void Parser::ParserAPI::SetRoot(const std::string &root, t_parsing_state ctx,
+void Parser::API::SetRoot(const std::string &root, t_parsing_state ctx,
 								size_t line) {
 	if (ctx == Parser::State::K_SERVER) {
 		servers_settings_->back().common.root = root;
@@ -64,7 +64,7 @@ void Parser::ParserAPI::SetRoot(const std::string &root, t_parsing_state ctx,
 	}
 }
 
-void Parser::ParserAPI::AddIndex(const std::string &index,
+void Parser::API::AddIndex(const std::string &index,
 								 t_parsing_state ctx, size_t line) {
 	if (ctx == Parser::State::K_SERVER) {
 		servers_settings_->back().common.index = index;
@@ -76,7 +76,7 @@ void Parser::ParserAPI::AddIndex(const std::string &index,
 	}
 }
 
-void Parser::ParserAPI::AddUploadStore(const std::string &store,
+void Parser::API::AddUploadStore(const std::string &store,
 									   t_parsing_state ctx,
 									 size_t line) {
 	if (ctx == Parser::State::K_SERVER) {
@@ -90,14 +90,14 @@ void Parser::ParserAPI::AddUploadStore(const std::string &store,
 	}
 }
 
-void Parser::ParserAPI::AddLimitExcept(const std::vector<std::string> &httpMeth,
+void Parser::API::AddLimitExcept(const std::vector<std::string> &httpMeth,
 									   t_parsing_state ctx, size_t line) {
 	if (ctx != Parser::State::K_LOCATION)
 		throw SyntaxError("Invalid context for limit_except", line);
 	servers_settings_->back().locations.back().limit_except = httpMeth;
 }
 
-void Parser::ParserAPI::AddAutoindex(bool autoindex, t_parsing_state ctx,
+void Parser::API::AddAutoindex(bool autoindex, t_parsing_state ctx,
 									 size_t line) {
 	if (ctx == Parser::State::K_SERVER) {
 		servers_settings_->back().common.autoindex = autoindex;
@@ -110,7 +110,7 @@ void Parser::ParserAPI::AddAutoindex(bool autoindex, t_parsing_state ctx,
 	}
 }
 
-void Parser::ParserAPI::SetClientMaxSz(uint32_t size, t_parsing_state ctx,
+void Parser::API::SetClientMaxSz(uint32_t size, t_parsing_state ctx,
 									   size_t line) {
 	if (ctx == Parser::State::K_SERVER) {
 		servers_settings_->back().common.client_max_body_size = size;
@@ -124,7 +124,7 @@ void Parser::ParserAPI::SetClientMaxSz(uint32_t size, t_parsing_state ctx,
 	}
 }
 
-void Parser::ParserAPI::AddErrorPage(uint16_t code, const std::string &uri,
+void Parser::API::AddErrorPage(uint16_t code, const std::string &uri,
 							t_parsing_state ctx, size_t line) {
 	if (ctx == Parser::State::K_SERVER) {
 		servers_settings_->back().common.error_pages[code] = uri;
@@ -137,7 +137,7 @@ void Parser::ParserAPI::AddErrorPage(uint16_t code, const std::string &uri,
 	}
 }
 
-void Parser::ParserAPI::AddCgiAssign(const std::string &extension,
+void Parser::API::AddCgiAssign(const std::string &extension,
 							 const std::string &binaryHandlerPath,
 							 t_parsing_state ctx, size_t line) {
 	if (ctx == Parser::State::K_SERVER) {
@@ -152,7 +152,7 @@ void Parser::ParserAPI::AddCgiAssign(const std::string &extension,
 	}
 }
 
-void Parser::ParserAPI::AddReturn(uint16_t status, const std::string &url,
+void Parser::API::AddReturn(uint16_t status, const std::string &url,
 								  t_parsing_state ctx, size_t line) {
 	if (ctx == Parser::State::K_SERVER) {
 		servers_settings_->back().common.return_status = status;
@@ -170,14 +170,14 @@ void Parser::ParserAPI::AddReturn(uint16_t status, const std::string &url,
 	}
 }
 
-void Parser::ParserAPI::AddServer(t_parsing_state ctx, size_t line) {
+void Parser::API::AddServer(t_parsing_state ctx, size_t line) {
 	if (ctx != Parser::State::K_INIT)
 		throw SyntaxError("Invalid context for server", line);
 	ServerConfig server;
 	servers_settings_->push_back(server);
 }
 
-CommonConfig Parser::ParserAPI::GetLastCommonCfg_(std::vector<ServerConfig>
+CommonConfig Parser::API::GetLastCommonCfg_(std::vector<ServerConfig>
 												  *servers_settings_) {
 	CommonConfig config;
 	config.root = servers_settings_->back().common.root;
@@ -193,11 +193,11 @@ CommonConfig Parser::ParserAPI::GetLastCommonCfg_(std::vector<ServerConfig>
 	return config;
 }
 
-void Parser::ParserAPI::AddLocation(const std::string &path,
+void Parser::API::AddLocation(const std::string &path,
 									t_parsing_state ctx, size_t line) {
 	if (ctx != Parser::State::K_SERVER)
 		throw SyntaxError("Invalid context for location", line);
-	if (canAddLocation(path)) {
+	if (canAddLocation_(path)) {
 		CommonConfig common = GetLastCommonCfg_(servers_settings_);
 		Location location(path, common);
 		servers_settings_->back().locations.push_back(location);

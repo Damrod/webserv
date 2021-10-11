@@ -100,19 +100,19 @@ class State {
 	static const std::map<const std::string, enum e_id> keyword_to_str;
 };
 
-class ParserAPI : public Analyser {
+class API : public Analyser {
  private:
 	std::vector<ServerConfig>	*servers_settings_;
-	bool canAddServer(uint32_t address, uint16_t port);
-	bool canAddLocation(const std::string &path);
+	bool canAddServer_(uint32_t address, uint16_t port);
+	bool canAddLocation_(const std::string &path);
 	CommonConfig GetLastCommonCfg_(std::vector<ServerConfig>
 													  *servers_settings_);
 
  public:
-	explicit ParserAPI(std::vector<ServerConfig> *server_settings);
+	explicit API(std::vector<ServerConfig> *server_settings);
 	std::vector<ServerConfig> &GetServersSettings(void);
 	void SetServersSettings(std::vector<ServerConfig> *server_settings);
-	virtual ~ParserAPI(void) {}
+	virtual ~API(void) {}
 	void SetListenAddress(uint32_t address, uint16_t port, State::e_id ctx,
 						  size_t line);
 	void AddServerName(const std::vector<std::string> &args, State::e_id ctx,
@@ -141,7 +141,7 @@ class Engine;
 
 class StatelessSet : public Analyser {
  public:
-	StatelessSet(Engine *parser, ParserAPI *config);
+	StatelessSet(Engine *parser, API *config);
 //  state handlers
 	State::e_id SyntaxFailer(const StatefulSet &data);
 	State::e_id ServerNameHandler(const StatefulSet &data);
@@ -172,7 +172,7 @@ class StatelessSet : public Analyser {
 						   std::string *errorThrow,
 						   uint16_t *port, uint32_t *address);
 	bool isKwAllowedInCtx_(State::e_id kw, State::e_id ctx);
-	ParserAPI *config_;
+	API *config_;
 	Engine *parser_;
 };
 
@@ -188,7 +188,7 @@ struct s_trans {
 
 class Engine: public Analyser {
  public:
-	Engine(const std::list<Token> &token, ParserAPI *config);
+	Engine(const std::list<Token> &token, API *config);
 	State::e_id ParserMainLoop(void);
 	void PushContext(const State::e_id &ctx);
 	void PopContext(void);

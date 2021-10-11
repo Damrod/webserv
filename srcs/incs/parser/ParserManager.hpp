@@ -23,7 +23,7 @@ class ParserManager {
 	std::string filebuff_;
 	Lexer lexer_;
 	std::list<Token> tokens_;
-	Parser::ParserAPI api_;
+	Parser::API api_;
 	Parser::Engine parser_;
 	std::vector<ServerConfig> parse_(const std::string &path);
 };
