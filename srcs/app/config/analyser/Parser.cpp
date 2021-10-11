@@ -289,7 +289,7 @@ t_parsing_state Parser::StatelessSet::ExpKwHandlerKw(const StatefulSet &data) {
 t_parsing_state Parser::StatelessSet::AutoindexHandler
 													(const StatefulSet &data) {
 	if (data.GetRawData() != "on" && data.GetRawData() != "off")
-		throw SyntaxError("Expecting `on'/`off' but found `" +
+		throw SyntaxError("Expecting `on' or `off' but found `" +
 		data.GetRawData()  + "'", LINE);
 	config_->AddAutoindex(data.GetRawData() == "on", data.GetCtx(), LINE);
 	return Token::State::K_EXP_SEMIC;
@@ -311,11 +311,23 @@ t_parsing_state Parser::StatelessSet::ServerNameHandler
 	return Token::State::K_SERVER_NAME;
 }
 
+static const char valid_http_methods[3][7] = {"GET", "POST", "DELETE"};
+
 t_parsing_state Parser::StatelessSet::LimitExceptHandlerSemic
 (const StatefulSet &data) {
 	if (data.GetArgNumber() == 0)
 		throw Analyser::SyntaxError("Invalid number of arguments in "
 									"`limit_except' directive", LINE);
+	for (unsigned int i = 0; i < parser_->GetArgs().size(); ++i) {
+		bool result = true;
+		for (unsigned j = 0;
+			 j < sizeof(valid_http_methods)/sizeof(valid_http_methods[0]);
+			 ++j )
+			result = result && (valid_http_methods[j] != parser_->GetArgs()[i]);
+		if (result)
+			throw Analyser::SyntaxError("`" + parser_->GetArgs()[i] + "' is not"
+				" a valid http method for `limit_except' directive", LINE);
+	}
 	config_->AddLimitExcept(parser_->GetArgs(), data.GetCtx(), LINE);
 	parser_->ResetArgNumber();
 	return Token::State::K_EXP_KW;
