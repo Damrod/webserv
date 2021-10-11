@@ -39,7 +39,7 @@ t_parsing_state Parser::State::GetParsingStateTypeEnum(const Token &token) {
 		|| token.getType() == Token::Type::T_SCOPE_OPEN
 		|| token.getType() == Token::Type::T_SCOPE_CLOSE)
 		return K_EXP_KW;
-	std::map<std::string, t_parsing_state>::const_iterator found =
+	std::map<const std::string, t_parsing_state>::const_iterator found =
 		keyword_to_str.find(token.getRawData());
 	if (found != keyword_to_str.end())
 		return found->second;
