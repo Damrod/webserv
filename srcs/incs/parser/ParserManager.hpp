@@ -25,7 +25,6 @@ class ParserManager {
 	std::list<Token> tokens_;
 	Parser::API api_;
 	Parser::Engine parser_;
-	std::vector<ServerConfig> parse_(const std::string &path);
 };
 
 std::ostream &operator<<(std::ostream &o,

@@ -179,17 +179,7 @@ void Parser::API::AddServer(t_parsing_state ctx, size_t line) {
 
 CommonConfig Parser::API::GetLastCommonCfg_(std::vector<ServerConfig>
 												  *servers_settings_) {
-	CommonConfig config;
-	config.root = servers_settings_->back().common.root;
-	config.autoindex = servers_settings_->back().common.autoindex;
-	config.client_max_body_size
-		= servers_settings_->back().common.client_max_body_size;
-	config.index = servers_settings_->back().common.index;
-	config.error_pages = servers_settings_->back().common.error_pages;
-	config.upload_store = servers_settings_->back().common.upload_store;
-	config.return_status = servers_settings_->back().common.return_status;
-	config.return_url = servers_settings_->back().common.return_url;
-	config.cgi_assign = servers_settings_->back().common.cgi_assign;
+	CommonConfig config = servers_settings_->back().common;
 	return config;
 }
 
