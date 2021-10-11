@@ -11,9 +11,9 @@
 #include <parser/Parser.hpp>
 #include <ServerConfig.hpp>
 
-class ConfigParserAPI {
+class ParserManager {
  public:
-	explicit ConfigParserAPI(const std::string &path);
+	explicit ParserManager(const std::string &path);
 	std::vector<ServerConfig> GetServersSettings(void);
  private:
 	std::vector<ServerConfig> servers_settings_;

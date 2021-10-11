@@ -6,13 +6,13 @@
 #include <parser/Token.hpp>
 #include <parser/Preprocessor.hpp>
 #include <parser/Parser.hpp>
-#include <parser/ConfigSetters.hpp>
+#include <parser/ParserManager.hpp>
 #include <Config.hpp>
 
 static std::vector<ServerConfig> getServerSettings(void) {
 	std::string path = "srcs/app/test/config_analyser/"
 		"nginx_docker/vol/http.d/AGVTest.conf";
-	ConfigParserAPI tst(path);
+	ParserManager tst(path);
 	return tst.GetServersSettings();
 }
 
@@ -175,8 +175,7 @@ TEST_CASE("Testing the parser", "[parser]") {
 		std::cout << cnf;
 		// std::cout << "=================  VS =================\n";
 		// std::cout << expected;
-		REQUIRE_FALSE(memcmp(result.str().c_str(), expected.c_str(),
-							 expected.size()));
+		REQUIRE(result.str() == expected);
 		// std::cout << config;
 	} catch(const std::exception &e) {
 		FAIL(e.what());

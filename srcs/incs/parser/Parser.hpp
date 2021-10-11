@@ -14,6 +14,12 @@
 #include <algorithm>
 #include <parser/Analyser.hpp>
 #include <parser/Token.hpp>
+// #define DBG
+#ifdef DBG
+# define LINE __LINE__
+#else
+# define LINE data.GetLineNumber()
+#endif
 
 struct ServerConfig;
 

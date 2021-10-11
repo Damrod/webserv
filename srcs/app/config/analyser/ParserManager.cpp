@@ -1,4 +1,4 @@
-#include <parser/ConfigSetters.hpp>
+#include <parser/ParserManager.hpp>
 
 static std::vector<ServerConfig> parse(const std::string &path) {
 	Preprocessor file(path);
@@ -10,10 +10,10 @@ static std::vector<ServerConfig> parse(const std::string &path) {
 	return config.GetServersSettings();
 }
 
-ConfigParserAPI::ConfigParserAPI(const std::string &path) :
+ParserManager::ParserManager(const std::string &path) :
 	servers_settings_(parse(path)),
 	path_(path) {}
 
-std::vector<ServerConfig> ConfigParserAPI::GetServersSettings(void) {
+std::vector<ServerConfig> ParserManager::GetServersSettings(void) {
 	return servers_settings_;
 }
