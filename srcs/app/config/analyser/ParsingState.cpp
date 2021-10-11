@@ -22,7 +22,7 @@ std::map<const std::string, t_parsing_state>
 
 
 std::string Parser::State::GetParsingStateTypeStr(t_parsing_state type) {
-	std::map<std::string, t_parsing_state>::const_iterator itb =
+	std::map<const std::string, t_parsing_state>::const_iterator itb =
 		keyword_to_str.begin();
 	for (; itb != keyword_to_str.end(); ++itb) {
 		if(type == itb->second)
