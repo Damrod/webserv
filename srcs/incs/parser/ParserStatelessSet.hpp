@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <cstdlib>
+#include <cerrno>
 #include <algorithm>
 #include <parser/ParserStatefulSet.hpp>
 #include <parser/ParsingState.hpp>
