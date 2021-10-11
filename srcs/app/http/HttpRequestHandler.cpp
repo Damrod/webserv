@@ -117,15 +117,17 @@ HttpRequestHandler::DefaultStatusResponse_(const std::size_t status_code) {
 }
 
 void	HttpRequestHandler::RequestError_(const std::size_t error_code) {
+	const CommonConfig &common_cfg = request_location_ ?
+								request_location_->common :
+								server_config_.common;
 	CommonConfig::ErrorPagesMap::const_iterator it =
-						request_location_->common.error_pages.find(error_code);
-	if (it != request_location_->common.error_pages.end()) {
-		const std::string error_page =
-									request_location_->common.root + it->second;
-		ServeFile_(error_page);
-		return;
+										common_cfg.error_pages.find(error_code);
+	if (it == common_cfg.error_pages.end()) {
+		DefaultStatusResponse_(error_code);
+	} else {
+		const std::string error_page_path = common_cfg.root + it->second;
+		ServeFile_(error_page_path);
 	}
-	DefaultStatusResponse_(error_code);
 }
 
 void	HttpRequestHandler::PathError_() {
