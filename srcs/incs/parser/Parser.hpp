@@ -105,8 +105,6 @@ class API : public Analyser {
 	std::vector<ServerConfig>	*servers_settings_;
 	bool canAddServer_(uint32_t address, uint16_t port);
 	bool canAddLocation_(const std::string &path);
-	CommonConfig GetLastCommonCfg_(std::vector<ServerConfig>
-													  *servers_settings_);
 
  public:
 	explicit API(std::vector<ServerConfig> *server_settings);

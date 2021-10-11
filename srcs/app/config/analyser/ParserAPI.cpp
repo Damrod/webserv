@@ -177,19 +177,12 @@ void Parser::API::AddServer(t_parsing_state ctx, size_t line) {
 	servers_settings_->push_back(server);
 }
 
-CommonConfig Parser::API::GetLastCommonCfg_(std::vector<ServerConfig>
-												  *servers_settings_) {
-	CommonConfig config = servers_settings_->back().common;
-	return config;
-}
-
 void Parser::API::AddLocation(const std::string &path,
 									t_parsing_state ctx, size_t line) {
 	if (ctx != Parser::State::K_SERVER)
 		throw SyntaxError("Invalid context for location", line);
 	if (canAddLocation_(path)) {
-		CommonConfig common = GetLastCommonCfg_(servers_settings_);
-		Location location(path, common);
+		Location location(path, servers_settings_->back().common);
 		servers_settings_->back().locations.push_back(location);
 	} else {
 		throw SyntaxError("duplicate location for path '" +
