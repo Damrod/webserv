@@ -30,6 +30,7 @@ class HttpRequestHandler : public IRequestHandler {
 		void				SetKeepAlive_(const HttpRequest &request);
 		void				DoRedirection_();
 		void				HandleRequest_();
+		void				HandleMethod_(const HttpRequest &request);
 		void				AddCommonHeaders_(HttpResponse *response);
 		std::string			DefaultResponseBody_(
 										const std::size_t status_code) const;

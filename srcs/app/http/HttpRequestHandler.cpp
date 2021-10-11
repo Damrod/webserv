@@ -69,17 +69,32 @@ void		HttpRequestHandler::HandleRequest_() {
 	}
 	SetKeepAlive_(*request);
 	request_location_ = new RequestLocation(server_config_, request->GetPath());
-	const std::string request_method = request->GetMethod();
+	bool do_method = true;
+	if (!request_location_->common.return_url.empty()) {
+		DoRedirection_();
+		do_method = false;
+	}
+	if (!HasAcceptedFormat_(*request)) {
+		do_method = false;
+	}
+	if (do_method) {
+		HandleMethod_(*request);
+	}
+	delete request;
+}
+
+void	HttpRequestHandler::HandleMethod_(const HttpRequest &request) {
+	const std::string request_method = request.GetMethod();
+
 	if (request_method == "GET") {
-		DoGet_(*request);
+		DoGet_(request);
 	} else if (request_method == "POST") {
-		DoPost_(*request);
+		DoPost_(request);
 	} else if (request_method == "DELETE") {
-		DoDelete_(*request);
+		DoDelete_(request);
 	} else {
 		RequestError_(501);
 	}
-	delete request;
 }
 
 void	HttpRequestHandler::AddCommonHeaders_(HttpResponse *response) {
