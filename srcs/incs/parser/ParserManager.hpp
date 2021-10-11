@@ -9,7 +9,8 @@
 #include <parser/Token.hpp>
 #include <parser/Lexer.hpp>
 #include <parser/Preprocessor.hpp>
-#include <parser/Parser.hpp>
+#include <parser/ParserAPI.hpp>
+#include <parser/ParserEngine.hpp>
 #include <ServerConfig.hpp>
 
 class ParserManager {
