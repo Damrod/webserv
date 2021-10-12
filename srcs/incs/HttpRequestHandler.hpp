@@ -46,6 +46,10 @@ class HttpRequestHandler : public IRequestHandler {
 		void				ServeFile_(const std::string &file_path);
 		void				MovedPermanently_(const HttpRequest &request);
 		void				DoGet_(const HttpRequest &request);
+		bool				IsCGI_(const std::string &full_path) const;
+		bool				IsExecutable_(const std::string &full_path) const;
+		bool				IsUploadEnabled_() const;
+		bool				IsValidUploadPath_(const std::string &path) const;
 		void				DoPost_(const HttpRequest &request);
 		void				DoDelete_(const HttpRequest &request);
 		bool				IsValidPath_(const std::string &path) const;

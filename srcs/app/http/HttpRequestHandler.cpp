@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <exception>
 #include <fstream>
+// TODO(any) Remove iostream
+#include <iostream>
 #include <sstream>
 #include <HttpStatusCodes.hpp>
 #include <StringUtils.hpp>
@@ -279,16 +281,49 @@ void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
 	}
 }
 
-void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
-	// TODO(any) Implement POST
-	(void)request;
-	HttpResponse	response(200);
-	std::string		body = "Responding to a POST request\n";
+bool	HttpRequestHandler::IsCGI_(const std::string &full_path) const {
+	const std::string extension = PathExtension_(full_path);
+	return request_location_->common.cgi_assign.count(extension) > 0;
+}
 
-	response.AddHeader("Content-Type", "text/plain");
-	response.SetBody(body);
-	AddCommonHeaders_(&response);
-	raw_response_ = response.CreateResponseString();
+bool	HttpRequestHandler::IsExecutable_(const std::string &full_path) const {
+	return access(full_path.c_str(), X_OK) == 0;
+}
+
+bool	HttpRequestHandler::IsUploadEnabled_() const {
+	return !request_location_->common.upload_store.empty();
+}
+
+bool	HttpRequestHandler::IsValidUploadPath_(const std::string &path) const {
+	if (request_location_->HasLocation()) {
+		return path == *request_location_->path;
+	}
+	return path == "/";
+}
+
+void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
+	const std::string request_path = request.GetPath();
+	const std::string full_path =
+							request_location_->common.root + request_path;
+	if (IsRegularFile_(full_path)) {
+		std::cout << "CGI (not implemented)\n";
+		if (!IsCGI_(full_path)) {
+			DefaultStatusResponse_(404);
+		} else if (!IsExecutable_(full_path)) {
+			DefaultStatusResponse_(403);
+		}
+		// TODO(any) Implement CGI
+		DefaultStatusResponse_(501);
+	} else {
+		std::cout << "POST upload (not implemented)\n";
+		// TODO(any) Parse and validate Content-Type
+		//          should be "multipart/form-data" with "boundary" set
+		//      RFC: https://www.rfc-editor.org/rfc/rfc7578
+		if (!IsUploadEnabled_() || !IsValidUploadPath_(request_path)) {
+			DefaultStatusResponse_(403);
+		}
+		DefaultStatusResponse_(501);
+	}
 }
 
 void	HttpRequestHandler::DoDelete_(const HttpRequest &request) {
