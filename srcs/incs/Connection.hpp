@@ -11,8 +11,8 @@
 class Connection {
 	public:
 		Connection(const ServerConfig &server_config, int sd);
-		enum ReadRequestStatus::Type	ReadRequest();
-		enum SendResponseStatus::Type	SendResponse();
+		ReadRequestStatus::Type		ReadRequest();
+		SendResponseStatus::Type	SendResponse();
 
 	private:
 		const ServerConfig	&server_config_;

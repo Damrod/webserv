@@ -2,20 +2,20 @@
 #define SRCS_INCS_CONNECTIONIOSTATUS_HPP_
 
 struct ReadRequestStatus {
-	enum Type {
+	typedef enum Type {
 		kFail,
 		kSuccess,
 		kStart
-	};
+	} Type;
 };
 
 struct SendResponseStatus {
-	enum Type {
+	typedef enum Type {
 		kFail,
 		kSuccess,
 		kCompleteClose,
 		kCompleteKeep
-	};
+	} Type;
 };
 
 #endif  // SRCS_INCS_CONNECTIONIOSTATUS_HPP_

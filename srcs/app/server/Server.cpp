@@ -60,7 +60,7 @@ bool	Server::HasConnection(int sd) {
 	return connections_.count(sd) > 0;
 }
 
-enum ReadRequestStatus::Type	Server::ReadRequest(int sd) {
+ReadRequestStatus::Type	Server::ReadRequest(int sd) {
 	std::map<int, Connection>::iterator it = connections_.find(sd);
 	if (it == connections_.end()) {
 		return ReadRequestStatus::kFail;
@@ -68,7 +68,7 @@ enum ReadRequestStatus::Type	Server::ReadRequest(int sd) {
 	return it->second.ReadRequest();
 }
 
-enum SendResponseStatus::Type	Server::SendResponse(int sd) {
+SendResponseStatus::Type	Server::SendResponse(int sd) {
 	std::map<int, Connection>::iterator it = connections_.find(sd);
 	if (it == connections_.end()) {
 		return SendResponseStatus::kFail;
