@@ -17,10 +17,10 @@ class WebServer {
 
 		Config		config_;
 		ServersMap_	servers_;
-		fd_set		master_set_;
-		fd_set		read_set_;
-		fd_set		tmp_write_set_;
+		fd_set		all_set_;
 		fd_set		write_set_;
+		fd_set		tmp_read_set_;
+		fd_set		tmp_write_set_;
 		int			max_sd_;
 
 	public:
