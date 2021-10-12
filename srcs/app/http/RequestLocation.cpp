@@ -5,6 +5,7 @@ RequestLocation::RequestLocation(const ServerConfig &server_config,
 		const std::string &request_path)
 	: location_(FindLocation_(server_config, request_path)),
 	common(location_ ? location_->common : server_config.common),
+	path(location_ ? &location_->path : NULL),
 	limit_except(location_ ? &location_->limit_except : NULL) {
 }
 

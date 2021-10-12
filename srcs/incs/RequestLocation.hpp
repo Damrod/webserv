@@ -15,6 +15,7 @@ class RequestLocation {
 		RequestLocation(const ServerConfig &server_config,
 						const std::string &request_path);
 		const CommonConfig				&common;
+		const std::string				*path;
 		const std::vector<std::string>	*limit_except;
 		bool							HasLocation() const;
 		const Location					*FindLocation_(
