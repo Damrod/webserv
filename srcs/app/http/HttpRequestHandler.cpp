@@ -286,10 +286,6 @@ bool	HttpRequestHandler::IsCGI_(const std::string &full_path) const {
 	return request_location_->common.cgi_assign.count(extension) > 0;
 }
 
-bool	HttpRequestHandler::IsExecutable_(const std::string &full_path) const {
-	return access(full_path.c_str(), X_OK) == 0;
-}
-
 bool	HttpRequestHandler::IsUploadEnabled_() const {
 	return !request_location_->common.upload_store.empty();
 }
@@ -308,21 +304,23 @@ void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
 	if (IsRegularFile_(full_path)) {
 		std::cout << "CGI (not implemented)\n";
 		if (!IsCGI_(full_path)) {
-			DefaultStatusResponse_(404);
+			RequestError_(404);
 		} else if (!IsExecutable_(full_path)) {
-			DefaultStatusResponse_(403);
+			RequestError_(403);
+		} else {
+			// TODO(any) Implement CGI
+			RequestError_(501);
 		}
-		// TODO(any) Implement CGI
-		DefaultStatusResponse_(501);
 	} else {
 		std::cout << "POST upload (not implemented)\n";
 		// TODO(any) Parse and validate Content-Type
 		//          should be "multipart/form-data" with "boundary" set
 		//      RFC: https://www.rfc-editor.org/rfc/rfc7578
 		if (!IsUploadEnabled_() || !IsValidUploadPath_(request_path)) {
-			DefaultStatusResponse_(403);
+			RequestError_(403);
+		} else {
+			RequestError_(501);
 		}
-		DefaultStatusResponse_(501);
 	}
 }
 
@@ -336,6 +334,10 @@ void	HttpRequestHandler::DoDelete_(const HttpRequest &request) {
 	response.SetBody(body);
 	AddCommonHeaders_(&response);
 	raw_response_ = response.CreateResponseString();
+}
+
+bool	HttpRequestHandler::IsExecutable_(const std::string &full_path) const {
+	return access(full_path.c_str(), X_OK) == 0;
 }
 
 bool	HttpRequestHandler::IsValidPath_(const std::string &path) const {

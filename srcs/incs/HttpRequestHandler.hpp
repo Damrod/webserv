@@ -47,11 +47,13 @@ class HttpRequestHandler : public IRequestHandler {
 		void				MovedPermanently_(const HttpRequest &request);
 		void				DoGet_(const HttpRequest &request);
 		bool				IsCGI_(const std::string &full_path) const;
-		bool				IsExecutable_(const std::string &full_path) const;
 		bool				IsUploadEnabled_() const;
 		bool				IsValidUploadPath_(const std::string &path) const;
 		void				DoPost_(const HttpRequest &request);
 		void				DoDelete_(const HttpRequest &request);
+		// TODO(any) We could extract some of the methods below
+		//           to a separate header/class
+		bool				IsExecutable_(const std::string &full_path) const;
 		bool				IsValidPath_(const std::string &path) const;
 		bool				IsDirectory_(const std::string &path) const;
 		bool				IsRegularFile_(const std::string &path) const;
