@@ -6,7 +6,7 @@ Connection::Connection(const ServerConfig &server_config, int socket)
 	: server_config_(server_config), socket_(socket), keep_alive_(true) {
 }
 
-enum ReadRequestStatus::Type	Connection::ReadRequest() {
+ReadRequestStatus::Type	Connection::ReadRequest() {
 	char	buffer[4096];
 
 	int nbytes = recv(socket_, buffer, sizeof(buffer), 0);
@@ -20,7 +20,7 @@ enum ReadRequestStatus::Type	Connection::ReadRequest() {
 	return status;
 }
 
-enum SendResponseStatus::Type	Connection::SendResponse() {
+SendResponseStatus::Type	Connection::SendResponse() {
 	if (raw_response_.empty()) {
 		IRequestHandler *handler =
 			new HttpRequestHandler(server_config_, raw_request_);
