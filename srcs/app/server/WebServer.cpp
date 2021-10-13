@@ -39,6 +39,7 @@ void	WebServer::Run() {
 			} else if (FD_ISSET(sd, &tmp_write_set_)) {
 				--ready_connections;
 				SendResponse_(sd);
+                FD_CLR(sd, &write_set_);
 			}
 		}
 	}
@@ -132,7 +133,9 @@ void	WebServer::ReadRequest_(int sd) {
 		FD_CLR(sd, &all_set_);
 		FD_CLR(sd, &write_set_);
 		SetMaxSocket_(sd);
+        return;
 	}
+    FD_SET(sd, &write_set_);
 }
 
 void	WebServer::SendResponse_(int sd) {
