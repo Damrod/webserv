@@ -2,6 +2,7 @@
 #define SRCS_INCS_HTTPSTATUSCODES_HPP_
 #include <map>
 #include <string>
+#include <CommonDefinitions.hpp>
 
 class HttpStatusCodes {
 	public:

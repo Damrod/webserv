@@ -13,6 +13,7 @@
 #include <parser/ParsingEvent.hpp>
 #include <parser/ParserAPI.hpp>
 #include <parser/Analyser.hpp>
+#include <CommonDefinitions.hpp>
 
 // #define DBG
 #ifdef DBG
@@ -78,10 +79,6 @@ struct s_trans {
 };
 
 }  // namespace Parser
-
-const std::string	valid_http_methods[] = {"GET", "HEAD", "POST", "PUT",
-	"DELETE", "CONNECT", "OPTIONS", "TRACE"};
-const uint16_t valid_return_status[] = {301, 302, 303, 307, 308};
 
 #include <parser/ParserEngine.hpp>
 
