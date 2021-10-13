@@ -19,6 +19,7 @@ class WebServer {
 		ServersMap_	servers_;
 		fd_set		master_set_;
 		fd_set		read_set_;
+		fd_set		tmp_write_set_;
 		fd_set		write_set_;
 		int			max_sd_;
 
