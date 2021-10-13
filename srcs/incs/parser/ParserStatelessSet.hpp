@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cerrno>
 #include <algorithm>
+#include <HttpStatusCodes.hpp>
 #include <parser/ParserStatefulSet.hpp>
 #include <parser/ParsingState.hpp>
 #include <parser/ParsingEvent.hpp>
@@ -59,6 +60,9 @@ class StatelessSet : public Analyser {
 						   std::string *errorThrow,
 						   uint16_t *port, uint32_t *address);
 	bool isKwAllowedInCtx_(State::e_id kw, State::e_id ctx);
+	bool isReturnStatusValid_(int64_t status);
+	bool areHttpMethodsValid_(const std::vector<std::string> &input,
+							  std::string *error_throw);
 	API *config_;
 	Engine *parser_;
 };
@@ -74,6 +78,10 @@ struct s_trans {
 };
 
 }  // namespace Parser
+
+const std::string	valid_http_methods[] = {"GET", "HEAD", "POST", "PUT",
+	"DELETE", "CONNECT", "OPTIONS", "TRACE"};
+const uint16_t valid_return_status[] = {301, 302, 303, 307, 308};
 
 #include <parser/ParserEngine.hpp>
 

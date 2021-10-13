@@ -11,7 +11,8 @@ bool Parser::StatelessSet::ParserErrorPage_(
 	if (input.size() != 2)
 		return EXIT_FAILURE;
 	int64_t result = std::strtol(input[0].c_str(), &endptr, 10);
-	if ((endptr && endptr[0] != '\0') || errno || result < 100 || result > 505)
+	if ((endptr && endptr[0] != '\0') || errno ||
+		!HttpStatusCodes::IsValid(result))
 		return EXIT_FAILURE;
 	*code = result;
 	*uri = input[1];
@@ -135,23 +136,33 @@ t_parsing_state Parser::StatelessSet::ServerNameHandler
 	return Parser::State::K_SERVER_NAME;
 }
 
-static const char valid_http_methods[3][7] = {"GET", "POST", "DELETE"};
-
-t_parsing_state Parser::StatelessSet::LimitExceptHandlerSemic
-(const StatefulSet &data) {
-	if (data.GetArgNumber() == 0)
-		throw Analyser::SyntaxError("Invalid number of arguments in "
-									"`limit_except' directive", LINE);
-	for (unsigned int i = 0; i < parser_->GetArgs().size(); ++i) {
+bool Parser::StatelessSet::areHttpMethodsValid_(const std::vector<std::string>
+										&input, std::string *error_throw) {
+	for (unsigned int i = 0; i < input.size(); ++i) {
 		bool notValidMethod = true;
 		for (unsigned j = 0;
 			 j < sizeof(valid_http_methods)/sizeof(valid_http_methods[0]);
 			 ++j )
 			notValidMethod = notValidMethod
-				&& (valid_http_methods[j] != parser_->GetArgs()[i]);
-		if (notValidMethod)
-			throw Analyser::SyntaxError("`" + parser_->GetArgs()[i] + "' is not"
-				" a valid http method for `limit_except' directive", LINE);
+				&& (valid_http_methods[j] != input[i]);
+		if (notValidMethod) {
+			*error_throw = "`" + input[i] + "' is not"
+				" a valid http method for `limit_except' directive";
+			return false;
+		}
+	}
+	return true;
+}
+
+
+t_parsing_state Parser::StatelessSet::LimitExceptHandlerSemic
+(const StatefulSet &data) {
+	std::string error_throw;
+	if (data.GetArgNumber() == 0)
+		throw Analyser::SyntaxError("Invalid number of arguments in "
+									"`limit_except' directive", LINE);
+	if (!areHttpMethodsValid_(parser_->GetArgs(), &error_throw)) {
+		throw Analyser::SyntaxError(error_throw, LINE);
 	}
 	config_->AddLimitExcept(parser_->GetArgs(), data.GetCtx(), LINE);
 	parser_->ResetArgNumber();
@@ -183,6 +194,17 @@ t_parsing_state Parser::StatelessSet::CgiAssignHandler
 	}
 }
 
+bool Parser::StatelessSet::isReturnStatusValid_(int64_t status) {
+	for (size_t i = 0;
+		 i < sizeof(valid_return_status)/sizeof(valid_return_status[0]);
+		 ++i) {
+		if (static_cast<uint16_t>(status) == valid_return_status[i]) {
+			return true;
+		}
+	}
+	return false;
+}
+
 t_parsing_state Parser::StatelessSet::ReturnHandler
 (const StatefulSet &data) {
 	if (data.GetArgNumber() == 0) {
@@ -193,8 +215,7 @@ t_parsing_state Parser::StatelessSet::ReturnHandler
 		int64_t status = std::strtol(parser_->GetArgs()[0].c_str(),
 									 &endptr,
 									 10);
-		if ((endptr && *endptr) || errno || status < 0
-			|| UINT16_MAX < status)
+		if ((endptr && *endptr) || errno || !isReturnStatusValid_(status))
 			throw Analyser::SyntaxError("Bad `return' status", LINE);
 		config_->AddReturn(static_cast<uint16_t>(status),
 						   data.GetRawData(),
