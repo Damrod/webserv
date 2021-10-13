@@ -21,8 +21,9 @@ class Server {
 		void	RemoveConnection(int sd);
 		int		GetListeningSocket() const;
 		bool	HasConnection(int sd);
-		bool	ReadRequest(int sd);
-		bool	SendResponse(int sd);
+
+		ReadRequestStatus::Type		ReadRequest(int sd);
+		SendResponseStatus::Type	SendResponse(int sd);
 };
 
 #endif  // SRCS_INCS_SERVER_HPP_
