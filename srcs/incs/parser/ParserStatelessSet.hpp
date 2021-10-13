@@ -7,11 +7,13 @@
 #include <cstdlib>
 #include <cerrno>
 #include <algorithm>
+#include <HttpStatusCodes.hpp>
 #include <parser/ParserStatefulSet.hpp>
 #include <parser/ParsingState.hpp>
 #include <parser/ParsingEvent.hpp>
 #include <parser/ParserAPI.hpp>
 #include <parser/Analyser.hpp>
+#include <CommonDefinitions.hpp>
 
 // #define DBG
 #ifdef DBG
@@ -59,6 +61,9 @@ class StatelessSet : public Analyser {
 						   std::string *errorThrow,
 						   uint16_t *port, uint32_t *address);
 	bool isKwAllowedInCtx_(State::e_id kw, State::e_id ctx);
+	bool isReturnStatusValid_(int64_t status);
+	bool areHttpMethodsValid_(const std::vector<std::string> &input,
+							  std::string *error_throw);
 	API *config_;
 	Engine *parser_;
 };
