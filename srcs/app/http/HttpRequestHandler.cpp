@@ -230,7 +230,7 @@ void	HttpRequestHandler::ServeFile_(const std::string &file_path) {
 	}
 	std::ifstream ifs(file_path.c_str(), std::ios::in | std::ios::binary);
 	if (!ifs) {
-		RequestError_(404);
+		PathError_();
 		return;
 	}
 	const std::string body = std::string(std::istreambuf_iterator<char>(ifs),
@@ -319,6 +319,15 @@ void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
 		if (!IsUploadEnabled_() || !IsValidUploadPath_(request_path)) {
 			RequestError_(403);
 		} else {
+			/*
+			try {
+				FormFile form_file = new FormFile(request);
+				delete form_file;
+			}
+			catch (const std::exception &e) {
+				RequestError_(400);
+			}
+			*/
 			RequestError_(501);
 		}
 	}
