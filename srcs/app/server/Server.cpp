@@ -60,18 +60,18 @@ bool	Server::HasConnection(int sd) {
 	return connections_.count(sd) > 0;
 }
 
-bool	Server::ReadRequest(int sd) {
+ReadRequestStatus::Type	Server::ReadRequest(int sd) {
 	std::map<int, Connection>::iterator it = connections_.find(sd);
 	if (it == connections_.end()) {
-		return false;
+		return ReadRequestStatus::kFail;
 	}
 	return it->second.ReadRequest();
 }
 
-bool	Server::SendResponse(int sd) {
+SendResponseStatus::Type	Server::SendResponse(int sd) {
 	std::map<int, Connection>::iterator it = connections_.find(sd);
 	if (it == connections_.end()) {
-		return false;
+		return SendResponseStatus::kFail;
 	}
 	return it->second.SendResponse();
 }
