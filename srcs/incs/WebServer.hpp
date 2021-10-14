@@ -9,6 +9,7 @@
 #include <map>
 #include <Config.hpp>
 #include <Server.hpp>
+#include <parser/Analyser.hpp>
 
 class WebServer {
 	private:

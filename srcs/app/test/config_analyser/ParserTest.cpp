@@ -9,7 +9,7 @@
 #include <Config.hpp>
 
 static std::vector<ServerConfig> getServerSettings(void) {
-	ParserManager tst("srcs/config_files/AGVTest.conf");
+	ParserManager tst("srcs/config/AGVTest.conf");
 	return tst.GetServersSettings();
 }
 

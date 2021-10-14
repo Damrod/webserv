@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[]) {
 	WebServer	webserver;
-	std::string	config_path = "config/default.conf";
+	std::string	config_path = "srcs/config/default.conf";
 
 	if (argc == 2) {
 		config_path = argv[1];
@@ -15,6 +15,11 @@ int main(int argc, char *argv[]) {
 	try {
 		webserver.Init(config_path);
 		webserver.Run();
+	}
+	catch (const Analyser::SyntaxError &e) {
+		std::cerr << "Syntax error while parsing the configuration file:\n"
+				  << e.what() << '\n';
+		return EXIT_FAILURE;
 	}
 	catch (const std::exception &e) {
 		std::cerr << e.what() << '\n';
