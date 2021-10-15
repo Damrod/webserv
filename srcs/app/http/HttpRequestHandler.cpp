@@ -11,6 +11,7 @@
 // TODO(any) Remove iostream
 #include <iostream>
 #include <sstream>
+#include <FormFile.hpp>
 #include <HttpStatusCodes.hpp>
 #include <StringUtils.hpp>
 
@@ -312,23 +313,31 @@ void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
 			RequestError_(501);
 		}
 	} else {
-		std::cout << "POST upload (not implemented)\n";
-		// TODO(any) Parse and validate Content-Type
-		//          should be "multipart/form-data" with "boundary" set
-		//      RFC: https://www.rfc-editor.org/rfc/rfc7578
 		if (!IsUploadEnabled_() || !IsValidUploadPath_(request_path)) {
 			RequestError_(403);
 		} else {
-			/*
 			try {
-				FormFile form_file = new FormFile(request);
-				delete form_file;
+				FormFile form_file(request);
+				// Write the file to disk
+				const std::string full_upload_path =
+										request_location_->common.upload_store +
+										form_file.GetFilename();
+				std::ofstream out(full_upload_path.c_str());
+				if (!out) {
+					PathError_();
+					return;
+				}
+				const std::string file_content = form_file.GetFileContent();
+				out.write(file_content.c_str(), file_content.size());
+				if (!out) {
+					RequestError_(500);
+				} else {
+					DefaultStatusResponse_(200);
+				}
 			}
 			catch (const std::exception &e) {
 				RequestError_(400);
 			}
-			*/
-			RequestError_(501);
 		}
 	}
 }
