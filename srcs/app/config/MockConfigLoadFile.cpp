@@ -56,6 +56,7 @@ server {
 
 	location	/test/ {
 		limit_except DELETE GET;
+		autoindex on;
 	}
 
 	location	/images/ {
@@ -122,6 +123,7 @@ void MockConfigLoadFile::InitConfig_() {
 	server5.locations.push_back(web3_upload);
 
 	Location web3_test("/test/", server5.common);
+	web3_test.common.autoindex = true;
 	web3_test.limit_except.push_back("DELETE");
 	web3_test.limit_except.push_back("GET");
 	server5.locations.push_back(web3_test);
