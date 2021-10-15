@@ -41,7 +41,7 @@ void	FormFile::ParseRequestContentType_(const HttpRequest &request) {
 	const std::string directive =
 							TrimString(content_type.substr(start), kWhitespace);
 	const std::string name = "boundary=";
-	if (!directive.rfind(name, 0) == 0) {
+	if (directive.rfind(name, 0) != 0) {
 		throw std::invalid_argument("[FormFile] Invalid boundary");
 	}
 	boundary_ = directive.substr(name.length());
