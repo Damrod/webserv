@@ -139,14 +139,7 @@ t_parsing_state Parser::StatelessSet::ServerNameHandler
 bool Parser::StatelessSet::areHttpMethodsValid_(const std::vector<std::string>
 										&input, std::string *error_throw) {
 	for (unsigned int i = 0; i < input.size(); ++i) {
-		bool notValidMethod = true;
-		for (unsigned j = 0;
-			 j < sizeof(Constants::kValidHttpMethods)
-				 / sizeof(Constants::kValidHttpMethods[0]);
-			 ++j )
-			notValidMethod = notValidMethod
-				&& (Constants::kValidHttpMethods[j] != input[i]);
-		if (notValidMethod) {
+		if (!Constants::IsValidMethod(input[i])) {
 			*error_throw = "`" + input[i] + "' is not"
 				" a valid http method for `limit_except' directive";
 			return false;
@@ -201,18 +194,6 @@ t_parsing_state Parser::StatelessSet::CgiAssignHandler
 	}
 }
 
-bool Parser::StatelessSet::isReturnStatusValid_(int64_t status) {
-	for (size_t i = 0;
-		 i < sizeof(Constants::kValidReturnStatus) /
-			 sizeof(Constants::kValidReturnStatus[0]);
-		 ++i) {
-		if (static_cast<uint16_t>(status) == Constants::kValidReturnStatus[i]) {
-			return true;
-		}
-	}
-	return false;
-}
-
 t_parsing_state Parser::StatelessSet::ReturnHandler
 (const StatefulSet &data) {
 	if (data.GetArgNumber() == 0) {
@@ -223,7 +204,8 @@ t_parsing_state Parser::StatelessSet::ReturnHandler
 		int64_t status = std::strtol(parser_->GetArgs()[0].c_str(),
 									 &endptr,
 									 10);
-		if ((endptr && *endptr) || errno || !isReturnStatusValid_(status))
+		if ((endptr && *endptr) || errno
+			|| !Constants::IsReturnStatusRedirection(status))
 			throw Analyser::SyntaxError("Bad `return' status", LINE);
 		if (data.GetRawData().find("http://") != 0
 			&& data.GetRawData().find("https://") != 0) {
