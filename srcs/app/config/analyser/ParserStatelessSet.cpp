@@ -141,10 +141,11 @@ bool Parser::StatelessSet::areHttpMethodsValid_(const std::vector<std::string>
 	for (unsigned int i = 0; i < input.size(); ++i) {
 		bool notValidMethod = true;
 		for (unsigned j = 0;
-			 j < sizeof(valid_http_methods)/sizeof(valid_http_methods[0]);
+			 j < sizeof(Constants::kValidHttpMethods)
+				 / sizeof(Constants::kValidHttpMethods[0]);
 			 ++j )
 			notValidMethod = notValidMethod
-				&& (valid_http_methods[j] != input[i]);
+				&& (Constants::kValidHttpMethods[j] != input[i]);
 		if (notValidMethod) {
 			*error_throw = "`" + input[i] + "' is not"
 				" a valid http method for `limit_except' directive";
@@ -182,7 +183,13 @@ t_parsing_state Parser::StatelessSet::CgiAssignHandler
 		parser_->IncrementArgNumber(data.GetRawData());
 		return Parser::State::K_CGI_ASSIGN;
 	} else if (data.GetArgNumber() == 1) {
-		config_->AddCgiAssign(parser_->GetArgs()[0],
+		if (parser_->GetArgs()[0].size() < 2
+			|| parser_->GetArgs()[0][0] != '.') {
+			throw Analyser::SyntaxError("`cgi_assign' extension does not "
+										"have the correct format", LINE);
+		}
+		const std::string extension = parser_->GetArgs()[0].substr(1);
+		config_->AddCgiAssign(extension,
 							  data.GetRawData(),
 							  data.GetCtx(),
 							  LINE);
@@ -196,9 +203,10 @@ t_parsing_state Parser::StatelessSet::CgiAssignHandler
 
 bool Parser::StatelessSet::isReturnStatusValid_(int64_t status) {
 	for (size_t i = 0;
-		 i < sizeof(valid_return_status)/sizeof(valid_return_status[0]);
+		 i < sizeof(Constants::kValidReturnStatus) /
+			 sizeof(Constants::kValidReturnStatus[0]);
 		 ++i) {
-		if (static_cast<uint16_t>(status) == valid_return_status[i]) {
+		if (static_cast<uint16_t>(status) == Constants::kValidReturnStatus[i]) {
 			return true;
 		}
 	}
@@ -217,6 +225,16 @@ t_parsing_state Parser::StatelessSet::ReturnHandler
 									 10);
 		if ((endptr && *endptr) || errno || !isReturnStatusValid_(status))
 			throw Analyser::SyntaxError("Bad `return' status", LINE);
+		if (data.GetRawData().find("http://") != 0
+			&& data.GetRawData().find("https://") != 0) {
+			throw Analyser::SyntaxError("Bad `return' URI", LINE);
+		}
+		if ((data.GetRawData().find("http://") == 0
+			&& data.GetRawData().size() < (strlen("http://") + 1))
+			|| (data.GetRawData().find("https://") == 0
+				&& data.GetRawData().size() < (strlen("https://") + 1))) {
+			throw Analyser::SyntaxError("Empty `return' URI", LINE);
+		}
 		config_->AddReturn(static_cast<uint16_t>(status),
 						   data.GetRawData(),
 						   data.GetCtx(), LINE);

@@ -3,7 +3,11 @@
 
 #include <arpa/inet.h>
 
-extern const char valid_http_methods[8][8];
-extern const uint16_t valid_return_status[5];
+namespace Constants {
+
+extern const char kValidHttpMethods[8][8];
+extern const uint16_t kValidReturnStatus[5];
+
+}
 
 #endif  // SRCS_INCS_COMMONDEFINITIONS_HPP_
