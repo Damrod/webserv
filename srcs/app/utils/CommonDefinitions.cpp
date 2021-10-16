@@ -1,19 +1,15 @@
 #include <CommonDefinitions.hpp>
 
-namespace Constants {
-
-static const char kValidHttpMethods[8][8] = {"GET", "HEAD", "POST",
+const char Constants::kValidHttpMethods[8][8] = {"GET", "HEAD", "POST",
 	"PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE"};
 
-static const uint16_t kRedirectionReturnStatus[5] = {301,
+const uint16_t Constants::kRedirectionReturnStatus[5] = {301,
 	302, 303, 307, 308};
-
-}  // namespace Constants
 
 bool Constants::IsValidMethod(const std::string &method) {
 	const std::size_t	len =
-		sizeof(Constants::kValidHttpMethods) /
-		sizeof(Constants::kValidHttpMethods[0]);
+		sizeof(kValidHttpMethods) /
+		sizeof(kValidHttpMethods[0]);
 	for (std::size_t i = 0; i < len; ++i) {
 		if (method == kValidHttpMethods[i])
 			return true;
@@ -23,10 +19,10 @@ bool Constants::IsValidMethod(const std::string &method) {
 
 bool Constants::IsReturnStatusRedirection(int16_t status) {
 	for (size_t i = 0;
-		 i < sizeof(Constants::kRedirectionReturnStatus) /
-			 sizeof(Constants::kRedirectionReturnStatus[0]);
+		 i < sizeof(kRedirectionReturnStatus) /
+			 sizeof(kRedirectionReturnStatus[0]);
 		 ++i) {
-		if (status == Constants::kRedirectionReturnStatus[i]) {
+		if (status == kRedirectionReturnStatus[i]) {
 			return true;
 		}
 	}
