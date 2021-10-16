@@ -73,6 +73,9 @@ void	FormFile::ParseRequestBody_(const HttpRequest &request) {
 	std::string form_part_end =
 					kCRLF + dash_boundary + boundary_ + dash_boundary + kCRLF;
 	std::size_t file_end = body.find(form_part_end, file_start);
+	if (file_end == std::string::npos) {
+		throw std::invalid_argument("[FormFile] Invalid file content");
+	}
 	file_content_ = body.substr(file_start, file_end - file_start);
 }
 
@@ -112,7 +115,6 @@ void	FormFile::ParseFormContentDisposition_(const std::string &header) {
 	index = ParseMediaType_(header, index, "form-data");
 
 	// Parse the disposition name
-	index = header.find_first_not_of(kWhitespace, index);
 	index = ParsePairName_(header, index, "name=");
 	ParseDoubleQuotedString_(header, &index);
 	index = header.find_first_not_of(kWhitespace, index);
@@ -175,7 +177,11 @@ FormFile::ParseHeaderName_(const std::string &str, std::size_t start,
 std::size_t
 FormFile::ParseMediaType_(const std::string &str, std::size_t start,
 							const std::string &name) const {
-	std::size_t end = str.find(';');
+	start = str.find_first_not_of(kWhitespace, start);
+	if (start == std::string::npos) {
+		throw std::invalid_argument("[FormFile] Invalid media-type");
+	}
+	std::size_t end = str.find(';', start);
 	if (end == std::string::npos) {
 		throw std::invalid_argument("[FormFile] Invalid media-type");
 	}
@@ -183,11 +189,15 @@ FormFile::ParseMediaType_(const std::string &str, std::size_t start,
 	if (TrimString(media_type, kWhitespace) != name) {
 		throw std::invalid_argument("[FormFile] Invalid media-type");
 	}
-	return end + 1;
+	end = str.find_first_not_of(kWhitespace, end + 1);
+	if (end == std::string::npos) {
+		throw std::invalid_argument("[FormFile] Invalid media-type");
+	}
+	return end;
 }
 
 void	FormFile::ParseBoundary_(const std::string &str, std::size_t index) {
-	const std::string pair = TrimString(str.substr(index), kWhitespace);
+	const std::string pair = str.substr(index);
 	std::size_t start = ParsePairName_(pair, 0, "boundary=");
 	boundary_ = pair.substr(start);
 	if (boundary_.empty() || boundary_.size() > 70) {
