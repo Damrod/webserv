@@ -101,18 +101,7 @@ bool	HttpRequest::ParseMethod_(const std::string &raw_request) {
 		return false;
 	method_ = raw_request.substr(0, offset_);
 	++offset_;
-	return IsValidMethod_(method_);
-}
-
-bool	HttpRequest::IsValidMethod_(const std::string &method) const {
-	const std::string	valid_http_methods[] = {"GET", "POST", "DELETE"};
-	const std::size_t	len =
-					sizeof(valid_http_methods) / sizeof(valid_http_methods[0]);
-	for (std::size_t i = 0; i < len; ++i) {
-		if (method == valid_http_methods[i])
-			return true;
-	}
-	return false;
+	return Constants::IsValidMethod(method_);
 }
 
 bool	HttpRequest::ParseRequestTarget_(const std::string &raw_request) {
