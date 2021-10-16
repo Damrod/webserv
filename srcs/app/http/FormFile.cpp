@@ -23,7 +23,7 @@ void	FormFile::ParseRequestContentType_(const HttpRequest &request) {
 	if (!request.HasHeader("Content-Type")) {
 		throw std::invalid_argument("[FormFile] Invalid request Content-Type");
 	}
-	// Check the media-type, should be multipart/form-data
+	// Parse the media-type, should be multipart/form-data
 	const std::string content_type = request.GetHeaderValue("Content-Type");
 	std::size_t start = 0;
 	std::size_t end = content_type.find(';');
@@ -32,7 +32,7 @@ void	FormFile::ParseRequestContentType_(const HttpRequest &request) {
 		throw std::invalid_argument("[FormFile] Invalid media-type");
 	}
 
-	// Check the boundary field
+	// Parse the boundary field
 	if (end == std::string::npos ||
 			content_type.find(';', end + 1) != std::string::npos) {
 		throw std::invalid_argument("[FormFile] Invalid boundary");
@@ -110,7 +110,7 @@ void	FormFile::ParseFormHeaders_(const std::string &headers) {
 		throw std::invalid_argument("[FormFile] Invalid Content-Disposition");
 	}
 	const std::string content_disposition = headers.substr(start, end);
-	ParseFormContentDisposition_(content_disposition);
+	ParseFormContentDisposition_(TrimString(content_disposition, kWhitespace));
 
 	// Parse the Content-Type of the form data
 	start = end + sizeof(kCRLF) - 1;
@@ -121,7 +121,7 @@ void	FormFile::ParseFormHeaders_(const std::string &headers) {
 	const std::string content_type = headers.substr(start, end - start);
 	ParseFormContentType_(content_type);
 
-	// Check that there are no more headers
+	// Verify that there are no more headers
 	end += (sizeof(kCRLF) - 1) * 2;
 	if (end != headers.size()) {
 		throw std::invalid_argument("[FormFile] Invalid form headers");
@@ -131,18 +131,10 @@ void	FormFile::ParseFormHeaders_(const std::string &headers) {
 // Syntax: Content-Disposition: form-data; name="myFile"; filename="foo.txt"
 void	FormFile::ParseFormContentDisposition_(const std::string &header) {
 	// Parse header name
-	std::size_t start = 0;
-	std::size_t end = header.find(':');
-	const std::string header_name = header.substr(start, end - start);
-	const std::string lwc_header_name =
-							ToLowerString(TrimString(header_name, kWhitespace));
-	if (lwc_header_name != "content-disposition" || end == std::string::npos) {
-		throw std::invalid_argument("[FormFile] Invalid form header");
-	}
+	std::size_t start = ParseHeaderName(header, 0, "content-disposition");
 
 	// Parse the disposition type
-	start = end + 1;
-	end = header.find(';', start);
+	std::size_t end = header.find(';', start);
 	if (end == std::string::npos) {
 		throw std::invalid_argument("[FormFile] Invalid Content-Disposition");
 	}
@@ -154,7 +146,7 @@ void	FormFile::ParseFormContentDisposition_(const std::string &header) {
 
 	// Parse the disposition name
 	std::size_t index = end + 1;
-	index = SkipSpace(header, index);
+	index = header.find_first_not_of(kWhitespace, index);
 	std::string name = "name=";
 	if (header.rfind(name, index) != index) {
 		throw std::invalid_argument(
@@ -162,12 +154,12 @@ void	FormFile::ParseFormContentDisposition_(const std::string &header) {
 	}
 	index += name.size();
 	ParseDoubleQuotedString(header, &index);
-	index = SkipSpace(header, index);
+	index = header.find_first_not_of(kWhitespace, index);
 	if (index >= header.size() || header[index] != ';') {
 		throw std::invalid_argument("[FormFile] Invalid Content-Disposition");
 	}
 	index += 1;
-	index = SkipSpace(header, index);
+	index = header.find_first_not_of(kWhitespace, index);
 
 	// Parse the disposition filename
 	name = "filename=";
@@ -183,21 +175,9 @@ void	FormFile::ParseFormContentDisposition_(const std::string &header) {
 	}
 }
 
-// Syntax: Content-Type: text/plain
+// Syntax: Content-Type: image/gif
 void	FormFile::ParseFormContentType_(const std::string &header) const {
-	// Parse header name
-	std::size_t start = 0;
-	std::size_t end = header.find(':');
-	const std::string header_name = header.substr(start, end - start);
-	const std::string lwc_header_name =
-							ToLowerString(TrimString(header_name, kWhitespace));
-	if (lwc_header_name != "content-type" || end == std::string::npos) {
-		throw std::invalid_argument("[FormFile] Invalid form header");
-	}
-}
-
-std::size_t	FormFile::SkipSpace(const std::string &str, std::size_t idx) const {
-	return str.find_first_not_of(kWhitespace, idx);
+	ParseHeaderName(header, 0, "content-type");
 }
 
 std::string
@@ -222,4 +202,22 @@ FormFile::ParseDoubleQuotedString(const std::string &str,
 	++(*index);
 	const std::string unquoted_str = str.substr(start, *index - start);
 	return unquoted_str;
+}
+
+std::size_t
+FormFile::ParseHeaderName(const std::string &str, std::size_t start,
+							const std::string &name) const {
+	// Parse header name
+	std::size_t end = str.find(':', start);
+	if (end == std::string::npos) {
+		throw std::invalid_argument("[FormFile] Invalid header format");
+	}
+	const std::string header_name = str.substr(start, end - start);
+	const std::string lwc_header_name =
+							ToLowerString(TrimString(header_name, kWhitespace));
+	const std::string lwc_name = ToLowerString(name);
+	if (lwc_header_name != lwc_name) {
+		throw std::invalid_argument("[FormFile] Invalid header: " + name);
+	}
+	return end + 1;
 }

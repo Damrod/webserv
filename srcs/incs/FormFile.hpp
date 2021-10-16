@@ -22,9 +22,10 @@ class FormFile {
 		void		ParseFormHeaders_(const std::string &headers);
 		void		ParseFormContentDisposition_(const std::string &header);
 		void		ParseFormContentType_(const std::string &header) const;
-		std::size_t	SkipSpace(const std::string &str, std::size_t index) const;
 		std::string	ParseDoubleQuotedString(
 							const std::string &str, std::size_t *index) const;
+		std::size_t	ParseHeaderName(const std::string &str, std::size_t index,
+									const std::string &name) const;
 };
 
 #endif  // SRCS_INCS_FORMFILE_HPP_
