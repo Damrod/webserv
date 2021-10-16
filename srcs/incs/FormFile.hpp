@@ -22,9 +22,9 @@ class FormFile {
 		void		ParseFormHeaders_(const std::string &headers);
 		void		ParseFormContentDisposition_(const std::string &header);
 		void		ParseFormContentType_(const std::string &header) const;
-		std::string	ParseDoubleQuotedString(
+		std::string	ParseDoubleQuotedString_(
 							const std::string &str, std::size_t *index) const;
-		std::size_t	ParseHeaderName(const std::string &str, std::size_t index,
+		std::size_t	ParseHeaderName_(const std::string &str, std::size_t index,
 									const std::string &name) const;
 };
 
