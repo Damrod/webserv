@@ -204,7 +204,6 @@ std::string
 FormFile::ParseDoubleQuotedString(const std::string &str,
 									std::size_t *index) const {
 	const char double_quote = '"';
-	const char backslash = '\\';
 	if (str[*index] != double_quote || str.size() < 3) {
 		throw std::invalid_argument("[FormFile] Invalid value");
 	}
@@ -212,12 +211,7 @@ FormFile::ParseDoubleQuotedString(const std::string &str,
 	*index += 1;
 	bool found = false;
 	while (!found) {
-		if (str[*index] == backslash) {
-			if (*index + 2 >= str.size()) {
-				throw std::invalid_argument("[FormFile] Missing closing quote");
-			}
-			*index += 2;
-		} else if (str[*index] == double_quote) {
+		if (str[*index] == double_quote) {
 			found = true;
 		} else if (*index < str.size()) {
 			++(*index);
