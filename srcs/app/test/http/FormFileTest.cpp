@@ -21,3 +21,23 @@ TEST_CASE("ValidFormFile", "[http]") {
 	REQUIRE("foo.txt" == form_file.GetFilename());
 	REQUIRE("foobar\n" == form_file.GetFileContent());
 }
+
+TEST_CASE("ValidFormFileFieldsWithSpace", "[http]") {
+	const std::string raw_request =
+		"POST /foo HTTP/1.1\r\n"
+		"Host: 127.0.0.1:8000\r\n"
+		"Content-Length: 132\r\n"
+		"Content-Type: \t multipart/form-data  ; boundary=something \t \r\n"
+		"\r\n"
+		"--something\r\n"
+		"Content-Disposition: \tform-data ;name=\"foo\" ;filename=\"bar.txt\"\t\r\n"
+		"Content-Type: text/plain \r\n"
+		"\r\n"
+		"foobar\n\r\n"
+		"--something--\r\n";
+
+	HttpRequest request(raw_request);
+	FormFile form_file(request);
+	REQUIRE("bar.txt" == form_file.GetFilename());
+	REQUIRE("foobar\n" == form_file.GetFileContent());
+}
