@@ -298,6 +298,30 @@ bool	HttpRequestHandler::IsValidUploadPath_(const std::string &path) const {
 	return path == "/";
 }
 
+void	HttpRequestHandler::UploadFile_(const HttpRequest &request) {
+	try {
+		FormFile form_file(request);
+		const std::string full_upload_path =
+								request_location_->common.upload_store +
+								form_file.GetFilename();
+		std::ofstream out(full_upload_path.c_str());
+		if (!out) {
+			PathError_();
+			return;
+		}
+		const std::string file_content = form_file.GetFileContent();
+		out.write(file_content.c_str(), file_content.size());
+		if (!out) {
+			RequestError_(500);
+		} else {
+			DefaultStatusResponse_(200);
+		}
+	}
+	catch (const std::exception &e) {
+		RequestError_(400);
+	}
+}
+
 void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
 	const std::string request_path = request.GetPath();
 	const std::string full_path =
@@ -316,28 +340,7 @@ void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
 		if (!IsUploadEnabled_() || !IsValidUploadPath_(request_path)) {
 			RequestError_(403);
 		} else {
-			try {
-				FormFile form_file(request);
-				// Write the file to disk
-				const std::string full_upload_path =
-										request_location_->common.upload_store +
-										form_file.GetFilename();
-				std::ofstream out(full_upload_path.c_str());
-				if (!out) {
-					PathError_();
-					return;
-				}
-				const std::string file_content = form_file.GetFileContent();
-				out.write(file_content.c_str(), file_content.size());
-				if (!out) {
-					RequestError_(500);
-				} else {
-					DefaultStatusResponse_(200);
-				}
-			}
-			catch (const std::exception &e) {
-				RequestError_(400);
-			}
+			UploadFile_(request);
 		}
 	}
 }

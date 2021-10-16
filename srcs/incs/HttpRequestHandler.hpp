@@ -49,6 +49,7 @@ class HttpRequestHandler : public IRequestHandler {
 		bool				IsCGI_(const std::string &full_path) const;
 		bool				IsUploadEnabled_() const;
 		bool				IsValidUploadPath_(const std::string &path) const;
+		void				UploadFile_(const HttpRequest &request);
 		void				DoPost_(const HttpRequest &request);
 		void				DoDelete_(const HttpRequest &request);
 		// TODO(any) We could extract some of the methods below
