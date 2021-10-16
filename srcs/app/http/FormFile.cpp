@@ -117,20 +117,18 @@ void	FormFile::ParseFormContentDisposition_(const std::string &header) {
 	// Parse the disposition name
 	index = ParsePairName_(header, index, "name=");
 	ParseDoubleQuotedString_(header, &index);
-	index = header.find_first_not_of(kWhitespace, index);
-	if (index == std::string::npos || header[index] != ';') {
+	index = SkipWhitespace_(header, index);
+	if (header[index] != ';') {
 		throw std::invalid_argument("[FormFile] Invalid Content-Disposition");
 	}
-	index += 1;
-	index = header.find_first_not_of(kWhitespace, index);
-
+	index = SkipWhitespace_(header, index + 1);
 	// Parse the disposition filename
 	index = ParsePairName_(header, index, "filename=");
 	const std::string quoted_filename = ParseDoubleQuotedString_(header, &index);
-	filename_ = TrimString(quoted_filename, "\"");
 	if (index != header.size()) {
 		throw std::invalid_argument("[FormFile] Invalid Content-Disposition");
 	}
+	filename_ = TrimString(quoted_filename, "\"");
 }
 
 std::string
@@ -177,10 +175,7 @@ FormFile::ParseHeaderName_(const std::string &str, std::size_t start,
 std::size_t
 FormFile::ParseMediaType_(const std::string &str, std::size_t start,
 							const std::string &name) const {
-	start = str.find_first_not_of(kWhitespace, start);
-	if (start == std::string::npos) {
-		throw std::invalid_argument("[FormFile] Invalid media-type");
-	}
+	start = SkipWhitespace_(str, start);
 	std::size_t end = str.find(';', start);
 	if (end == std::string::npos) {
 		throw std::invalid_argument("[FormFile] Invalid media-type");
@@ -189,11 +184,7 @@ FormFile::ParseMediaType_(const std::string &str, std::size_t start,
 	if (TrimString(media_type, kWhitespace) != name) {
 		throw std::invalid_argument("[FormFile] Invalid media-type");
 	}
-	end = str.find_first_not_of(kWhitespace, end + 1);
-	if (end == std::string::npos) {
-		throw std::invalid_argument("[FormFile] Invalid media-type");
-	}
-	return end;
+	return SkipWhitespace_(str, end + 1);
 }
 
 void	FormFile::ParseBoundary_(const std::string &str, std::size_t index) {
@@ -212,4 +203,13 @@ std::size_t	FormFile::ParsePairName_(const std::string &str, std::size_t index,
 				"[FormFile] Invalid key name");
 	}
 	return index + name.size();
+}
+
+std::size_t
+FormFile::SkipWhitespace_(const std::string &str, std::size_t index) const {
+	index = str.find_first_not_of(kWhitespace, index);
+	if (index == std::string::npos) {
+		throw std::invalid_argument("[FormFile] Invalid form");
+	}
+	return index;
 }

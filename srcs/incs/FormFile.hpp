@@ -30,6 +30,8 @@ class FormFile {
 		void		ParseBoundary_(const std::string &str, std::size_t index);
 		std::size_t	ParsePairName_(const std::string &str, std::size_t index,
 									const std::string &name) const;
+		std::size_t	SkipWhitespace_(const std::string &str,
+									std::size_t index) const;
 };
 
 #endif  // SRCS_INCS_FORMFILE_HPP_
