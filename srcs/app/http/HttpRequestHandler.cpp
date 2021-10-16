@@ -135,7 +135,7 @@ HttpRequestHandler::DefaultStatusResponse_(const std::size_t status_code) {
 }
 
 void	HttpRequestHandler::RequestError_(const std::size_t error_code) {
-	const CommonConfig &common_cfg = request_location_ ?
+	const CommonConfig &common_cfg = request_location_ != NULL ?
 								request_location_->common :
 								server_config_.common;
 	CommonConfig::ErrorPagesMap::const_iterator it =
