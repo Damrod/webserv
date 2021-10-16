@@ -1,10 +1,6 @@
 #include <HttpStatusCodes.hpp>
 #include <utility>
 
-const char Constants::kValidHttpMethods[8][8] = {"GET", "HEAD", "POST",
-	"PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE"};
-const uint16_t Constants::kValidReturnStatus[] = {301, 302, 303, 307, 308};
-
 const HttpStatusCodes::StatusCodesMap_
 HttpStatusCodes::kStatusCodesMap_ = CreateStatusCodesMap_();
 
