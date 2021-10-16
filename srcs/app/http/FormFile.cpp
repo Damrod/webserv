@@ -131,7 +131,7 @@ void	FormFile::ParseFormHeaders_(const std::string &headers) {
 // Syntax: Content-Disposition: form-data; name="myFile"; filename="foo.txt"
 void	FormFile::ParseFormContentDisposition_(const std::string &header) {
 	// Parse header name
-	std::size_t start = ParseHeaderName(header, 0, "content-disposition");
+	std::size_t start = ParseHeaderName_(header, 0, "content-disposition");
 
 	// Parse the disposition type
 	std::size_t end = header.find(';', start);
@@ -153,7 +153,7 @@ void	FormFile::ParseFormContentDisposition_(const std::string &header) {
 				"[FormFile] Invalid Content-Disposition name");
 	}
 	index += name.size();
-	ParseDoubleQuotedString(header, &index);
+	ParseDoubleQuotedString_(header, &index);
 	index = header.find_first_not_of(kWhitespace, index);
 	if (index >= header.size() || header[index] != ';') {
 		throw std::invalid_argument("[FormFile] Invalid Content-Disposition");
@@ -168,7 +168,7 @@ void	FormFile::ParseFormContentDisposition_(const std::string &header) {
 				"[FormFile] Invalid Content-Disposition filename");
 	}
 	index += name.size();
-	const std::string quoted_filename = ParseDoubleQuotedString(header, &index);
+	const std::string quoted_filename = ParseDoubleQuotedString_(header, &index);
 	filename_ = TrimString(quoted_filename, "\"");
 	if (index != header.size()) {
 		throw std::invalid_argument("[FormFile] Invalid Content-Disposition");
@@ -177,11 +177,11 @@ void	FormFile::ParseFormContentDisposition_(const std::string &header) {
 
 // Syntax: Content-Type: image/gif
 void	FormFile::ParseFormContentType_(const std::string &header) const {
-	ParseHeaderName(header, 0, "content-type");
+	ParseHeaderName_(header, 0, "content-type");
 }
 
 std::string
-FormFile::ParseDoubleQuotedString(const std::string &str,
+FormFile::ParseDoubleQuotedString_(const std::string &str,
 									std::size_t *index) const {
 	const char double_quote = '"';
 	if (str[*index] != double_quote || str.size() < 3) {
@@ -205,7 +205,7 @@ FormFile::ParseDoubleQuotedString(const std::string &str,
 }
 
 std::size_t
-FormFile::ParseHeaderName(const std::string &str, std::size_t start,
+FormFile::ParseHeaderName_(const std::string &str, std::size_t start,
 							const std::string &name) const {
 	// Parse header name
 	std::size_t end = str.find(':', start);
