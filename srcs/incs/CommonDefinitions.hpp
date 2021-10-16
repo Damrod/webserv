@@ -1,7 +1,7 @@
 #ifndef SRCS_INCS_COMMONDEFINITIONS_HPP_
 #define SRCS_INCS_COMMONDEFINITIONS_HPP_
 
-#include <arpa/inet.h>
+#include <stdint.h>
 
 namespace Constants {
 
