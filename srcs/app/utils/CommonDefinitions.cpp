@@ -1,11 +1,5 @@
 #include <CommonDefinitions.hpp>
 
-const char Constants::kValidHttpMethods[8][8] = {"GET", "HEAD", "POST",
-		"PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE"};
-
-const uint16_t Constants::kRedirectionReturnStatus[5] = {301,
-														302, 303, 307, 308};
-
 bool Constants::IsValidMethod(const std::string &method) {
 	const std::size_t	len =
 		sizeof(kValidHttpMethods) / sizeof(kValidHttpMethods[0]);
