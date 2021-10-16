@@ -9,11 +9,14 @@ std::vector<ServerConfig>	&Parser::API::GetServersSettings(void) {
 }
 
 bool Parser::API::canAddServer_(uint32_t address, uint16_t port) {
+	if (servers_settings_->empty()) {
+		return true;
+	}
 	std::vector<ServerConfig>::const_iterator it = servers_settings_->begin();
 	++it;
 	for (; it != servers_settings_->end(); ++it) {
-	 if (it->listen_port == port) {
-			  return false;
+		if (it->listen_port == port) {
+			return false;
 		}
 	}
 	(void)address;
