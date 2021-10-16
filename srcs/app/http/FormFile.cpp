@@ -51,19 +51,16 @@ void	FormFile::ParseRequestBody_(const HttpRequest &request) {
 	const std::string body = request.GetBody();
 
 	// Skip first boundary
-	const std::string form_part_start = dash_boundary + boundary_ + kCRLF;
-	if (body.rfind(form_part_start, 0) != 0) {
-		throw std::invalid_argument("[FormFile] Invalid body boundary");
-	}
+	const std::string boundary_start = dash_boundary + boundary_ + kCRLF;
+	std::size_t headers_start = SkipWord_(body, 0, boundary_start);
 
 	// Parse the headers to extract the filename
-	std::size_t	headers_start = form_part_start.size();
-	std::size_t headers_end = body.find(
-									std::string(kCRLF) + kCRLF, headers_start);
+	const std::string body_delimiter = std::string(kCRLF) + kCRLF;
+	std::size_t headers_end = body.find(body_delimiter, headers_start);
 	if (headers_end == std::string::npos) {
 		throw std::invalid_argument("[FormFile] Invalid body headers");
 	}
-	headers_end += (sizeof(kCRLF) - 1) * 2;
+	headers_end += body_delimiter.size();
 	std::string headers =
 						body.substr(headers_start, headers_end - headers_start);
 	ParseFormHeaders_(headers);
@@ -115,7 +112,7 @@ void	FormFile::ParseFormContentDisposition_(const std::string &header) {
 	index = ParseMediaType_(header, index, "form-data");
 
 	// Parse the disposition name
-	index = ParsePairName_(header, index, "name=");
+	index = SkipWord_(header, index, "name=");
 	ParseDoubleQuotedString_(header, &index);
 	index = SkipWhitespace_(header, index);
 	if (header[index] != ';') {
@@ -123,7 +120,7 @@ void	FormFile::ParseFormContentDisposition_(const std::string &header) {
 	}
 	index = SkipWhitespace_(header, index + 1);
 	// Parse the disposition filename
-	index = ParsePairName_(header, index, "filename=");
+	index = SkipWord_(header, index, "filename=");
 	const std::string quoted_filename = ParseDoubleQuotedString_(header, &index);
 	if (index != header.size()) {
 		throw std::invalid_argument("[FormFile] Invalid Content-Disposition");
@@ -189,20 +186,20 @@ FormFile::ParseMediaType_(const std::string &str, std::size_t start,
 
 void	FormFile::ParseBoundary_(const std::string &str, std::size_t index) {
 	const std::string pair = str.substr(index);
-	std::size_t start = ParsePairName_(pair, 0, "boundary=");
+	std::size_t start = SkipWord_(pair, 0, "boundary=");
 	boundary_ = pair.substr(start);
 	if (boundary_.empty() || boundary_.size() > 70) {
 		throw std::invalid_argument("[FormFile] Invalid boundary");
 	}
 }
 
-std::size_t	FormFile::ParsePairName_(const std::string &str, std::size_t index,
-										const std::string &name) const {
-	if (str.rfind(name, index) != index) {
+std::size_t	FormFile::SkipWord_(const std::string &str, std::size_t index,
+										const std::string &word) const {
+	if (str.rfind(word, index) != index) {
 		throw std::invalid_argument(
-				"[FormFile] Invalid key name");
+				"[FormFile] Invalid identifier");
 	}
-	return index + name.size();
+	return index + word.size();
 }
 
 std::size_t
