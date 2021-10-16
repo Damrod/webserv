@@ -163,7 +163,7 @@ TEST_CASE("Testing the parser", "[parser]") {
 							"\t\treturn_url : \n"
 							"\t\terror_pages map : \n"
 							"\t\tcgi_assign map : \n"
-							"\t\t\t0: file extension: .py, "
+							"\t\t\t0: file extension: py, "
 							"binary handler path:/usr/bin/python2\n";
 	std::ostringstream result;
 	try {
