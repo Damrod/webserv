@@ -119,7 +119,7 @@ void	FormFile::ParseFormHeaders_(const std::string &headers) {
 		throw std::invalid_argument("[FormFile] Invalid form Content-Type");
 	}
 	const std::string content_type = headers.substr(start, end - start);
-	ParseFormContentType_(content_type);
+	ParseHeaderName_(content_type, 0, "content-type");
 
 	// Verify that there are no more headers
 	end += (sizeof(kCRLF) - 1) * 2;
@@ -173,11 +173,6 @@ void	FormFile::ParseFormContentDisposition_(const std::string &header) {
 	if (index != header.size()) {
 		throw std::invalid_argument("[FormFile] Invalid Content-Disposition");
 	}
-}
-
-// Syntax: Content-Type: image/gif
-void	FormFile::ParseFormContentType_(const std::string &header) const {
-	ParseHeaderName_(header, 0, "content-type");
 }
 
 std::string
