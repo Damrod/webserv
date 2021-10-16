@@ -21,7 +21,6 @@ class FormFile {
 		void		ParseRequestBody_(const HttpRequest &request);
 		void		ParseFormHeaders_(const std::string &headers);
 		void		ParseFormContentDisposition_(const std::string &header);
-		void		ParseFormContentType_(const std::string &header) const;
 		std::string	ParseDoubleQuotedString_(
 							const std::string &str, std::size_t *index) const;
 		std::size_t	ParseHeaderName_(const std::string &str, std::size_t index,
