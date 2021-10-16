@@ -28,18 +28,6 @@ void	FormFile::ParseRequestContentType_(const HttpRequest &request) {
 	ParseBoundary_(content_type, index);
 }
 
-void	FormFile::ParseBoundary_(const std::string &str, std::size_t index) {
-	const std::string directive = TrimString(str.substr(index), kWhitespace);
-	const std::string name = "boundary=";
-	if (directive.rfind(name, 0) != 0) {
-		throw std::invalid_argument("[FormFile] Invalid boundary");
-	}
-	boundary_ = directive.substr(name.length());
-	if (boundary_.empty() || boundary_.size() > 70) {
-		throw std::invalid_argument("[FormFile] Invalid boundary");
-	}
-}
-
 /*
 ** https://datatracker.ietf.org/doc/html/rfc2046#section-5.1.1
 POST /foo HTTP/1.1
@@ -120,33 +108,22 @@ void	FormFile::ParseFormHeaders_(const std::string &headers) {
 
 // Syntax: Content-Disposition: form-data; name="myFile"; filename="foo.txt"
 void	FormFile::ParseFormContentDisposition_(const std::string &header) {
-	// Parse header name
 	std::size_t index = ParseHeaderName_(header, 0, "content-disposition");
 	index = ParseMediaType_(header, index, "form-data");
 
 	// Parse the disposition name
 	index = header.find_first_not_of(kWhitespace, index);
-	std::string name = "name=";
-	if (header.rfind(name, index) != index) {
-		throw std::invalid_argument(
-				"[FormFile] Invalid Content-Disposition name");
-	}
-	index += name.size();
+	index = ParsePairName_(header, index, "name=");
 	ParseDoubleQuotedString_(header, &index);
 	index = header.find_first_not_of(kWhitespace, index);
-	if (index >= header.size() || header[index] != ';') {
+	if (index == std::string::npos || header[index] != ';') {
 		throw std::invalid_argument("[FormFile] Invalid Content-Disposition");
 	}
 	index += 1;
 	index = header.find_first_not_of(kWhitespace, index);
 
 	// Parse the disposition filename
-	name = "filename=";
-	if (header.rfind(name, index) != index) {
-		throw std::invalid_argument(
-				"[FormFile] Invalid Content-Disposition filename");
-	}
-	index += name.size();
+	index = ParsePairName_(header, index, "filename=");
 	const std::string quoted_filename = ParseDoubleQuotedString_(header, &index);
 	filename_ = TrimString(quoted_filename, "\"");
 	if (index != header.size()) {
@@ -207,4 +184,22 @@ FormFile::ParseMediaType_(const std::string &str, std::size_t start,
 		throw std::invalid_argument("[FormFile] Invalid media-type");
 	}
 	return end + 1;
+}
+
+void	FormFile::ParseBoundary_(const std::string &str, std::size_t index) {
+	const std::string pair = TrimString(str.substr(index), kWhitespace);
+	std::size_t start = ParsePairName_(pair, 0, "boundary=");
+	boundary_ = pair.substr(start);
+	if (boundary_.empty() || boundary_.size() > 70) {
+		throw std::invalid_argument("[FormFile] Invalid boundary");
+	}
+}
+
+std::size_t	FormFile::ParsePairName_(const std::string &str, std::size_t index,
+										const std::string &name) const {
+	if (str.rfind(name, index) != index) {
+		throw std::invalid_argument(
+				"[FormFile] Invalid key name");
+	}
+	return index + name.size();
 }
