@@ -24,12 +24,12 @@ void	FormFile::ParseRequestContentType_(const HttpRequest &request) {
 		throw std::invalid_argument("[FormFile] Invalid request Content-Type");
 	}
 	const std::string content_type = request.GetHeaderValue("Content-Type");
-	std::size_t end = ParseMediaType_(content_type, 0, "multipart/form-data");
+	std::size_t index = ParseMediaType_(content_type, 0, "multipart/form-data");
+	ParseBoundary_(content_type, index);
+}
 
-	// Parse the boundary field
-	std::size_t start = end;
-	const std::string directive =
-							TrimString(content_type.substr(start), kWhitespace);
+void	FormFile::ParseBoundary_(const std::string &str, std::size_t index) {
+	const std::string directive = TrimString(str.substr(index), kWhitespace);
 	const std::string name = "boundary=";
 	if (directive.rfind(name, 0) != 0) {
 		throw std::invalid_argument("[FormFile] Invalid boundary");
@@ -181,7 +181,6 @@ FormFile::ParseDoubleQuotedString_(const std::string &str,
 std::size_t
 FormFile::ParseHeaderName_(const std::string &str, std::size_t start,
 							const std::string &name) const {
-	// Parse header name
 	std::size_t end = str.find(':', start);
 	if (end == std::string::npos) {
 		throw std::invalid_argument("[FormFile] Invalid header format");
