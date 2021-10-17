@@ -1,5 +1,5 @@
-#ifndef SRCS_INCS_PARSER_PARSERAPI_HPP_
-#define SRCS_INCS_PARSER_PARSERAPI_HPP_
+#ifndef SRCS_INCS_PARSER_PARSERWRAPPER_HPP_
+#define SRCS_INCS_PARSER_PARSERWRAPPER_HPP_
 
 #include <iostream>
 #include <map>
@@ -44,17 +44,17 @@ std::map<T, U>map, const std::string &key, const std::string &value) {
 	return o.str();
 }
 
-class API : public Analyser {
+class Wrapper : public Analyser {
  private:
 	std::vector<ServerConfig>	*servers_settings_;
 	bool canAddServer_(uint32_t address, uint16_t port);
 	bool canAddLocation_(const std::string &path);
 
  public:
-	explicit API(std::vector<ServerConfig> *server_settings);
+	explicit Wrapper(std::vector<ServerConfig> *server_settings);
 	std::vector<ServerConfig> &GetServersSettings(void);
 	void SetServersSettings(std::vector<ServerConfig> *server_settings);
-	virtual ~API(void) {}
+	virtual ~Wrapper(void) {}
 	void SetListenAddress(uint32_t address, uint16_t port, State::e_id ctx,
 						  size_t line);
 	void AddServerName(const std::vector<std::string> &args, State::e_id ctx,
@@ -80,4 +80,4 @@ class API : public Analyser {
 
 }  // namespace Parser
 
-#endif  // SRCS_INCS_PARSER_PARSERAPI_HPP_
+#endif  // SRCS_INCS_PARSER_PARSERWRAPPER_HPP_

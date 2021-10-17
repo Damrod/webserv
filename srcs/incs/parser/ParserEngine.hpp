@@ -5,7 +5,7 @@
 #include <list>
 #include <stack>
 #include <vector>
-#include <parser/ParserAPI.hpp>
+#include <parser/ParserWrapper.hpp>
 #include <parser/Analyser.hpp>
 #include <parser/ParserStatelessSet.hpp>
 #include <parser/ParsingState.hpp>
@@ -16,7 +16,7 @@ namespace Parser {
 
 class Engine: public Analyser {
  public:
-	Engine(const std::list<Token> &token, API *config);
+	Engine(const std::list<Token> &token, Wrapper *config);
 	State::e_id ParserMainLoop(void);
 	void PushContext(const State::e_id &ctx);
 	void PopContext(void);

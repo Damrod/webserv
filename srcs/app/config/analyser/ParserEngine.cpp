@@ -1,6 +1,6 @@
 #include <parser/ParserEngine.hpp>
 
-Parser::Engine::Engine(const std::list<Token> &token, API *config) :
+Parser::Engine::Engine(const std::list<Token> &token, Wrapper *config) :
 	handlers_(this, config),
 	ite_(token.end()),
 	itc_(token.begin()),

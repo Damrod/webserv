@@ -1,6 +1,6 @@
 #include <parser/ParserStatelessSet.hpp>
 
-Parser::StatelessSet::StatelessSet(Engine *parser, API *config) :
+Parser::StatelessSet::StatelessSet(Engine *parser, Wrapper *config) :
 	config_(config),
 	parser_(parser) {}
 
