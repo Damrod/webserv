@@ -8,8 +8,6 @@
 #include <algorithm>
 #include <exception>
 #include <fstream>
-// TODO(any) Remove iostream
-#include <iostream>
 #include <sstream>
 #include <FormFile.hpp>
 #include <HttpStatusCodes.hpp>
@@ -72,15 +70,9 @@ void		HttpRequestHandler::HandleRequest_() {
 	}
 	SetKeepAlive_(*request);
 	request_location_ = new RequestLocation(server_config_, request->GetPath());
-	bool do_method = true;
 	if (!request_location_->common.return_url.empty()) {
 		DoRedirection_();
-		do_method = false;
-	}
-	if (!HasAcceptedFormat_(*request)) {
-		do_method = false;
-	}
-	if (do_method) {
+	} else if (HasAcceptedFormat_(*request)) {
 		HandleMethod_(*request);
 	}
 	delete request;
@@ -327,7 +319,6 @@ void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
 	const std::string full_path =
 							request_location_->common.root + request_path;
 	if (IsRegularFile_(full_path)) {
-		std::cout << "CGI (not implemented)\n";
 		if (!IsCGI_(full_path)) {
 			RequestError_(404);
 		} else if (!IsExecutable_(full_path)) {

@@ -52,8 +52,7 @@ class HttpRequestHandler : public IRequestHandler {
 		void				UploadFile_(const HttpRequest &request);
 		void				DoPost_(const HttpRequest &request);
 		void				DoDelete_(const HttpRequest &request);
-		// TODO(any) We could extract some of the methods below
-		//           to a separate header/class
+
 		bool				IsExecutable_(const std::string &full_path) const;
 		bool				IsValidPath_(const std::string &path) const;
 		bool				IsDirectory_(const std::string &path) const;
