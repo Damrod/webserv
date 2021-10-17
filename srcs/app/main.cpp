@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[]) {
 	WebServer	webserver;
-	std::string	config_path = "srcs/config/default.conf";
+	std::string	config_path = "config/default.conf";
 
 	if (argc == 2) {
 		config_path = argv[1];

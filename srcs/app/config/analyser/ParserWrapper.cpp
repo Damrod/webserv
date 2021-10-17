@@ -8,7 +8,6 @@ std::vector<ServerConfig>	&Parser::Wrapper::GetServersSettings(void) {
 	return *servers_settings_;
 }
 
-
 bool Parser::Wrapper::canAddServer_(uint32_t address, uint16_t port) {
 	std::vector<ServerConfig>::const_iterator it = servers_settings_->begin();
 	for (; it != servers_settings_->end() - 1; ++it) {
