@@ -16,6 +16,11 @@ int main(int argc, char *argv[]) {
 		webserver.Init(config_path);
 		webserver.Run();
 	}
+	catch (const Analyser::SyntaxError &e) {
+		std::cerr << "Syntax error while parsing the configuration file:\n"
+				  << e.what() << '\n';
+		return EXIT_FAILURE;
+	}
 	catch (const std::exception &e) {
 		std::cerr << e.what() << '\n';
 		return EXIT_FAILURE;
