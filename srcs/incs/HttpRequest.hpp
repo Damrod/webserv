@@ -3,6 +3,7 @@
 #include <map>
 #include <string>
 #include <StringUtils.hpp>
+#include <CommonDefinitions.hpp>
 
 class HttpRequest {
 	private:
@@ -63,7 +64,6 @@ class HttpRequest {
 		bool		ParseHost_();
 		bool		ParsePort_(const std::string &port_str);
 		bool		ParseBody_(const std::string &raw_request);
-		bool		IsValidMethod_(const std::string &method) const;
 		bool		IsValidPath_(const std::string &path) const;
 		bool		IsValidHttpVersion_(const std::string &http_version) const;
 		bool		IsValidHeaderName_(const std::string &header_name) const;
