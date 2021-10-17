@@ -11,7 +11,7 @@
 #include <parser/ParserStatefulSet.hpp>
 #include <parser/ParsingState.hpp>
 #include <parser/ParsingEvent.hpp>
-#include <parser/ParserAPI.hpp>
+#include <parser/ParserWrapper.hpp>
 #include <parser/Analyser.hpp>
 #include <CommonDefinitions.hpp>
 
@@ -29,7 +29,7 @@ class Engine;
 class StatelessSet : public Analyser {
  public:
 // ************* Constructors ************
-	StatelessSet(Engine *parser, API *config);
+	StatelessSet(Engine *parser, Wrapper *config);
 
 //  *********** State handlers ***********
 	State::e_id SyntaxFailer(const StatefulSet &data);
@@ -63,7 +63,7 @@ class StatelessSet : public Analyser {
 	bool isKwAllowedInCtx_(State::e_id kw, State::e_id ctx);
 	bool areHttpMethodsValid_(const std::vector<std::string> &input,
 							  std::string *error_throw);
-	API *config_;
+	Wrapper *config_;
 	Engine *parser_;
 };
 
