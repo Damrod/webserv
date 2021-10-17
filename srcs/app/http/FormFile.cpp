@@ -29,22 +29,13 @@ void	FormFile::ParseRequestContentType_(const HttpRequest &request) {
 }
 
 /*
-** https://datatracker.ietf.org/doc/html/rfc2046#section-5.1.1
-POST /foo HTTP/1.1
-Content-Length: 68137
-Content-Type: multipart/form-data; boundary=something
-
---something
-Content-Disposition: form-data; name="myFile"; filename="foo.txt"
-Content-Type: text/plain
-
-(content of the uploaded file foo.txt)
---something--
-*/
-
-/*
 ** Example body
---something\r\nContent-Disposition: form-data; name="filename"; filename="foo.txt"\r\nContent-Type: text/plain\r\n\r\nfoobar\n\r\n--something--\r\n
+--something\r\n
+Content-Disposition: form-data; name="filename"; filename="foo.txt"\r\n
+Content-Type: text/plain\r\n
+\r\n
+foobar\n\r\n
+--something--\r\n
 */
 void	FormFile::ParseRequestBody_(const HttpRequest &request) {
 	const std::string dash_boundary = "--";
@@ -78,7 +69,9 @@ void	FormFile::ParseRequestBody_(const HttpRequest &request) {
 
 /*
 ** Example of the form headers
-Content-Disposition: form-data; name="myFile"; filename="foo.txt"\r\nContent-Type: text/plain\r\n\r\n
+Content-Disposition: form-data; name="myFile"; filename="foo.txt"\r\n
+Content-Type: text/plain\r\n
+\r\n
 */
 void	FormFile::ParseFormHeaders_(const std::string &headers) {
 	// Parse the content disposition
