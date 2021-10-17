@@ -9,9 +9,7 @@
 #include <Config.hpp>
 
 static std::vector<ServerConfig> getServerSettings(void) {
-	std::string path = "srcs/app/test/config_analyser/"
-		"nginx_docker/vol/http.d/AGVTest.conf";
-	ParserManager tst(path);
+	ParserManager tst("srcs/config/AGVTest.conf");
 	return tst.GetServersSettings();
 }
 
@@ -171,7 +169,7 @@ TEST_CASE("Testing the parser", "[parser]") {
 	try {
 		std::vector<ServerConfig> cnf = getServerSettings();
 		result << cnf;
-		std::cout << cnf;
+		// std::cout << cnf;
 		// std::cout << "=================  VS =================\n";
 		// std::cout << expected;
 		REQUIRE(result.str() == expected);

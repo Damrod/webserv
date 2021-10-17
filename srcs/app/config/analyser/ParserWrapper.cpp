@@ -39,7 +39,7 @@ t_parsing_state ctx, size_t line) {
 		servers_settings_->back().listen_address = address;
 		servers_settings_->back().listen_port = port;
 	} else {
-			throw SyntaxError("Duplicate default `listen_address'", line);
+		throw SyntaxError("Duplicate default `listen_address'", line);
 	}
 }
 
