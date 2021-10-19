@@ -53,7 +53,6 @@ class HttpRequestHandler : public IRequestHandler {
 		void				DoPost_(const HttpRequest &request);
 		void				DoDelete_(const HttpRequest &request);
 
-		bool				IsExecutable_(const std::string &full_path) const;
 		bool				IsValidPath_(const std::string &path) const;
 		bool				IsDirectory_(const std::string &path) const;
 		bool				IsRegularFile_(const std::string &path) const;
