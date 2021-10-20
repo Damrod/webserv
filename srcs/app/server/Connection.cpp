@@ -13,18 +13,26 @@ ReadRequestStatus::Type	Connection::ReadRequest() {
 	if (nbytes <= 0) {
 		return ReadRequestStatus::kFail;
 	}
-	ReadRequestStatus::Type status = raw_request_.empty() ?
-									ReadRequestStatus::kStart :
-									ReadRequestStatus::kSuccess;
 	raw_request_.append(&buffer[0], &buffer[nbytes]);
-	return status;
+	if (request.GetState() == HttpRequest::kPartial) {
+		std::size_t offset = request.ParseRawString(raw_request_);
+		if (offset != std::string::npos) {
+			raw_request_.erase(0, offset);
+		}
+	}
+	HttpRequest::State request_state = request.GetState();
+	if (request_state == HttpRequest::kPartial)
+		return ReadRequestStatus::kSuccess;
+	return ReadRequestStatus::kComplete;
 }
 
 SendResponseStatus::Type	Connection::SendResponse() {
 	if (raw_response_.empty()) {
+		const bool is_complete = request.GetState() == HttpRequest::kComplete;
+		HttpRequest *request_ptr = is_complete ? &request : NULL;
 		IRequestHandler *handler =
-			new HttpRequestHandler(server_config_, raw_request_);
-		raw_request_.clear();
+			new HttpRequestHandler(server_config_, request_ptr);
+		request.Reset();
 		raw_response_ = handler->GetRawResponse();
 		keep_alive_ = handler->GetKeepAlive();
 		delete handler;

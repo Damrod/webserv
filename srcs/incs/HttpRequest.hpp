@@ -6,7 +6,19 @@
 #include <CommonDefinitions.hpp>
 
 class HttpRequest {
+	public:
+		enum State {
+			kPartial,
+			kComplete,
+			kInvalid
+		};
+
 	private:
+		enum ParseState_ {
+			kParseRequestLine,
+			kParseHeaders,
+			kParseBody
+		};
 		typedef std::string							HeaderName;
 		typedef std::string							HeaderValue;
 		typedef	std::map<HeaderName, HeaderValue>	HeadersMap;
@@ -16,7 +28,8 @@ class HttpRequest {
 
 		static const char			kCRLF_[];
 		static const char			kWhitespace_[];
-		static const std::size_t	kPortMax;
+		static const std::size_t	kPortMax_;
+		static const std::size_t	kMaxUriLength_;
 
 		std::string	method_;
 		std::string	request_target_;
@@ -27,14 +40,18 @@ class HttpRequest {
 		std::string	host_;
 		std::size_t	port_;
 		std::string	body_;
+		std::size_t	content_length_;
 
 		// Variable used by the Parse* methods
 		// This is an index into the raw_request string
 		// that keeps track of the start/end of the fields/delimiters.
 		std::size_t	offset_;
+		ParseState_	parse_state_;
+		State		state_;
 
 	public:
-		explicit	HttpRequest(const std::string &raw_request);
+					HttpRequest();
+		std::size_t	ParseRawString(const std::string &raw_request);
 		std::string	GetMethod() const;
 		std::string	GetRequestTarget() const;
 		std::string	GetPath() const;
@@ -48,9 +65,10 @@ class HttpRequest {
 		std::size_t	GetPort() const;
 		std::string	GetBody() const;
 		bool		HasHeader(const std::string &header_name) const;
+		void		Reset();
+		State		GetState() const;
 
 	private:
-		bool		ParseRawString_(const std::string &raw_request);
 		bool		ParseRequestLine_(const std::string &raw_request);
 		bool		ParseMethod_(const std::string &raw_request);
 		bool		ParseRequestTarget_(const std::string &raw_request);

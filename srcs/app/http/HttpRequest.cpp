@@ -6,24 +6,27 @@
 
 const char			HttpRequest::kCRLF_[] = "\r\n";
 const char			HttpRequest::kWhitespace_[] = " \t";
-const std::size_t	HttpRequest::kPortMax = 65535;
+const std::size_t	HttpRequest::kPortMax_ = 65535;
+const std::size_t	HttpRequest::kMaxUriLength_ = 2048;
 
-HttpRequest::HttpRequest(const std::string &raw_request) {
-	if (!ParseRawString_(raw_request))
-		throw std::invalid_argument("[HttpRequest] Bad Request");
+HttpRequest::HttpRequest()
+	: port_(80), content_length_(0),
+	parse_state_(kParseRequestLine), state_(kPartial) {
 }
 
-bool	HttpRequest::ParseRawString_(const std::string &raw_request) {
+std::size_t
+HttpRequest::ParseRawString(const std::string &raw_request) {
 	offset_ = 0;
 	if (!ParseRequestLine_(raw_request))
-		return false;
+		return std::string::npos;
 	if (!ParseHeaders_(raw_request))
-		return false;
+		return std::string::npos;
 	if (!ParseHost_())
-		return false;
+		return std::string::npos;
 	if (!ParseBody_(raw_request))
-		return false;
-	return true;
+		return std::string::npos;
+	state_ = kComplete;
+	return raw_request.size();
 }
 
 std::string	HttpRequest::GetMethod() const {
@@ -276,7 +279,7 @@ bool	HttpRequest::ParsePort_(const std::string &port_str) {
 	errno = 0;
 	char *endptr;
 	port_ = std::strtoul(port_str.c_str(), &endptr, 10);
-	return !errno && *endptr == '\0' && port_ <= kPortMax;
+	return !errno && *endptr == '\0' && port_ <= kPortMax_;
 }
 
 bool	HttpRequest::ParseBody_(const std::string &raw_request) {
@@ -289,6 +292,25 @@ bool	HttpRequest::ParseBody_(const std::string &raw_request) {
 	std::size_t content_length =
 						std::strtoul(content_length_str.c_str(), &endptr, 10);
 	return !errno && *endptr == '\0' && content_length == body_.size();
+}
+
+void	HttpRequest::Reset() {
+	method_.clear();
+	request_target_.clear();
+	path_.clear();
+	queries_.clear();
+	http_version_.clear();
+	headers_.clear();
+	port_ = 0;
+	body_.clear();
+	content_length_ = 0;
+	offset_ = 0;
+	parse_state_ = kParseRequestLine;
+	state_ = kPartial;
+}
+
+HttpRequest::State	HttpRequest::GetState() const {
+	return state_;
 }
 
 std::ostream&	operator<<(std::ostream &os, const HttpRequest &request) {
