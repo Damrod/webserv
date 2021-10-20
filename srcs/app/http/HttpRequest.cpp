@@ -301,7 +301,7 @@ void	HttpRequest::Reset() {
 	queries_.clear();
 	http_version_.clear();
 	headers_.clear();
-	port_ = 0;
+	port_ = 80;
 	body_.clear();
 	content_length_ = 0;
 	offset_ = 0;
