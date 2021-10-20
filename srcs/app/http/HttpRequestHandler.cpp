@@ -326,10 +326,10 @@ void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
 			RequestError_(501);
 		}
 	} else {
-		if (!IsUploadEnabled_() || !IsValidUploadPath_(request_path)) {
-			RequestError_(403);
-		} else {
+		if (IsUploadEnabled_() && IsValidUploadPath_(request_path)) {
 			UploadFile_(request);
+		} else {
+			RequestError_(403);
 		}
 	}
 }
