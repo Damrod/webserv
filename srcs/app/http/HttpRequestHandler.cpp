@@ -320,7 +320,7 @@ void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
 							request_location_->common.root + request_path;
 	if (IsRegularFile_(full_path)) {
 		if (!IsCGI_(full_path)) {
-			RequestError_(404);
+			RequestError_(501);
 		} else {
 			// TODO(any) Implement CGI
 			RequestError_(501);
@@ -329,7 +329,7 @@ void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
 		if (IsUploadEnabled_() && IsValidUploadPath_(request_path)) {
 			UploadFile_(request);
 		} else {
-			RequestError_(403);
+			RequestError_(404);
 		}
 	}
 }
