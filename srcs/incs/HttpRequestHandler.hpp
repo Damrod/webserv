@@ -30,6 +30,7 @@ class HttpRequestHandler : public IRequestHandler {
 		void				SetKeepAlive_(const HttpRequest &request);
 		void				DoRedirection_();
 		void				HandleRequest_();
+		void				HandleMethod_(const HttpRequest &request);
 		void				AddCommonHeaders_(HttpResponse *response);
 		std::string			DefaultResponseBody_(
 										const std::size_t status_code) const;
@@ -45,8 +46,13 @@ class HttpRequestHandler : public IRequestHandler {
 		void				ServeFile_(const std::string &file_path);
 		void				MovedPermanently_(const HttpRequest &request);
 		void				DoGet_(const HttpRequest &request);
+		bool				IsCGI_(const std::string &full_path) const;
+		bool				IsUploadEnabled_() const;
+		bool				IsValidUploadPath_(const std::string &path) const;
+		void				UploadFile_(const HttpRequest &request);
 		void				DoPost_(const HttpRequest &request);
 		void				DoDelete_(const HttpRequest &request);
+
 		bool				IsValidPath_(const std::string &path) const;
 		bool				IsDirectory_(const std::string &path) const;
 		bool				IsRegularFile_(const std::string &path) const;

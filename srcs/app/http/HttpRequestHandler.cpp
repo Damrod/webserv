@@ -9,6 +9,7 @@
 #include <exception>
 #include <fstream>
 #include <sstream>
+#include <FormFile.hpp>
 #include <HttpStatusCodes.hpp>
 #include <StringUtils.hpp>
 
@@ -69,17 +70,26 @@ void		HttpRequestHandler::HandleRequest_() {
 	}
 	SetKeepAlive_(*request);
 	request_location_ = new RequestLocation(server_config_, request->GetPath());
-	const std::string request_method = request->GetMethod();
+	if (!request_location_->common.return_url.empty()) {
+		DoRedirection_();
+	} else if (HasAcceptedFormat_(*request)) {
+		HandleMethod_(*request);
+	}
+	delete request;
+}
+
+void	HttpRequestHandler::HandleMethod_(const HttpRequest &request) {
+	const std::string request_method = request.GetMethod();
+
 	if (request_method == "GET") {
-		DoGet_(*request);
+		DoGet_(request);
 	} else if (request_method == "POST") {
-		DoPost_(*request);
+		DoPost_(request);
 	} else if (request_method == "DELETE") {
-		DoDelete_(*request);
+		DoDelete_(request);
 	} else {
 		RequestError_(501);
 	}
-	delete request;
 }
 
 void	HttpRequestHandler::AddCommonHeaders_(HttpResponse *response) {
@@ -213,7 +223,7 @@ void	HttpRequestHandler::ServeFile_(const std::string &file_path) {
 	}
 	std::ifstream ifs(file_path.c_str(), std::ios::in | std::ios::binary);
 	if (!ifs) {
-		RequestError_(404);
+		PathError_();
 		return;
 	}
 	const std::string body = std::string(std::istreambuf_iterator<char>(ifs),
@@ -239,13 +249,6 @@ void	HttpRequestHandler::MovedPermanently_(const HttpRequest &request) {
 }
 
 void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
-	if (!request_location_->common.return_url.empty()) {
-		DoRedirection_();
-		return;
-	}
-	if (!HasAcceptedFormat_(request)) {
-		return;
-	}
 	const std::string full_path =
 							request_location_->common.root + request.GetPath();
 	if (!IsValidPath_(full_path)) {
@@ -271,16 +274,64 @@ void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
 	}
 }
 
-void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
-	// TODO(any) Implement POST
-	(void)request;
-	HttpResponse	response(200);
-	std::string		body = "Responding to a POST request\n";
+bool	HttpRequestHandler::IsCGI_(const std::string &full_path) const {
+	const std::string extension = PathExtension_(full_path);
+	return request_location_->common.cgi_assign.count(extension) > 0;
+}
 
-	response.AddHeader("Content-Type", "text/plain");
-	response.SetBody(body);
-	AddCommonHeaders_(&response);
-	raw_response_ = response.CreateResponseString();
+bool	HttpRequestHandler::IsUploadEnabled_() const {
+	return !request_location_->common.upload_store.empty();
+}
+
+bool	HttpRequestHandler::IsValidUploadPath_(const std::string &path) const {
+	if (request_location_->HasLocation()) {
+		return path == *request_location_->path;
+	}
+	return path == "/";
+}
+
+void	HttpRequestHandler::UploadFile_(const HttpRequest &request) {
+	try {
+		FormFile form_file(request);
+		const std::string full_upload_path =
+								request_location_->common.upload_store +
+								form_file.GetFilename();
+		std::ofstream out(full_upload_path.c_str());
+		if (!out) {
+			PathError_();
+			return;
+		}
+		const std::string file_content = form_file.GetFileContent();
+		out.write(file_content.c_str(), file_content.size());
+		if (!out) {
+			RequestError_(500);
+		} else {
+			DefaultStatusResponse_(200);
+		}
+	}
+	catch (const std::exception &e) {
+		RequestError_(400);
+	}
+}
+
+void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
+	const std::string request_path = request.GetPath();
+	const std::string full_path =
+							request_location_->common.root + request_path;
+	if (IsRegularFile_(full_path)) {
+		if (!IsCGI_(full_path)) {
+			RequestError_(501);
+		} else {
+			// TODO(any) Implement CGI
+			RequestError_(501);
+		}
+	} else {
+		if (IsUploadEnabled_() && IsValidUploadPath_(request_path)) {
+			UploadFile_(request);
+		} else {
+			RequestError_(404);
+		}
+	}
 }
 
 void	HttpRequestHandler::DoDelete_(const HttpRequest &request) {
