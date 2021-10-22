@@ -219,3 +219,43 @@ TEST_CASE("ValidHttpRequestTwoRequests", "[http]") {
 	REQUIRE(HttpRequest::kComplete == request.GetState());
 	REQUIRE(offset == raw_request1.size());
 }
+
+TEST_CASE("InvalidHttpRequestInvalidHttpVersion", "[http]") {
+	const std::string raw_request =
+		"GET /hello.txt http/1.1\r\n"
+		"Host: www.example.com\r\n"
+		"\r\n";
+
+	HttpRequest	request;
+	request.ParseRawString(raw_request);
+	REQUIRE(HttpRequest::kInvalid == request.GetState());
+}
+
+TEST_CASE("InvalidHttpRequestInvalidMethod", "[http]") {
+	const std::string raw_request =
+		"get /hello.txt HTTP/1.1\r\n"
+		"Host: www.example.com\r\n"
+		"\r\n";
+
+	HttpRequest	request;
+	request.ParseRawString(raw_request);
+	REQUIRE(HttpRequest::kInvalid == request.GetState());
+}
+
+TEST_CASE("ValidHttpRequestParsePartialBody", "[http]") {
+	const std::string raw_request =
+		"GET /hello.txt HTTP/1.1\r\n"
+		"Host: www.example.com\r\n"
+		"Content-Length: 1000\r\n"
+		"\r\n";
+	const std::string half_body(500, 'a');
+
+	HttpRequest	request;
+	REQUIRE(raw_request.size() == request.ParseRawString(raw_request));
+	REQUIRE(HttpRequest::kPartial == request.GetState());
+	REQUIRE(half_body.size() == request.ParseRawString(half_body));
+	REQUIRE(HttpRequest::kPartial == request.GetState());
+	REQUIRE(half_body.size() == request.ParseRawString(half_body));
+	REQUIRE(HttpRequest::kComplete == request.GetState());
+	REQUIRE(half_body + half_body == request.GetBody());
+}
