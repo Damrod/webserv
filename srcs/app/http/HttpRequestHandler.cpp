@@ -315,18 +315,16 @@ void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
 							request_location_->common.root + request_path;
 	if (IsRegularFile_(full_path)) {
 		if (!IsCGI_(full_path)) {
-			RequestError_(404);
-		} else if (!IsExecutable_(full_path)) {
-			RequestError_(403);
+			RequestError_(501);
 		} else {
 			// TODO(any) Implement CGI
 			RequestError_(501);
 		}
 	} else {
-		if (!IsUploadEnabled_() || !IsValidUploadPath_(request_path)) {
-			RequestError_(403);
-		} else {
+		if (IsUploadEnabled_() && IsValidUploadPath_(request_path)) {
 			UploadFile_(request);
+		} else {
+			RequestError_(404);
 		}
 	}
 }
@@ -341,10 +339,6 @@ void	HttpRequestHandler::DoDelete_(const HttpRequest &request) {
 	response.SetBody(body);
 	AddCommonHeaders_(&response);
 	raw_response_ = response.CreateResponseString();
-}
-
-bool	HttpRequestHandler::IsExecutable_(const std::string &full_path) const {
-	return access(full_path.c_str(), X_OK) == 0;
 }
 
 bool	HttpRequestHandler::IsValidPath_(const std::string &path) const {
