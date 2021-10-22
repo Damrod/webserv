@@ -1,4 +1,5 @@
 #include <HttpRequest.hpp>
+#include <algorithm>
 #include <ostream>
 #include <stdexcept>
 #include <cerrno>
