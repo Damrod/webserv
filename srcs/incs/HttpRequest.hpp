@@ -29,7 +29,6 @@ class HttpRequest {
 		static const char			kCRLF_[];
 		static const char			kWhitespace_[];
 		static const std::size_t	kPortMax_;
-		static const std::size_t	kMaxUriLength_;
 
 		std::string	method_;
 		std::string	request_target_;
@@ -42,9 +41,8 @@ class HttpRequest {
 		std::string	body_;
 		std::size_t	content_length_;
 
-		// Variable used by the Parse* methods
 		// This is an index into the raw_request string
-		// that keeps track of the start/end of the fields/delimiters.
+		// that keeps track of the characters parsed so far.
 		std::size_t	offset_;
 		ParseState_	parse_state_;
 		State		state_;
@@ -69,19 +67,21 @@ class HttpRequest {
 		State		GetState() const;
 
 	private:
-		bool		ParseRequestLine_(const std::string &raw_request);
-		bool		ParseMethod_(const std::string &raw_request);
-		bool		ParseRequestTarget_(const std::string &raw_request);
-		bool		ParseQueryString_(const std::string &query_string);
+		void		ParseRequestLine_(const std::string &raw_request);
+		void		ParseMethod_(const std::string &request_line);
+		void		ParseRequestTarget_(const std::string &request_line);
+		void		ParseQueryString_(const std::string &query_string);
 		void		AddQuery_(const std::string &name, const std::string &val);
-		bool		ParseHttpVersion_(const std::string &uri);
-		bool		ParseHeaders_(const std::string &raw_request);
+		void		ParseHttpVersion_(const std::string &request_line);
+		void		ParseHeaders_(const std::string &raw_request);
+		bool		ParseHeader_(const std::string &header);
 		std::string	ParseHeaderName_(const std::string &raw_request);
 		std::string	ParseHeaderValue_(const std::string &raw_request);
 		void		AddHeader_(const std::string &name, const std::string &val);
-		bool		ParseHost_();
-		bool		ParsePort_(const std::string &port_str);
-		bool		ParseBody_(const std::string &raw_request);
+		void		ParseHost_();
+		void		ParsePort_(const std::string &port_str);
+		void		ParseContentLength_();
+		void		ParseBody_(const std::string &raw_request);
 		bool		IsValidPath_(const std::string &path) const;
 		bool		IsValidHttpVersion_(const std::string &http_version) const;
 		bool		IsValidHeaderName_(const std::string &header_name) const;

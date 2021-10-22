@@ -125,7 +125,7 @@ void	WebServer::ReadRequest_(int sd) {
 	Server *server_ptr = &server_it->second;
 
 	ReadRequestStatus::Type status = server_ptr->ReadRequest(sd);
-	if (status != ReadRequestStatus::kComplete) {
+	if (status == ReadRequestStatus::kComplete) {
 		FD_SET(sd, &write_set_);
 	} else if (status == ReadRequestStatus::kFail) {
 		server_ptr->RemoveConnection(sd);

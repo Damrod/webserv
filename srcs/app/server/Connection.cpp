@@ -14,11 +14,9 @@ ReadRequestStatus::Type	Connection::ReadRequest() {
 		return ReadRequestStatus::kFail;
 	}
 	raw_request_.append(&buffer[0], &buffer[nbytes]);
-	if (request.GetState() == HttpRequest::kPartial) {
+	if (raw_response_.empty() && request.GetState() == HttpRequest::kPartial) {
 		std::size_t offset = request.ParseRawString(raw_request_);
-		if (offset != std::string::npos) {
-			raw_request_.erase(0, offset);
-		}
+		raw_request_.erase(0, offset);
 	}
 	HttpRequest::State request_state = request.GetState();
 	if (request_state == HttpRequest::kPartial)
@@ -32,10 +30,10 @@ SendResponseStatus::Type	Connection::SendResponse() {
 		HttpRequest *request_ptr = is_complete ? &request : NULL;
 		IRequestHandler *handler =
 			new HttpRequestHandler(server_config_, request_ptr);
-		request.Reset();
 		raw_response_ = handler->GetRawResponse();
 		keep_alive_ = handler->GetKeepAlive();
 		delete handler;
+		request.Reset();
 	}
 	int nbytes = send(socket_, raw_response_.c_str(), raw_response_.size(), 0);
 	if (nbytes <= 0) {
