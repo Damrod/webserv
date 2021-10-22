@@ -95,7 +95,9 @@ void	HttpRequest::ParseRequestLine_(const std::string &raw_request) {
 	if (offset_ != request_line_end) {
 		state_ = kInvalid;
 	}
-	parse_state_ = kParseHeaders;
+	if (state_ == kPartial) {
+		parse_state_ = kParseHeaders;
+	}
 }
 
 void	HttpRequest::ParseMethod_(const std::string &raw_request) {
@@ -188,6 +190,9 @@ void	HttpRequest::ParseHttpVersion_(const std::string &raw_request) {
 	http_version_ = raw_request.substr(http_version_start,
 										http_version_end - http_version_start);
 	offset_ = http_version_end;
+	if (!IsValidHttpVersion_(http_version_)) {
+		state_ = kInvalid;
+	}
 }
 
 bool	HttpRequest::IsValidHttpVersion_(const std::string &http_version) const {
