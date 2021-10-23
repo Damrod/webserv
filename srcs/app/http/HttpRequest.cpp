@@ -41,8 +41,9 @@ std::map<std::string, std::string>	HttpRequest::GetQueries() const {
 
 std::string	HttpRequest::GetQueryValue(const std::string &query_name) const {
 	QueriesMap::const_iterator	query_it = queries_.find(query_name);
-	if (query_it != queries_.end())
+	if (query_it != queries_.end()) {
 		return query_it->second;
+	}
 	return "";
 }
 
@@ -61,8 +62,9 @@ std::map<std::string, std::string>	HttpRequest::GetHeaders() const {
 std::string	HttpRequest::GetHeaderValue(const std::string &header_name) const {
 	const std::string			header_name_lc = ToLowerString(header_name);
 	HeadersMap::const_iterator	map_it = headers_.find(header_name_lc);
-	if (map_it != headers_.end())
+	if (map_it != headers_.end()) {
 		return map_it->second;
+	}
 	return "";
 }
 
@@ -148,10 +150,11 @@ void	HttpRequest::ParseQueryString_(const std::string &query_string) {
 	while (position < query_string.size()) {
 		const std::size_t	next_delimiter = query_string.find('&', position);
 		std::string	query;
-		if (next_delimiter == std::string::npos)
+		if (next_delimiter == std::string::npos) {
 			query = query_string.substr(position);
-		else
+		} else {
 			query = query_string.substr(position, next_delimiter - position);
+		}
 		const std::size_t	pair_delimiter = query.find('=');
 		const std::string	name = query.substr(0, pair_delimiter);
 		if (name.empty()) {
@@ -159,11 +162,13 @@ void	HttpRequest::ParseQueryString_(const std::string &query_string) {
 			return;
 		}
 		std::string			value;
-		if (pair_delimiter != std::string::npos)
+		if (pair_delimiter != std::string::npos) {
 			value = query.substr(pair_delimiter + 1);
+		}
 		AddQuery_(name, value);
-		if (next_delimiter == std::string::npos)
+		if (next_delimiter == std::string::npos) {
 			break;
+		}
 		position = next_delimiter + 1;
 	}
 }
@@ -266,8 +271,9 @@ std::string HttpRequest::ParseHeaderValue_(const std::string &header) {
 	const std::size_t value_start = header.find(':') + 1;
 	std::string value = header.substr(value_start);
 	value = TrimString(value, kWhitespace_);
-	if (!IsValidHeaderValue_(value))
+	if (!IsValidHeaderValue_(value)) {
 		return "";
+	}
 	return value;
 }
 
@@ -293,8 +299,9 @@ bool	HttpRequest::IsValidHeaderValue_(const std::string &value) const {
 
 bool	HttpRequest::ContainOnlyVisibleChars_(const std::string &str) const {
 	for (std::size_t i = 0; i < str.size(); ++i) {
-		if (!::isprint(str[i]))
+		if (!::isprint(str[i])) {
 			return false;
+		}
 	}
 	return true;
 }
