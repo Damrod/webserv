@@ -283,3 +283,15 @@ TEST_CASE("InvalidHttpRequestEmptyHeaderValue", "[http]") {
 	request.ParseRawString(raw_request);
 	REQUIRE(HttpRequest::kInvalid == request.GetState());
 }
+
+TEST_CASE("InvalidHttpRequestNegativeContentLength", "[http]") {
+	const std::string raw_request =
+		"GET /hello.txt HTTP/1.1\r\n"
+		"Host: www.example.com\r\n"
+		"Content-Length: -1\r\n"
+		"\r\n";
+
+	HttpRequest request;
+	request.ParseRawString(raw_request);
+	REQUIRE(HttpRequest::kInvalid == request.GetState());
+}
