@@ -243,11 +243,8 @@ void	HttpRequest::ParseHeaders_(const std::string &raw_request) {
 
 bool	HttpRequest::ParseHeader_(const std::string &header) {
 	std::string name = ParseHeaderName_(header);
-	if (name.empty()) {
-		return false;
-	}
 	std::string value = ParseHeaderValue_(header);
-	if (value.empty()) {
+	if (name.empty() || value.empty()) {
 		return false;
 	}
 	AddHeader_(name, value);
