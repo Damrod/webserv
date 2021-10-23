@@ -3,8 +3,8 @@
 #include <WebServer.hpp>
 
 int main(int argc, char *argv[]) {
-	WebServer	webserver;
 	std::string	config_path = "config/default.conf";
+	WebServer	webserver(config_path);
 
 	if (argc == 2) {
 		config_path = argv[1];
@@ -13,7 +13,6 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 	try {
-		webserver.Init(config_path);
 		webserver.Run();
 	}
 	catch (const Analyser::SyntaxError &e) {

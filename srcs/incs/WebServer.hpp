@@ -25,9 +25,8 @@ class WebServer {
 		int			max_sd_;
 
 	public:
-		WebServer();
 		// Load the config file and servers settings
-		void	Init(const std::string &pathname);
+		WebServer(const std::string &pathname);
 
 		// Run the web server
 		void	Run();

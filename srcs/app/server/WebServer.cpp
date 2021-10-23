@@ -5,13 +5,10 @@
 #include <ConnectionIOStatus.hpp>
 #include <ServerConfig.hpp>
 
-WebServer::WebServer() {
+WebServer::WebServer(const std::string &pathname) {
 	FD_ZERO(&all_set_);
 	FD_ZERO(&write_set_);
 	max_sd_ = -1;
-}
-
-void	WebServer::Init(const std::string &pathname) {
 	config_.LoadFile(pathname);
 	PopulateServers_();
 }
