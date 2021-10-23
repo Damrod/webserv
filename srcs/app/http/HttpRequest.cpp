@@ -342,6 +342,7 @@ void	HttpRequest::ParsePort_(const std::string &port_str) {
 }
 
 void	HttpRequest::ParseContentLength_() {
+	const std::string valid_chars = "0123456789";
 	if (!HasHeader("Content-Length")) {
 		return;
 	}
@@ -349,7 +350,8 @@ void	HttpRequest::ParseContentLength_() {
 	char *endptr;
 	const std::string s = GetHeaderValue("Content-Length");
 	content_length_ = std::strtoul(s.c_str(), &endptr, 10);
-	if (errno || *endptr != '\0') {
+	if (errno || *endptr != '\0' ||
+			s.find_first_not_of(valid_chars) != std::string::npos) {
 		state_ = kInvalid;
 	}
 }
