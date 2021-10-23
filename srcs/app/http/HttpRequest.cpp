@@ -129,18 +129,17 @@ void	HttpRequest::ParseRequestTarget_(const std::string &raw_request) {
 	const std::size_t	query_delimiter = request_target_.find('?');
 	if (query_delimiter == std::string::npos) {
 		path_ = request_target_;
-		if (!IsValidPath_(path_)) {
-			state_ = kInvalid;
-		}
-		return;
+	} else {
+		path_ = request_target_.substr(0, query_delimiter);
 	}
-	path_ = request_target_.substr(0, query_delimiter);
-	std::string query_string = request_target_.substr(query_delimiter + 1);
 	if (!IsValidPath_(path_)) {
 		state_ = kInvalid;
 		return;
 	}
-	ParseQueryString_(query_string);
+	if (query_delimiter != std::string::npos) {
+		std::string query_string = request_target_.substr(query_delimiter + 1);
+		ParseQueryString_(query_string);
+	}
 }
 
 void	HttpRequest::ParseQueryString_(const std::string &query_string) {
