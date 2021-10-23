@@ -259,3 +259,27 @@ TEST_CASE("ValidHttpRequestParsePartialBody", "[http]") {
 	REQUIRE(HttpRequest::kComplete == request.GetState());
 	REQUIRE(half_body + half_body == request.GetBody());
 }
+
+TEST_CASE("InvalidHttpRequestEmptyHeaderName", "[http]") {
+	const std::string raw_request =
+		"GET /hello.txt HTTP/1.1\r\n"
+		"Host: www.example.com\r\n"
+		": empty name\r\n"
+		"\r\n";
+
+	HttpRequest	request;
+	request.ParseRawString(raw_request);
+	REQUIRE(HttpRequest::kInvalid == request.GetState());
+}
+
+TEST_CASE("InvalidHttpRequestEmptyHeaderValue", "[http]") {
+	const std::string raw_request =
+		"GET /hello.txt HTTP/1.1\r\n"
+		"Host: www.example.com\r\n"
+		"Empty:\r\n"
+		"\r\n";
+
+	HttpRequest	request;
+	request.ParseRawString(raw_request);
+	REQUIRE(HttpRequest::kInvalid == request.GetState());
+}
