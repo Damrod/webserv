@@ -41,8 +41,8 @@ class WebServer {
 		void	SendResponse_(int sd);
 		bool	IsListeningSocket_(int sd) const;
 
-		ServersMap_::iterator	FindListeningServer_(int sd);
-		ServersMap_::iterator	FindConnectionServer_(int sd);
+		Server	*FindListeningServer_(int sd);
+		Server  *FindConnectionServer_(int sd);
 };
 
 #endif  // SRCS_INCS_WEBSERVER_HPP_

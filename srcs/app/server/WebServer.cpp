@@ -80,19 +80,22 @@ void	WebServer::SetMaxSocket_(int curr_sd) {
 	}
 }
 
-std::map<int, Server>::iterator
-WebServer::FindListeningServer_(int sd) {
-	return servers_.find(sd);
+Server  *WebServer::FindListeningServer_(int sd) {
+    std::map<int, Server>::iterator server_it;
+	server_it = servers_.find(sd);
+    if (server_it == servers_.end()) {
+        return NULL;
+    }
+    return &server_it->second;
 }
 
 // Accept the new connection
 // Add it to the server connections
 // And to the all_set_
 void	WebServer::AcceptNewConnection_(int sd) {
-	ServersMap_::iterator	server_it = FindListeningServer_(sd);
-	Server *server_ptr = &server_it->second;
+	Server *server = FindListeningServer_(sd);
 
-	int new_sd = accept(server_ptr->GetListeningSocket(), NULL, NULL);
+	int new_sd = accept(server->GetListeningSocket(), NULL, NULL);
 	if (new_sd < 0) {
 		throw std::runtime_error(std::strerror(errno));
 	}
@@ -100,58 +103,59 @@ void	WebServer::AcceptNewConnection_(int sd) {
 		throw std::runtime_error(std::strerror(errno));
 	}
 	FD_SET(new_sd, &all_set_);
-	server_ptr->AddConnection(new_sd);
+	server->AddConnection(new_sd);
 	if (max_sd_ < new_sd) {
 		max_sd_ = new_sd;
 	}
 }
 
-std::map<int, Server>::iterator
-WebServer::FindConnectionServer_(int sd) {
+Server	*WebServer::FindConnectionServer_(int sd) {
 	ServersMap_::iterator	server_it = servers_.begin();
 
 	for(; server_it!= servers_.end(); ++server_it) {
 		if (server_it->second.HasConnection(sd)) {
-			return server_it;
+			return &server_it->second;
 		}
 	}
-	return servers_.end();
+	return NULL;
 }
 
 // A connection is sending data
 // Find which server has this connection
 // And append the data to the connection HttpRequest
 void	WebServer::ReceiveRequest_(int sd) {
-	ServersMap_::iterator server_it = FindConnectionServer_(sd);
-	Server *server_ptr = &server_it->second;
+	Server	*server = FindConnectionServer_(sd);
 
-	ReceiveRequestStatus::Type status = server_ptr->ReceiveRequest(sd);
-	if (status == ReceiveRequestStatus::kStart) {
-		FD_SET(sd, &write_set_);
-	} else if (status == ReceiveRequestStatus::kFail) {
-		server_ptr->RemoveConnection(sd);
-		FD_CLR(sd, &all_set_);
-		FD_CLR(sd, &write_set_);
-		SetMaxSocket_(sd);
-        return;
-	}
-    FD_SET(sd, &write_set_);
+    if (server) {
+	    ReceiveRequestStatus::Type status = server->ReceiveRequest(sd);
+	    if (status == ReceiveRequestStatus::kStart) {
+	    	FD_SET(sd, &write_set_);
+	    } else if (status == ReceiveRequestStatus::kFail) {
+	    	server->RemoveConnection(sd);
+	    	FD_CLR(sd, &all_set_);
+	    	FD_CLR(sd, &write_set_);
+	    	SetMaxSocket_(sd);
+           return;
+	    }
+       FD_SET(sd, &write_set_);
+    }
 }
 
 void	WebServer::SendResponse_(int sd) {
-	ServersMap_::iterator server_it = FindConnectionServer_(sd);
-	Server	*server_ptr = &server_it->second;
+	Server	*server = FindConnectionServer_(sd);
 
-	SendResponseStatus::Type status = server_ptr->SendResponse(sd);
-	if (status == SendResponseStatus::kCompleteKeep) {
-		FD_CLR(sd, &write_set_);
-	} else if (status == SendResponseStatus::kFail ||
-				status == SendResponseStatus::kCompleteClose) {
-		server_ptr->RemoveConnection(sd);
-		FD_CLR(sd, &all_set_);
-		FD_CLR(sd, &write_set_);
-		SetMaxSocket_(sd);
-	}
+    if (server) {
+	    SendResponseStatus::Type status = server->SendResponse(sd);
+	    if (status == SendResponseStatus::kCompleteKeep) {
+	    	FD_CLR(sd, &write_set_);
+	    } else if (status == SendResponseStatus::kFail ||
+	    			status == SendResponseStatus::kCompleteClose) {
+	    	server->RemoveConnection(sd);
+	    	FD_CLR(sd, &all_set_);
+	    	FD_CLR(sd, &write_set_);
+	    	SetMaxSocket_(sd);
+	    }
+    }
 }
 
 bool	WebServer::IsListeningSocket_(int sd) const {

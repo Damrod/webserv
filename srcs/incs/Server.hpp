@@ -3,6 +3,7 @@
 #include <map>
 #include <Connection.hpp>
 #include <ServerConfig.hpp>
+#include <HttpRequestHandler.hpp>
 
 class Server {
 	private:

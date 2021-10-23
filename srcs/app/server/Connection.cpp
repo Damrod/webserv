@@ -1,5 +1,4 @@
 #include <Connection.hpp>
-#include <IRequestHandler.hpp>
 #include <HttpRequestHandler.hpp>
 
 Connection::Connection(const ServerConfig &server_config, int socket)
