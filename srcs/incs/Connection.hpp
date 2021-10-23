@@ -11,7 +11,7 @@
 class Connection {
 	public:
 		Connection(const ServerConfig &server_config, int sd);
-		ReadRequestStatus::Type		ReadRequest();
+		ReceiveRequestStatus::Type	ReceiveRequest();
 		SendResponseStatus::Type	SendResponse();
 
 	private:

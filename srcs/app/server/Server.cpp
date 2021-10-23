@@ -60,12 +60,12 @@ bool	Server::HasConnection(int sd) {
 	return connections_.count(sd) > 0;
 }
 
-ReadRequestStatus::Type	Server::ReadRequest(int sd) {
+ReceiveRequestStatus::Type	Server::ReceiveRequest(int sd) {
 	std::map<int, Connection>::iterator it = connections_.find(sd);
 	if (it == connections_.end()) {
-		return ReadRequestStatus::kFail;
+		return ReceiveRequestStatus::kFail;
 	}
-	return it->second.ReadRequest();
+	return it->second.ReceiveRequest();
 }
 
 SendResponseStatus::Type	Server::SendResponse(int sd) {

@@ -34,7 +34,7 @@ void	WebServer::Run() {
 				if (IsListeningSocket_(sd)) {
 					AcceptNewConnection_(sd);
 				} else {
-					ReadRequest_(sd);
+					ReceiveRequest_(sd);
 				}
 			} else if (FD_ISSET(sd, &tmp_write_set_)) {
 				--ready_connections;
@@ -121,14 +121,14 @@ WebServer::FindConnectionServer_(int sd) {
 // A connection is sending data
 // Find which server has this connection
 // And append the data to the connection HttpRequest
-void	WebServer::ReadRequest_(int sd) {
+void	WebServer::ReceiveRequest_(int sd) {
 	ServersMap_::iterator server_it = FindConnectionServer_(sd);
 	Server *server_ptr = &server_it->second;
 
-	ReadRequestStatus::Type status = server_ptr->ReadRequest(sd);
-	if (status == ReadRequestStatus::kStart) {
+	ReceiveRequestStatus::Type status = server_ptr->ReceiveRequest(sd);
+	if (status == ReceiveRequestStatus::kStart) {
 		FD_SET(sd, &write_set_);
-	} else if (status == ReadRequestStatus::kFail) {
+	} else if (status == ReceiveRequestStatus::kFail) {
 		server_ptr->RemoveConnection(sd);
 		FD_CLR(sd, &all_set_);
 		FD_CLR(sd, &write_set_);

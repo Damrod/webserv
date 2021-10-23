@@ -1,7 +1,7 @@
 #ifndef SRCS_INCS_CONNECTIONIOSTATUS_HPP_
 #define SRCS_INCS_CONNECTIONIOSTATUS_HPP_
 
-struct ReadRequestStatus {
+struct ReceiveRequestStatus {
 	enum Type {
 		kFail,
 		kSuccess,

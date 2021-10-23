@@ -37,7 +37,7 @@ class WebServer {
 		void	AddListeningSocketsToMasterSet_();
 		void	SetMaxSocket_(int curr_sd);
 		void	AcceptNewConnection_(int sd);
-		void	ReadRequest_(int sd);
+		void	ReceiveRequest_(int sd);
 		void	SendResponse_(int sd);
 		bool	IsListeningSocket_(int sd) const;
 

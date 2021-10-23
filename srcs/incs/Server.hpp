@@ -22,7 +22,7 @@ class Server {
 		int		GetListeningSocket() const;
 		bool	HasConnection(int sd);
 
-		ReadRequestStatus::Type		ReadRequest(int sd);
+		ReceiveRequestStatus::Type	ReceiveRequest(int sd);
 		SendResponseStatus::Type	SendResponse(int sd);
 };
 

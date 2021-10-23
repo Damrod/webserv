@@ -6,16 +6,16 @@ Connection::Connection(const ServerConfig &server_config, int socket)
 	: server_config_(server_config), socket_(socket), keep_alive_(true) {
 }
 
-ReadRequestStatus::Type	Connection::ReadRequest() {
+ReceiveRequestStatus::Type	Connection::ReceiveRequest() {
 	char	buffer[4096];
 
 	int nbytes = recv(socket_, buffer, sizeof(buffer), 0);
 	if (nbytes <= 0) {
-		return ReadRequestStatus::kFail;
+		return ReceiveRequestStatus::kFail;
 	}
-	ReadRequestStatus::Type status = raw_request_.empty() ?
-									ReadRequestStatus::kStart :
-									ReadRequestStatus::kSuccess;
+	ReceiveRequestStatus::Type status = raw_request_.empty() ?
+									ReceiveRequestStatus::kStart :
+									ReceiveRequestStatus::kSuccess;
 	raw_request_.append(&buffer[0], &buffer[nbytes]);
 	return status;
 }
