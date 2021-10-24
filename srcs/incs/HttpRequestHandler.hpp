@@ -11,7 +11,7 @@
 class HttpRequestHandler : public IRequestHandler {
 	public:
 		HttpRequestHandler(const ServerConfig &server_config,
-							const std::string &raw_request);
+							const HttpRequest *request);
 		~HttpRequestHandler();
 		std::string			GetRawResponse() const;
 		bool				GetKeepAlive() const;
@@ -22,14 +22,13 @@ class HttpRequestHandler : public IRequestHandler {
 		HttpRequestHandler&	operator=(const HttpRequestHandler&);
 
 		const ServerConfig	&server_config_;
-		std::string			raw_request_;
 		std::string			raw_response_;
 		bool				keep_alive_;
 		RequestLocation		*request_location_;
 
 		void				SetKeepAlive_(const HttpRequest &request);
 		void				DoRedirection_();
-		void				HandleRequest_();
+		void				HandleRequest_(const HttpRequest *request);
 		void				HandleMethod_(const HttpRequest &request);
 		void				AddCommonHeaders_(HttpResponse *response);
 		std::string			DefaultResponseBody_(
