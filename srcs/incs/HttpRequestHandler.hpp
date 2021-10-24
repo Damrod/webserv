@@ -3,17 +3,16 @@
 #include <string>
 #include <HttpRequest.hpp>
 #include <HttpResponse.hpp>
-#include <IRequestHandler.hpp>
 #include <MimeTypes.hpp>
 #include <RequestLocation.hpp>
 #include <ServerConfig.hpp>
+#include <IRequestHandler.hpp>
 
 class HttpRequestHandler : public IRequestHandler {
 	public:
-		HttpRequestHandler(const ServerConfig &server_config,
-							const std::string &raw_request);
+		HttpRequestHandler(const ServerConfig &server_config);
 		~HttpRequestHandler();
-		std::string			GetRawResponse() const;
+		std::string         BuildResponse(std::string raw_request);
 		bool				GetKeepAlive() const;
 
 	private:

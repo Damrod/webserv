@@ -4,8 +4,8 @@
 
 class IRequestHandler {
 	public:
-		virtual std::string	GetRawResponse() const = 0;
 		virtual bool		GetKeepAlive() const = 0;
+		virtual std::string	BuildResponse(std::string) = 0;
 		virtual				~IRequestHandler() {}
 };
 

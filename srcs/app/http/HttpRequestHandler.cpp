@@ -13,9 +13,8 @@
 #include <HttpStatusCodes.hpp>
 #include <StringUtils.hpp>
 
-HttpRequestHandler::HttpRequestHandler(const ServerConfig &server_config,
-										const std::string &raw_request)
-	: server_config_(server_config), raw_request_(raw_request),
+HttpRequestHandler::HttpRequestHandler(const ServerConfig &server_config)
+	: server_config_(server_config), raw_request_(NULL),
 		keep_alive_(true), request_location_(NULL) {
 	HandleRequest_();
 }
@@ -24,7 +23,8 @@ HttpRequestHandler::~HttpRequestHandler() {
 	delete request_location_;
 }
 
-std::string	HttpRequestHandler::GetRawResponse() const {
+std::string        HttpRequestHandler::BuildResponse(std::string raw_request) {
+	HandleRequest_();
 	return raw_response_;
 }
 

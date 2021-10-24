@@ -43,8 +43,10 @@ void	Server::BindListeningSocket() {
 	}
 }
 
+// Create conection and specify how to handle it
 void	Server::AddConnection(int sd) {
-	connections_.insert(std::make_pair(sd, Connection(settings_, sd)));
+    HttpRequestHandler HttpRequestHandler(settings_);
+	connections_.insert(std::make_pair(sd, Connection(sd, HttpRequestHandler)));
 }
 
 void	Server::RemoveConnection(int sd) {

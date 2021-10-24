@@ -7,19 +7,20 @@
 #include <HttpRequest.hpp>
 #include <HttpResponse.hpp>
 #include <ServerConfig.hpp>
+#include <IRequestHandler.hpp>
 
 class Connection {
 	public:
-		Connection(const ServerConfig &server_config, int sd);
+		Connection(int sd, IRequestHandler &requestHandler_);
 		ReceiveRequestStatus::Type	ReceiveRequest();
 		SendResponseStatus::Type	SendResponse();
 
 	private:
-		const ServerConfig	&server_config_;
-		const int			socket_;
-		bool				keep_alive_;
-		std::string			raw_request_;
-		std::string			raw_response_;
+		const int			       socket_;
+		bool				       keep_alive_;
+		std::string			       raw_request_;
+		std::string			       raw_response_;
+		IRequestHandler     &requestHandler_;
 };
 
 #endif  // SRCS_INCS_CONNECTION_HPP_
