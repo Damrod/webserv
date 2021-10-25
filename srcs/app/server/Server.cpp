@@ -14,6 +14,13 @@ Server::Server(const ServerConfig &settings)
 	: settings_(settings), listen_sd_(-1) {
 }
 
+Server::~Server() {
+	std::map<int, Connection *>::iterator it = connections_.begin();
+	for (; it != connections_.end(); ++it) {
+		delete it->second;
+	}
+}
+
 void	Server::BindListeningSocket() {
 	listen_sd_ = socket(AF_INET, SOCK_STREAM, 0);
 	if (listen_sd_ < 0) {
@@ -44,11 +51,13 @@ void	Server::BindListeningSocket() {
 }
 
 void	Server::AddConnection(int sd) {
-	connections_.insert(std::make_pair(sd, Connection(settings_, sd)));
+	Connection *connection = new Connection(settings_, sd);
+	connections_.insert(std::make_pair(sd, connection));
 }
 
 void	Server::RemoveConnection(int sd) {
 	close(sd);
+	delete connections_[sd];
 	connections_.erase(sd);
 }
 
@@ -61,17 +70,17 @@ bool	Server::HasConnection(int sd) {
 }
 
 ReadRequestStatus::Type	Server::ReadRequest(int sd) {
-	std::map<int, Connection>::iterator it = connections_.find(sd);
+	std::map<int, Connection *>::iterator it = connections_.find(sd);
 	if (it == connections_.end()) {
 		return ReadRequestStatus::kFail;
 	}
-	return it->second.ReadRequest();
+	return it->second->ReadRequest();
 }
 
 SendResponseStatus::Type	Server::SendResponse(int sd) {
-	std::map<int, Connection>::iterator it = connections_.find(sd);
+	std::map<int, Connection *>::iterator it = connections_.find(sd);
 	if (it == connections_.end()) {
 		return SendResponseStatus::kFail;
 	}
-	return it->second.SendResponse();
+	return it->second->SendResponse();
 }
