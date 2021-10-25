@@ -14,7 +14,7 @@
 class WebServer {
 	private:
 		typedef	int							Socket_;
-		typedef std::map<Socket_, Server>	ServersMap_;
+		typedef std::map<Socket_, Server *>	ServersMap_;
 
 		Config		config_;
 		ServersMap_	servers_;
@@ -26,6 +26,7 @@ class WebServer {
 
 	public:
 		WebServer();
+		~WebServer();
 		// Load the config file and servers settings
 		void	Init(const std::string &pathname);
 
@@ -33,6 +34,9 @@ class WebServer {
 		void	Run();
 
 	private:
+		WebServer(const WebServer &);
+		WebServer &	operator=(const WebServer &);
+
 		void	PopulateServers_();
 		void	AddListeningSocketsToMasterSet_();
 		void	SetMaxSocket_(int curr_sd);

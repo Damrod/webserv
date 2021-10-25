@@ -11,6 +11,13 @@ WebServer::WebServer() {
 	max_sd_ = -1;
 }
 
+WebServer::~WebServer() {
+	ServersMap_::iterator it = servers_.begin();
+	for (; it != servers_.end(); ++it) {
+		delete it->second;
+	}
+}
+
 void	WebServer::Init(const std::string &pathname) {
 	config_.LoadFile(pathname);
 	PopulateServers_();
@@ -51,10 +58,10 @@ void	WebServer::PopulateServers_() {
 	std::vector<ServerConfig>::iterator	settings_it = servers_settings.begin();
 
 	while (settings_it != servers_settings.end()) {
-		Server	server(*settings_it);
+		Server	*server = new Server(*settings_it);
 
-		server.BindListeningSocket();
-		servers_.insert(std::make_pair(server.GetListeningSocket(), server));
+		server->BindListeningSocket();
+		servers_.insert(std::make_pair(server->GetListeningSocket(), server));
 		++settings_it;
 	}
 }
@@ -63,7 +70,7 @@ void	WebServer::AddListeningSocketsToMasterSet_() {
 	ServersMap_::iterator	server_it = servers_.begin();
 
 	for (; server_it != servers_.end(); ++server_it) {
-		int listen_sd = server_it->second.GetListeningSocket();
+		int listen_sd = server_it->second->GetListeningSocket();
 		FD_SET(listen_sd, &all_set_);
 		if (max_sd_ < listen_sd) {
 			max_sd_ = listen_sd;
@@ -79,7 +86,7 @@ void	WebServer::SetMaxSocket_(int curr_sd) {
 	}
 }
 
-std::map<int, Server>::iterator
+std::map<int, Server *>::iterator
 WebServer::FindListeningServer_(int sd) {
 	return servers_.find(sd);
 }
@@ -89,7 +96,7 @@ WebServer::FindListeningServer_(int sd) {
 // And to the all_set_
 void	WebServer::AcceptNewConnection_(int sd) {
 	ServersMap_::iterator	server_it = FindListeningServer_(sd);
-	Server *server_ptr = &server_it->second;
+	Server *server_ptr = server_it->second;
 
 	int new_sd = accept(server_ptr->GetListeningSocket(), NULL, NULL);
 	if (new_sd < 0) {
@@ -105,12 +112,12 @@ void	WebServer::AcceptNewConnection_(int sd) {
 	}
 }
 
-std::map<int, Server>::iterator
+std::map<int, Server *>::iterator
 WebServer::FindConnectionServer_(int sd) {
 	ServersMap_::iterator	server_it = servers_.begin();
 
 	for(; server_it!= servers_.end(); ++server_it) {
-		if (server_it->second.HasConnection(sd)) {
+		if (server_it->second->HasConnection(sd)) {
 			return server_it;
 		}
 	}
@@ -122,7 +129,7 @@ WebServer::FindConnectionServer_(int sd) {
 // And append the data to the connection HttpRequest
 void	WebServer::ReadRequest_(int sd) {
 	ServersMap_::iterator server_it = FindConnectionServer_(sd);
-	Server *server_ptr = &server_it->second;
+	Server *server_ptr = server_it->second;
 
 	ReadRequestStatus::Type status = server_ptr->ReadRequest(sd);
 	if (status == ReadRequestStatus::kComplete) {
@@ -137,7 +144,7 @@ void	WebServer::ReadRequest_(int sd) {
 
 void	WebServer::SendResponse_(int sd) {
 	ServersMap_::iterator server_it = FindConnectionServer_(sd);
-	Server	*server_ptr = &server_it->second;
+	Server	*server_ptr = server_it->second;
 
 	SendResponseStatus::Type status = server_ptr->SendResponse(sd);
 	if (status == SendResponseStatus::kCompleteKeep) {
