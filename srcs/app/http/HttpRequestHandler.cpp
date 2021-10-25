@@ -11,6 +11,10 @@
 #include <sstream>
 #include <FormFile.hpp>
 #include <HttpStatusCodes.hpp>
+#include <IRequest.hpp>
+#include <HttpRequest.hpp>
+#include <HttpResponse.hpp>
+#include <RequestState.hpp>
 #include <StringUtils.hpp>
 
 HttpRequestHandler::HttpRequestHandler(const ServerConfig &server_config,
@@ -60,7 +64,7 @@ void		HttpRequestHandler::HandleRequest_(const HttpRequest *request) {
 		DoRedirection_();
 		return;
 	}
-	if (request == NULL) {
+	if (request == NULL || request->GetState() != RequestState::kComplete) {
 		RequestError_(400);
 		return;
 	}
