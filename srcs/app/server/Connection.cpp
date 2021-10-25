@@ -14,19 +14,19 @@ ReadRequestStatus::Type	Connection::ReadRequest() {
 		return ReadRequestStatus::kFail;
 	}
 	raw_request_.append(&buffer[0], &buffer[nbytes]);
-	if (raw_response_.empty() && request_.GetState() == HttpRequest::kPartial) {
+	if (raw_response_.empty() && request_.GetState() == RequestState::kPartial) {
 		std::size_t offset = request_.ParseRawString(raw_request_);
 		raw_request_.erase(0, offset);
 	}
-	HttpRequest::State request_state = request_.GetState();
-	if (request_state == HttpRequest::kPartial)
+	RequestState::State request_state = request_.GetState();
+	if (request_state == RequestState::kPartial)
 		return ReadRequestStatus::kSuccess;
 	return ReadRequestStatus::kComplete;
 }
 
 SendResponseStatus::Type	Connection::SendResponse() {
 	if (raw_response_.empty()) {
-		const bool is_complete = request_.GetState() == HttpRequest::kComplete;
+		const bool is_complete = request_.GetState() == RequestState::kComplete;
 		HttpRequest *request_ptr = is_complete ? &request_ : NULL;
 		IRequestHandler *handler =
 			new HttpRequestHandler(server_config_, request_ptr);
