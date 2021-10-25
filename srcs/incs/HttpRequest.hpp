@@ -3,10 +3,11 @@
 #include <map>
 #include <string>
 #include <CommonDefinitions.hpp>
+#include <IRequest.hpp>
 #include <RequestState.hpp>
 #include <StringUtils.hpp>
 
-class HttpRequest {
+class HttpRequest : public IRequest {
 	private:
 		enum ParseState_ {
 			kParseRequestLine,
