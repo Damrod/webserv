@@ -44,6 +44,7 @@ class HttpRequest : public IRequest {
 
 	public:
 					HttpRequest();
+					~HttpRequest();
 		std::size_t	ParseRawString(const std::string &raw_request);
 		std::string	GetMethod() const;
 		std::string	GetRequestTarget() const;
@@ -62,6 +63,9 @@ class HttpRequest : public IRequest {
 		RequestState::State	GetState() const;
 
 	private:
+		HttpRequest(const HttpRequest &);
+		HttpRequest &	operator=(const HttpRequest &);
+
 		void		ParseRequestLine_(const std::string &raw_request);
 		void		ParseMethod_(const std::string &request_line);
 		void		ParseRequestTarget_(const std::string &request_line);

@@ -14,6 +14,8 @@ HttpRequest::HttpRequest()
 	parse_state_(kParseRequestLine), state_(RequestState::kPartial) {
 }
 
+HttpRequest::~HttpRequest() {}
+
 std::size_t
 HttpRequest::ParseRawString(const std::string &raw_request) {
 	offset_ = 0;
