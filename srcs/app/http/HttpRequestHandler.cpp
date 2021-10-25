@@ -1,22 +1,8 @@
 #include <HttpRequestHandler.hpp>
-#include <dirent.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <cerrno>
-#include <ctime>
-#include <algorithm>
-#include <exception>
-#include <fstream>
-#include <sstream>
-#include <FormFile.hpp>
-#include <HttpStatusCodes.hpp>
-#include <StringUtils.hpp>
 
 HttpRequestHandler::HttpRequestHandler(const ServerConfig &server_config)
-	: server_config_(server_config), raw_request_(NULL),
+	: server_config_(server_config), raw_request_(""),
 		keep_alive_(true), request_location_(NULL) {
-	HandleRequest_();
 }
 
 HttpRequestHandler::~HttpRequestHandler() {
@@ -24,6 +10,7 @@ HttpRequestHandler::~HttpRequestHandler() {
 }
 
 std::string        HttpRequestHandler::BuildResponse(std::string raw_request) {
+    raw_request_ = raw_request;
 	HandleRequest_();
 	return raw_response_;
 }
