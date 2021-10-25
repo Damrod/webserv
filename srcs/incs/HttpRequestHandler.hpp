@@ -7,6 +7,7 @@
 #include <MimeTypes.hpp>
 #include <RequestLocation.hpp>
 #include <ServerConfig.hpp>
+#include <CGI.hpp>
 
 class HttpRequestHandler : public IRequestHandler {
 	public:

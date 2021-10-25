@@ -321,8 +321,12 @@ void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
 		if (!IsCGI_(full_path)) {
 			RequestError_(501);
 		} else {
-			// TODO(any) Implement CGI
-			RequestError_(501);
+			HttpResponse response(200);
+			AddCommonHeaders_(&response);
+			CGI engine(request, *request_location_, PathExtension_(full_path),
+				&response);
+			engine.ExecuteCGI();
+			raw_response_ = response.CreateResponseString();
 		}
 	} else {
 		if (IsUploadEnabled_() && IsValidUploadPath_(request_path)) {
