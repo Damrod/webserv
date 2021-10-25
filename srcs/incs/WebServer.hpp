@@ -7,9 +7,19 @@
 #include <unistd.h>
 #include <string>
 #include <map>
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <netinet/in.h>
+#include <cerrno>
+#include <cstring>
+#include <iostream>
+#include <stdexcept>
 #include <Config.hpp>
 #include <Server.hpp>
+#include <ServerConfig.hpp>
+#include <ConnectionIOStatus.hpp>
 #include <parser/Analyser.hpp>
+
 
 class WebServer {
 	private:
@@ -39,9 +49,13 @@ class WebServer {
 		void	ReceiveRequest_(int sd);
 		void	SendResponse_(int sd);
 		bool	IsListeningSocket_(int sd) const;
+        int     BindNewListeningSocketToServer_(const ServerConfig &settings);
 
 		Server	*FindListeningServer_(int sd);
 		Server  *FindConnectionServer_(int sd);
+
+        void	HandleReadSocket_(int sd);
+        void	HandleWriteSocket_(int sd);
 };
 
 #endif  // SRCS_INCS_WEBSERVER_HPP_

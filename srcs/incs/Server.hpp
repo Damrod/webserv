@@ -1,6 +1,7 @@
 #ifndef SRCS_INCS_SERVER_HPP_
 #define SRCS_INCS_SERVER_HPP_
 #include <map>
+#include <unistd.h>
 #include <Connection.hpp>
 #include <ServerConfig.hpp>
 #include <HttpRequestHandler.hpp>
@@ -16,7 +17,7 @@ class Server {
 		std::map<int, Connection>	connections_;
 
 	public:
-		explicit Server(const ServerConfig &settings);
+		explicit Server(const ServerConfig &settings, int listen_sd);
 		void	BindListeningSocket();
 		void	AddConnection(int sd);
 		void	RemoveConnection(int sd);
