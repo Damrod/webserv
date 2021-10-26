@@ -1,7 +1,11 @@
 #include <Connection.hpp>
 
-Connection::Connection(int socket, IRequestHandler &requestHandler)
+Connection::Connection(int socket, IRequestHandler *requestHandler)
 	: socket_(socket), requestHandler_(requestHandler), keep_alive_(true) {
+}
+
+Connection::~Connection() {
+    delete requestHandler_;
 }
 
 ReceiveRequestStatus::Type	Connection::ReceiveRequest() {
@@ -20,9 +24,9 @@ ReceiveRequestStatus::Type	Connection::ReceiveRequest() {
 
 SendResponseStatus::Type	Connection::SendResponse() {
 	if (raw_response_.empty()) {
+        raw_response_ = requestHandler_->BuildResponse(raw_request_);
 		raw_request_.clear();
-        raw_response_ = requestHandler_.BuildResponse(raw_request_);
-		keep_alive_ = requestHandler_.GetKeepAlive();
+		keep_alive_ = requestHandler_->GetKeepAlive();
 	}
 	int nbytes = send(socket_, raw_response_.c_str(), raw_response_.size(), 0);
 	if (nbytes <= 0) {

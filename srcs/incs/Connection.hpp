@@ -12,13 +12,14 @@
 
 class Connection {
 	public:
-		Connection(int sd, IRequestHandler &requestHandler);
+		Connection(int sd, IRequestHandler *requestHandler);
+		~Connection();
 		ReceiveRequestStatus::Type	ReceiveRequest();
 		SendResponseStatus::Type	SendResponse();
 
 	private:
 		const int			       socket_;
-		IRequestHandler            &requestHandler_;
+		IRequestHandler            *requestHandler_;
 		bool				       keep_alive_;
 		std::string			       raw_request_;
 		std::string			       raw_response_;
