@@ -18,10 +18,10 @@
 #include <StringUtils.hpp>
 
 HttpRequestHandler::HttpRequestHandler(const ServerConfig &server_config,
-										const HttpRequest *request)
+										const IRequest *request)
 	: server_config_(server_config), keep_alive_(true),
 		request_location_(NULL) {
-	HandleRequest_(request);
+	HandleRequest_(dynamic_cast<const HttpRequest *>(request));
 }
 
 HttpRequestHandler::~HttpRequestHandler() {

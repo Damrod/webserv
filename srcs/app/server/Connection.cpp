@@ -33,8 +33,7 @@ ReadRequestStatus::Type	Connection::ReadRequest() {
 SendResponseStatus::Type	Connection::SendResponse() {
 	if (raw_response_.empty()) {
 		IRequestHandler *handler =
-			new HttpRequestHandler(server_config_,
-									dynamic_cast<HttpRequest *>(request_));
+							new HttpRequestHandler(server_config_, request_);
 		raw_response_ = handler->GetRawResponse();
 		keep_alive_ = handler->GetKeepAlive();
 		delete handler;
