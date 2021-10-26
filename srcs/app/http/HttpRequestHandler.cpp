@@ -6,7 +6,7 @@
 #include <cerrno>
 #include <ctime>
 #include <algorithm>
-#include <exception>
+#include <stdexcept>
 #include <fstream>
 #include <sstream>
 #include <FormFile.hpp>
@@ -327,6 +327,9 @@ void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
 			CGI engine(request, *request_location_, PathExtension_(full_path),
 				&response);
 			engine.ExecuteCGI();
+			if (engine.GetExecReturn() != EXIT_SUCCESS) {
+				throw std::runtime_error("execve error");
+			}
 			raw_response_ = response.CreateResponseString();
 			} catch (const std::exception &e) {
 				// std::cout << e.what();
