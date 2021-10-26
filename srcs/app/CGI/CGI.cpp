@@ -116,12 +116,11 @@ void CGI::ParseCGIOut_(void) {
 
 void CGI::ExecuteCGI(void) {
 	int pipes[2];
+	int pipes2[2];
 	SyscallWrap::pipeWr(pipes);
+	SyscallWrap::pipeWr(pipes2);
 	pid_t pid = SyscallWrap::forkWr();
 	if (pid == 0) {
-		int pipes2[2];
-		SyscallWrap::pipeWr(pipes2);
-		SyscallWrap::writeWr(pipes2[1], reqBody_.c_str(), reqBody_.size());
 		SyscallWrap::closeWr(pipes2[1]);
 		SyscallWrap::dup2Wr(pipes2[0], STDIN_FILENO);
 		SyscallWrap::closeWr(pipes2[0]);
@@ -133,6 +132,9 @@ void CGI::ExecuteCGI(void) {
 								NULL};
 		SyscallWrap::execveWr(exec_path_.c_str(), argv, CGIenv_);
 	} else {
+		WriteAll_(pipes2[1], reqBody_.c_str(), reqBody_.size());
+		SyscallWrap::closeWr(pipes2[0]);
+		SyscallWrap::closeWr(pipes2[1]);
 		int status;
 		SyscallWrap::waitpidWr(-1, &status, 0);
 		if (WIFEXITED(status))
