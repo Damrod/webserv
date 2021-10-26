@@ -12,6 +12,7 @@
 #include <sstream>
 #include <map>
 #include <cerrno>
+#include <cstdlib>
 #include <cstring>
 #include <HttpRequest.hpp>
 #include <HttpResponse.hpp>

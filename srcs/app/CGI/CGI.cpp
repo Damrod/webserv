@@ -131,6 +131,7 @@ void CGI::ExecuteCGI(void) {
 								StrDupWrapper_(arg_path_),
 								NULL};
 		SyscallWrap::execveWr(exec_path_.c_str(), argv, CGIenv_);
+		std::exit(EXIT_FAILURE);
 	} else {
 		WriteAll_(pipes2[1], reqBody_.c_str(), reqBody_.size());
 		SyscallWrap::closeWr(pipes2[0]);
