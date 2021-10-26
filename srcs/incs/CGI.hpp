@@ -50,6 +50,7 @@ class CGI {
 								  const std::string &separator,
 								  bool needsSeparator,
 								  size_t line);
+	void WriteAll_(int fd, const void *buf, size_t count);
 	int execRet_;
 	std::string CGIout_;
 	std::string CGIoutHeaders_;

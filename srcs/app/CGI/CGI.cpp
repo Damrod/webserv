@@ -150,6 +150,12 @@ void CGI::ExecuteCGI(void) {
 	ParseCGIOut_();
 }
 
+void	CGI::WriteAll_(int fd, const void *buf, size_t count) {
+	while (count) {
+		count -= SyscallWrap::writeWr(fd, buf, count);
+	}
+}
+
 ssize_t CGI::SyscallWrap::writeWr(int fd, const void *buf, size_t count) {
 	ssize_t ret;
 	if ((ret = write(fd, buf, count)) == -1)
