@@ -12,10 +12,15 @@ class Server {
 
 		// The clients that are connected to the server
 		// The key is the socket of the connection
-		std::map<int, Connection>	connections_;
+		std::map<int, Connection *>	connections_;
+
+		Server();
+		Server(const Server &);
+		Server &	operator=(const Server &);
 
 	public:
 		explicit Server(const ServerConfig &settings);
+		~Server();
 		void	BindListeningSocket();
 		void	AddConnection(int sd);
 		void	RemoveConnection(int sd);

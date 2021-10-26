@@ -11,8 +11,10 @@ const std::size_t	HttpRequest::kPortMax_ = 65535;
 
 HttpRequest::HttpRequest()
 	: port_(80), content_length_(0),
-	parse_state_(kParseRequestLine), state_(kPartial) {
+	parse_state_(kParseRequestLine), state_(RequestState::kPartial) {
 }
+
+HttpRequest::~HttpRequest() {}
 
 std::size_t
 HttpRequest::ParseRawString(const std::string &raw_request) {
@@ -85,7 +87,7 @@ bool	HttpRequest::HasHeader(const std::string &header_name) const {
 }
 
 void	HttpRequest::ParseRequestLine_(const std::string &raw_request) {
-	if (parse_state_ != kParseRequestLine || state_ != kPartial) {
+	if (parse_state_ != kParseRequestLine || state_ != RequestState::kPartial) {
 		return;
 	}
 	const std::size_t request_line_end = raw_request.find(kCRLF_);
@@ -96,9 +98,9 @@ void	HttpRequest::ParseRequestLine_(const std::string &raw_request) {
 	ParseRequestTarget_(raw_request);
 	ParseHttpVersion_(raw_request);
 	if (offset_ != request_line_end) {
-		state_ = kInvalid;
+		state_ = RequestState::kInvalid;
 	}
-	if (state_ == kPartial) {
+	if (state_ == RequestState::kPartial) {
 		parse_state_ = kParseHeaders;
 	}
 }
@@ -111,7 +113,7 @@ void	HttpRequest::ParseMethod_(const std::string &raw_request) {
 	method_ = raw_request.substr(0, method_end);
 	offset_ = method_end + 1;
 	if (!Constants::IsValidMethod(method_)) {
-		state_ = kInvalid;
+		state_ = RequestState::kInvalid;
 	}
 }
 
@@ -135,7 +137,7 @@ void	HttpRequest::ParseRequestTarget_(const std::string &raw_request) {
 		path_ = request_target_.substr(0, query_delimiter);
 	}
 	if (!IsValidPath_(path_)) {
-		state_ = kInvalid;
+		state_ = RequestState::kInvalid;
 		return;
 	}
 	if (query_delimiter != std::string::npos) {
@@ -158,7 +160,7 @@ void	HttpRequest::ParseQueryString_(const std::string &query_string) {
 		const std::size_t	pair_delimiter = query.find('=');
 		const std::string	name = query.substr(0, pair_delimiter);
 		if (name.empty()) {
-			state_ = kInvalid;
+			state_ = RequestState::kInvalid;
 			return;
 		}
 		std::string			value;
@@ -196,7 +198,7 @@ void	HttpRequest::ParseHttpVersion_(const std::string &raw_request) {
 										http_version_end - http_version_start);
 	offset_ = http_version_end;
 	if (!IsValidHttpVersion_(http_version_)) {
-		state_ = kInvalid;
+		state_ = RequestState::kInvalid;
 	}
 }
 
@@ -205,7 +207,7 @@ bool	HttpRequest::IsValidHttpVersion_(const std::string &http_version) const {
 }
 
 void	HttpRequest::ParseHeaders_(const std::string &raw_request) {
-	if (parse_state_ != kParseHeaders || state_ != kPartial) {
+	if (parse_state_ != kParseHeaders || state_ != RequestState::kPartial) {
 		return;
 	}
 	const std::size_t headers_start = offset_ + 2;
@@ -219,7 +221,7 @@ void	HttpRequest::ParseHeaders_(const std::string &raw_request) {
 		const std::size_t header_start = offset_;
 		const std::size_t header_end = raw_request.find(kCRLF_, offset_);
 		if (header_end == std::string::npos) {
-			state_ = kInvalid;
+			state_ = RequestState::kInvalid;
 			return;
 		}
 		if (header_end - offset_ == 0) {
@@ -228,7 +230,7 @@ void	HttpRequest::ParseHeaders_(const std::string &raw_request) {
 		const std::string header =
 					raw_request.substr(header_start, header_end - header_start);
 		if (!ParseHeader_(header)) {
-			state_ = kInvalid;
+			state_ = RequestState::kInvalid;
 			return;
 		}
 		offset_ = header_end + 2;
@@ -236,7 +238,7 @@ void	HttpRequest::ParseHeaders_(const std::string &raw_request) {
 	offset_ += 2;
 	ParseHost_();
 	ParseContentLength_();
-	if (state_ == kPartial) {
+	if (state_ == RequestState::kPartial) {
 		parse_state_ = kParseBody;
 	}
 }
@@ -308,7 +310,7 @@ bool	HttpRequest::ContainOnlyVisibleChars_(const std::string &str) const {
 void	HttpRequest::ParseHost_() {
 	std::string host = GetHeaderValue("Host");
 	if (host.empty()) {
-		state_ = kInvalid;
+		state_ = RequestState::kInvalid;
 		return;
 	}
 	std::size_t port_delimiter = host.find(':');
@@ -319,7 +321,7 @@ void	HttpRequest::ParseHost_() {
 	}
 	host_ = host.substr(0, port_delimiter);
 	if (host_.empty()) {
-		state_ = kInvalid;
+		state_ = RequestState::kInvalid;
 		return;
 	}
 	std::string port_str = host.substr(port_delimiter + 1);
@@ -330,14 +332,14 @@ void	HttpRequest::ParsePort_(const std::string &port_str) {
 	const std::string valid_chars = "0123456789";
 	if (port_str.empty() ||
 			port_str.find_first_not_of(valid_chars) != std::string::npos) {
-		state_ = kInvalid;
+		state_ = RequestState::kInvalid;
 		return;
 	}
 	errno = 0;
 	char *endptr;
 	port_ = std::strtoul(port_str.c_str(), &endptr, 10);
 	if (errno || *endptr != '\0' || port_ > kPortMax_) {
-		state_ = kInvalid;
+		state_ = RequestState::kInvalid;
 	}
 }
 
@@ -352,12 +354,12 @@ void	HttpRequest::ParseContentLength_() {
 	content_length_ = std::strtoul(s.c_str(), &endptr, 10);
 	if (errno || *endptr != '\0' ||
 			s.find_first_not_of(valid_chars) != std::string::npos) {
-		state_ = kInvalid;
+		state_ = RequestState::kInvalid;
 	}
 }
 
 void	HttpRequest::ParseBody_(const std::string &raw_request) {
-	if (parse_state_ != kParseBody || state_ != kPartial) {
+	if (parse_state_ != kParseBody || state_ != RequestState::kPartial) {
 		return;
 	}
 	if (body_.size() < content_length_) {
@@ -367,10 +369,10 @@ void	HttpRequest::ParseBody_(const std::string &raw_request) {
 		body_.append(raw_request, offset_, n);
 		offset_ += n;
 		if (body_.size() == content_length_) {
-			state_ = kComplete;
+			state_ = RequestState::kComplete;
 		}
 	} else {
-		state_ = kComplete;
+		state_ = RequestState::kComplete;
 	}
 }
 
@@ -386,10 +388,10 @@ void	HttpRequest::Reset() {
 	content_length_ = 0;
 	offset_ = 0;
 	parse_state_ = kParseRequestLine;
-	state_ = kPartial;
+	state_ = RequestState::kPartial;
 }
 
-HttpRequest::State	HttpRequest::GetState() const {
+RequestState::State	HttpRequest::GetState() const {
 	return state_;
 }
 

@@ -14,6 +14,8 @@ HttpResponse::HttpResponse(std::size_t status_code) {
 	reason_phrase_ = HttpStatusCodes::GetReasonPhrase(status_code);
 }
 
+HttpResponse::~HttpResponse() {}
+
 void	HttpResponse::SetHttpVersion(const std::string &http_version) {
 	http_version_ = http_version;
 }

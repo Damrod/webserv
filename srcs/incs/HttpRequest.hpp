@@ -2,17 +2,12 @@
 #define SRCS_INCS_HTTPREQUEST_HPP_
 #include <map>
 #include <string>
-#include <StringUtils.hpp>
 #include <CommonDefinitions.hpp>
+#include <IRequest.hpp>
+#include <RequestState.hpp>
+#include <StringUtils.hpp>
 
-class HttpRequest {
-	public:
-		enum State {
-			kPartial,
-			kComplete,
-			kInvalid
-		};
-
+class HttpRequest : public IRequest {
 	private:
 		enum ParseState_ {
 			kParseRequestLine,
@@ -45,10 +40,11 @@ class HttpRequest {
 		// that keeps track of the characters parsed so far.
 		std::size_t	offset_;
 		ParseState_	parse_state_;
-		State		state_;
+		RequestState::State	state_;
 
 	public:
 					HttpRequest();
+					~HttpRequest();
 		std::size_t	ParseRawString(const std::string &raw_request);
 		std::string	GetMethod() const;
 		std::string	GetRequestTarget() const;
@@ -64,9 +60,12 @@ class HttpRequest {
 		std::string	GetBody() const;
 		bool		HasHeader(const std::string &header_name) const;
 		void		Reset();
-		State		GetState() const;
+		RequestState::State	GetState() const;
 
 	private:
+		HttpRequest(const HttpRequest &);
+		HttpRequest &	operator=(const HttpRequest &);
+
 		void		ParseRequestLine_(const std::string &raw_request);
 		void		ParseMethod_(const std::string &request_line);
 		void		ParseRequestTarget_(const std::string &request_line);

@@ -11,7 +11,7 @@
 class HttpRequestHandler : public IRequestHandler {
 	public:
 		HttpRequestHandler(const ServerConfig &server_config,
-							const HttpRequest *request);
+							const IRequest *request);
 		~HttpRequestHandler();
 		std::string			GetRawResponse() const;
 		bool				GetKeepAlive() const;
