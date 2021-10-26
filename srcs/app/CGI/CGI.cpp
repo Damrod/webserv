@@ -153,6 +153,10 @@ void CGI::ExecuteCGI(void) {
 	ParseCGIOut_();
 }
 
+int		CGI::GetExecReturn() const {
+	return execRet_;
+}
+
 void	CGI::WriteAll_(int fd, const void *buf, size_t count) {
 	while (count) {
 		count -= SyscallWrap::writeWr(fd, buf, count);

@@ -24,6 +24,7 @@ class CGI {
 		const std::string &extension, HttpResponse *response);
 	virtual ~CGI(void);
 	void ExecuteCGI(void);
+	int  GetExecReturn() const;
 
  private:
 	enum {
