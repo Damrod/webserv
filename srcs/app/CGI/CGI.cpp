@@ -22,14 +22,22 @@ CGI::CGI(const HttpRequest &request, const RequestLocation &location,
 	exec_path_(GetExecutable_(extension)),
 	response_(response),
 	CGIenvMap_(MakeEnv_()),
-	CGIenv_(MakeCEnv_())
-{}
+	CGIenv_(MakeCEnv_()) {
+	pipes[0] = -1;
+	pipes[1] = -1;
+	pipes2[0] = -1;
+	pipes2[1] = -1;
+}
 
 CGI::~CGI(void) {
 	for (unsigned int i = 0; CGIenv_[i]; ++i) {
 		delete [] CGIenv_[i];
 	}
 	delete [] CGIenv_;
+	SyscallWrap::closeWr(&pipes[0]);
+	SyscallWrap::closeWr(&pipes[1]);
+	SyscallWrap::closeWr(&pipes2[0]);
+	SyscallWrap::closeWr(&pipes2[1]);
 }
 
 std::map<std::string, std::string> CGI::MakeEnv_(void) {
@@ -115,19 +123,17 @@ void CGI::ParseCGIOut_(void) {
 }
 
 void CGI::ExecuteCGI(void) {
-	int pipes[2];
-	int pipes2[2];
 	SyscallWrap::pipeWr(pipes);
 	SyscallWrap::pipeWr(pipes2);
 	pid_t pid = SyscallWrap::forkWr();
 	if (pid == 0) {
 		try {
-			SyscallWrap::closeWr(pipes2[1]);
+			SyscallWrap::closeWr(&pipes2[1]);
 			SyscallWrap::dup2Wr(pipes2[0], STDIN_FILENO);
-			SyscallWrap::closeWr(pipes2[0]);
+			SyscallWrap::closeWr(&pipes2[0]);
 			SyscallWrap::dup2Wr(pipes[1], STDOUT_FILENO);
-			SyscallWrap::closeWr(pipes[0]);
-			SyscallWrap::closeWr(pipes[1]);
+			SyscallWrap::closeWr(&pipes[0]);
+			SyscallWrap::closeWr(&pipes[1]);
 			char * const argv[] = {StrDupWrapper_(exec_path_),
 									StrDupWrapper_(arg_path_),
 									NULL};
@@ -138,13 +144,13 @@ void CGI::ExecuteCGI(void) {
 		}
 	} else {
 		WriteAll_(pipes2[1], reqBody_.c_str(), reqBody_.size());
-		SyscallWrap::closeWr(pipes2[0]);
-		SyscallWrap::closeWr(pipes2[1]);
+		SyscallWrap::closeWr(&pipes2[0]);
+		SyscallWrap::closeWr(&pipes2[1]);
 		int status;
 		SyscallWrap::waitpidWr(-1, &status, 0);
 		if (WIFEXITED(status))
 			execRet_ = WEXITSTATUS(status);
-		SyscallWrap::closeWr(pipes[1]);
+		SyscallWrap::closeWr(&pipes[1]);
 		char buffer[BUFFER_SIZE];
 		int bytes_read;
 		while ((bytes_read = SyscallWrap::readWr(pipes[0], buffer,
@@ -152,7 +158,7 @@ void CGI::ExecuteCGI(void) {
 			buffer[bytes_read] = '\0';
 			CGIout_ += buffer;
 		}
-		SyscallWrap::closeWr(pipes[0]);
+		SyscallWrap::closeWr(&pipes[0]);
 	}
 	ParseCGIOut_();
 }
@@ -204,10 +210,14 @@ int CGI::SyscallWrap::execveWr(const char *pathname, char *const argv[],
 	return ret;
 }
 
-int CGI::SyscallWrap::closeWr(int fd) {
+int CGI::SyscallWrap::closeWr(int *fd) {
 	int ret;
-	if ((ret = close(fd)) == -1)
-		throw std::runtime_error(std::strerror(errno));
+	if (*fd != -1) {
+		if ((ret = close(*fd)) == -1) {
+			throw std::runtime_error(std::strerror(errno));
+		}
+		*fd = -1;
+	}
 	return ret;
 }
 

@@ -38,7 +38,7 @@ class CGI {
 		static int dup2Wr(int oldfd, int newfd);
 		static int execveWr(const char *pathname, char *const argv[],
 						   char *const envp[]);
-		static int closeWr(int fd);
+		static int closeWr(int *fd);
 		static pid_t forkWr(void);
 		static pid_t waitpidWr(pid_t pid, int *wstatus, int options);
 	};
@@ -66,6 +66,8 @@ class CGI {
 	std::string raw_response_;
 	const std::map<std::string, std::string> CGIenvMap_;
 	char * const *CGIenv_;
+	int pipes[2];
+	int pipes2[2];
 	static const char kCRLF_[3];
 };
 
