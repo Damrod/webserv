@@ -165,3 +165,10 @@ void	CGI::WriteAll_(int fd, const void *buf, size_t count) {
 		count -= SyscallWrap::writeWr(fd, buf, count);
 	}
 }
+
+void	CGI::CloseAssign_(int *fd) {
+	if (*fd != -1) {
+		SyscallWrap::closeWr(*fd);
+		*fd = -1;
+	}
+}
