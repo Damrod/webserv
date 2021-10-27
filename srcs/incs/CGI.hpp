@@ -66,8 +66,8 @@ class CGI {
 	std::string raw_response_;
 	const std::map<std::string, std::string> CGIenvMap_;
 	char * const *CGIenv_;
-	int pipes[2];
-	int pipes2[2];
+	int pipes_[2];
+	int pipes2_[2];
 	static const char kCRLF_[3];
 };
 
