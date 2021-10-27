@@ -1,11 +1,13 @@
 #include <Connection.hpp>
 
-Connection::Connection(int socket, IRequestHandler *requestHandler)
-	: socket_(socket), requestHandler_(requestHandler), keep_alive_(true) {
-}
+Connection::Connection(int socket, IRequestHandler *request_handler,
+															IRequest *request)
+	: socket_(socket), request_handler_(request_handler), request_(request),
+	keep_alive_(true) {}
 
 Connection::~Connection() {
-    delete requestHandler_;
+	delete request_handler_;
+	delete request_;
 }
 
 ReceiveRequestStatus::Type	Connection::ReceiveRequest() {
@@ -15,18 +17,23 @@ ReceiveRequestStatus::Type	Connection::ReceiveRequest() {
 	if (nbytes <= 0) {
 		return ReceiveRequestStatus::kFail;
 	}
-	ReceiveRequestStatus::Type status = raw_request_.empty() ?
-									ReceiveRequestStatus::kStart :
-									ReceiveRequestStatus::kSuccess;
 	raw_request_.append(&buffer[0], &buffer[nbytes]);
-	return status;
+	if (raw_response_.empty() &&
+							request_->GetState() == RequestState::kPartial) {
+		std::size_t offset = request_->ParseRawString(raw_request_);
+		raw_request_.erase(0, offset);
+	}
+	RequestState::State request_state = request_->GetState();
+	if (request_state == RequestState::kPartial)
+		return ReceiveRequestStatus::kSuccess;
+	return ReceiveRequestStatus::kComplete;
 }
 
 SendResponseStatus::Type	Connection::SendResponse() {
 	if (raw_response_.empty()) {
-        raw_response_ = requestHandler_->BuildResponse(raw_request_);
-		raw_request_.clear();
-		keep_alive_ = requestHandler_->GetKeepAlive();
+		raw_response_ = request_handler_->BuildResponse(request_);
+		keep_alive_ = request_handler_->GetKeepAlive();
+		request_->Reset();
 	}
 	int nbytes = send(socket_, raw_response_.c_str(), raw_response_.size(), 0);
 	if (nbytes <= 0) {

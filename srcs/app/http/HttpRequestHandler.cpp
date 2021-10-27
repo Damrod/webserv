@@ -1,17 +1,14 @@
 #include <HttpRequestHandler.hpp>
 
 HttpRequestHandler::HttpRequestHandler(const ServerConfig &server_config)
-	: server_config_(server_config), raw_request_(""),
-		keep_alive_(true), request_location_(NULL) {
+	: server_config_(server_config), keep_alive_(true),
+		request_location_(NULL) {
 }
 
-HttpRequestHandler::~HttpRequestHandler() {
-	delete request_location_;
-}
+HttpRequestHandler::~HttpRequestHandler() {}
 
-std::string        HttpRequestHandler::BuildResponse(std::string raw_request) {
-    raw_request_ = raw_request;
-	HandleRequest_();
+std::string	HttpRequestHandler::BuildResponse(IRequest *request) {
+	HandleRequest_(dynamic_cast<const HttpRequest *>(request));
 	return raw_response_;
 }
 
@@ -42,16 +39,12 @@ void		HttpRequestHandler::DoRedirection_() {
 	raw_response_ = response.CreateResponseString();
 }
 
-void		HttpRequestHandler::HandleRequest_() {
+void		HttpRequestHandler::HandleRequest_(const HttpRequest *request) {
 	if (!server_config_.common.return_url.empty()) {
 		DoRedirection_();
 		return;
 	}
-	HttpRequest	*request = NULL;
-	try {
-		request = new HttpRequest(raw_request_);
-	}
-	catch (const std::exception &e) {
+	if (request == NULL || request->GetState() != RequestState::kComplete) {
 		RequestError_(400);
 		return;
 	}
@@ -62,7 +55,8 @@ void		HttpRequestHandler::HandleRequest_() {
 	} else if (HasAcceptedFormat_(*request)) {
 		HandleMethod_(*request);
 	}
-	delete request;
+	delete request_location_;
+	request_location_ = NULL;
 }
 
 void	HttpRequestHandler::HandleMethod_(const HttpRequest &request) {

@@ -1,32 +1,34 @@
 #ifndef SRCS_INCS_HTTPREQUESTHANDLER_HPP_
 #define SRCS_INCS_HTTPREQUESTHANDLER_HPP_
-#include <string>
+#include <HttpRequestHandler.hpp>
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <algorithm>
 #include <cerrno>
 #include <iostream>
 #include <ctime>
-#include <algorithm>
 #include <exception>
 #include <fstream>
 #include <sstream>
+#include <string>
 #include <FormFile.hpp>
-#include <StringUtils.hpp>
 #include <HttpRequest.hpp>
 #include <HttpResponse.hpp>
 #include <HttpStatusCodes.hpp>
+#include <IRequest.hpp>
+#include <IRequestHandler.hpp>
 #include <MimeTypes.hpp>
 #include <RequestLocation.hpp>
 #include <ServerConfig.hpp>
-#include <IRequestHandler.hpp>
+#include <StringUtils.hpp>
 
 class HttpRequestHandler : public IRequestHandler {
 	public:
-		HttpRequestHandler(const ServerConfig &server_config);
+		explicit	HttpRequestHandler(const ServerConfig &server_config);
 		~HttpRequestHandler();
-		std::string         BuildResponse(std::string raw_request);
+		std::string			BuildResponse(IRequest *request);
 		bool				GetKeepAlive() const;
 
 	private:
@@ -35,14 +37,13 @@ class HttpRequestHandler : public IRequestHandler {
 		HttpRequestHandler&	operator=(const HttpRequestHandler&);
 
 		const ServerConfig	&server_config_;
-		std::string			raw_request_;
 		std::string			raw_response_;
 		bool				keep_alive_;
 		RequestLocation		*request_location_;
 
 		void				SetKeepAlive_(const HttpRequest &request);
 		void				DoRedirection_();
-		void				HandleRequest_();
+		void				HandleRequest_(const HttpRequest *request);
 		void				HandleMethod_(const HttpRequest &request);
 		void				AddCommonHeaders_(HttpResponse *response);
 		std::string			DefaultResponseBody_(

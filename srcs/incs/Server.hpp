@@ -1,10 +1,11 @@
 #ifndef SRCS_INCS_SERVER_HPP_
 #define SRCS_INCS_SERVER_HPP_
-#include <map>
 #include <unistd.h>
+#include <map>
 #include <Connection.hpp>
-#include <ServerConfig.hpp>
+#include <HttpRequest.hpp>
 #include <HttpRequestHandler.hpp>
+#include <ServerConfig.hpp>
 
 class Server {
 	private:
@@ -16,8 +17,12 @@ class Server {
 		// The key is the socket of the connection
 		std::map<int, Connection *>	connections_;
 
+		Server();
+		Server(const Server &);
+		Server &	operator=(const Server &);
+
 	public:
-		explicit Server(const ServerConfig &settings, int listen_sd);
+		Server(const ServerConfig &settings, int listen_sd);
 		~Server();
 		void	BindListeningSocket();
 		void	AddConnection(int sd);

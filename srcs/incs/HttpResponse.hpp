@@ -12,6 +12,7 @@ class HttpResponse {
 
 	public:
 		explicit	HttpResponse(std::size_t status_code);
+					~HttpResponse();
 		void		SetHttpVersion(const std::string &http_version);
 		void		SetStatusCode(std::size_t status_code);
 		void		SetReasonPhrase(const std::string &reason_phrase);
@@ -27,6 +28,10 @@ class HttpResponse {
 		std::string	CreateResponseString() const;
 
 	private:
+		HttpResponse();
+		HttpResponse(const HttpResponse &);
+		HttpResponse &	operator=(const HttpResponse &);
+
 		static const char							kCRLF_[];
 
 		std::string	http_version_;

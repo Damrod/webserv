@@ -12,12 +12,12 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 	try {
-	    WebServer	webserver(config_path);
+		WebServer	webserver(config_path);
 		webserver.Run();
 	}
 	catch (const Analyser::SyntaxError &e) {
 		std::cerr << "Syntax error while parsing the configuration file:\n"
-				  << e.what() << '\n';
+					<< e.what() << '\n';
 		return EXIT_FAILURE;
 	}
 	catch (const std::exception &e) {

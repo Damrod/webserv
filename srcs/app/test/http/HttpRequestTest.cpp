@@ -10,7 +10,9 @@ TEST_CASE("ValidHttpGetRequestWithoutBody", "[http]") {
 	 	"Accept-Language: en, mi\r\n"
 	 	"\r\n";
 
-	HttpRequest	request(raw_request);
+	HttpRequest	request;
+	REQUIRE(raw_request.size() == request.ParseRawString(raw_request));
+	REQUIRE(RequestState::kComplete == request.GetState());
 	REQUIRE("GET" == request.GetMethod());
 	REQUIRE("/hello.txt" == request.GetRequestTarget());
 	REQUIRE("HTTP/1.1" == request.GetHttpVersion());
@@ -36,7 +38,8 @@ TEST_CASE("ValidHttpPostRequestWithBody", "[http]") {
 		"\r\n"
 		"User=Peter+Lee&pw=123456&action=login";
 
-	HttpRequest	request(raw_request);
+	HttpRequest	request;
+	REQUIRE(raw_request.size() == request.ParseRawString(raw_request));
 	REQUIRE("POST" == request.GetMethod());
 	REQUIRE("/bin/login" == request.GetRequestTarget());
 	REQUIRE("HTTP/1.1" == request.GetHttpVersion());
@@ -48,11 +51,13 @@ TEST_CASE("ValidHttpPostRequestWithBody", "[http]") {
 	REQUIRE("User=Peter+Lee&pw=123456&action=login" == request.GetBody());
 }
 
-TEST_CASE("InvalidHttpRequestNoHostThrowException", "[http]") {
+TEST_CASE("InvalidHttpRequestNoHost", "[http]") {
 	const std::string raw_request =
 		"GET /hello.txt HTTP/1.1\r\n"
 		"\r\n";
-	REQUIRE_THROWS(HttpRequest(raw_request));
+	HttpRequest request;
+	request.ParseRawString(raw_request);
+	REQUIRE(RequestState::kInvalid == request.GetState());
 }
 
 TEST_CASE("InvalidHttpRequestHeaderWithoutDelimiter", "[http]") {
@@ -60,7 +65,9 @@ TEST_CASE("InvalidHttpRequestHeaderWithoutDelimiter", "[http]") {
 		"GET /hello.txt HTTP/1.1\r\n"
 		"Host 127.0.0.1:8000\r\n"
 		"\r\n";
-	REQUIRE_THROWS(HttpRequest(raw_request));
+	HttpRequest request;
+	request.ParseRawString(raw_request);
+	REQUIRE(RequestState::kInvalid == request.GetState());
 }
 
 TEST_CASE("InvalidHttpRequestRelativeRequestTarget", "[http]") {
@@ -68,88 +75,107 @@ TEST_CASE("InvalidHttpRequestRelativeRequestTarget", "[http]") {
 		"GET hello.txt HTTP/1.1\r\n"
 		"Host: 127.0.0.1:8000\r\n"
 		"\r\n";
-	REQUIRE_THROWS(HttpRequest(raw_request));
+	HttpRequest request;
+	request.ParseRawString(raw_request);
+	REQUIRE(RequestState::kInvalid == request.GetState());
 }
 
-TEST_CASE("InvalidHttpRequestContentLengthWithoutBody", "[http]") {
-	const std::string	raw_request =
+TEST_CASE("ValidPartialHttpRequestTwoParts", "[http]") {
+	const std::string raw_request =
 		"GET /hello.txt HTTP/1.1\r\n"
 		"Host: localhost\r\n"
 		"Content-Length: 42\r\n"
 		"\r\n";
 
-	REQUIRE_THROWS(HttpRequest(raw_request));
+	HttpRequest request;
+	request.ParseRawString(raw_request);
+	REQUIRE(RequestState::kPartial == request.GetState());
+	const std::string body(42, 'a');
+	request.ParseRawString(body);
+	REQUIRE(RequestState::kComplete == request.GetState());
 }
 
 TEST_CASE("ValidHttpRequestZeroContentLengthWithoutBody", "[http]") {
-	const std::string	raw_request =
+	const std::string raw_request =
 		"GET /hello.txt HTTP/1.1\r\n"
 		"Host: localhost\r\n"
 		"Content-Length: 0\r\n"
 		"\r\n";
 
-	HttpRequest	request(raw_request);
+	HttpRequest	request;
+	REQUIRE(raw_request.size() == request.ParseRawString(raw_request));
 	REQUIRE("0" == request.GetHeaderValue("Content-Length"));
 }
 
 TEST_CASE("InvalidHttpRequestContentLengthInvalidCharacters", "[http]") {
-	const std::string	raw_request =
+	const std::string raw_request =
 		"GET /hello.txt HTTP/1.1\r\n"
 		"Host: localhost\r\n"
 		"Content-Length: 37abc\r\n"
 		"\r\n"
 		"User=Peter+Lee&pw=123456&action=login";
 
-	REQUIRE_THROWS(HttpRequest(raw_request));
+	HttpRequest request;
+	request.ParseRawString(raw_request);
+	REQUIRE(RequestState::kInvalid == request.GetState());
 }
 
 TEST_CASE("ValidHttpRequestHostWithPort", "[http]") {
-	const std::string	raw_request =
+	const std::string raw_request =
 		"GET /hello.txt HTTP/1.1\r\n"
 		"Host: localhost:8080\r\n"
 		"\r\n";
 
-	HttpRequest	request(raw_request);
+	HttpRequest	request;
+	request.ParseRawString(raw_request);
+	REQUIRE(RequestState::kComplete == request.GetState());
 	REQUIRE("localhost" == request.GetHost());
 	REQUIRE(8080 == request.GetPort());
 }
 
 TEST_CASE("ValidHttpRequestHostWithoutPort", "[http]") {
-	const std::string	raw_request =
+	const std::string raw_request =
 		"GET /hello.txt HTTP/1.1\r\n"
 		"Host: localhost\r\n"
 		"\r\n";
 
-	HttpRequest	request(raw_request);
+	HttpRequest	request;
+	request.ParseRawString(raw_request);
+	REQUIRE(RequestState::kComplete == request.GetState());
 	REQUIRE("localhost" == request.GetHost());
 	REQUIRE(80 == request.GetPort());
 }
 
 TEST_CASE("InvalidHttpRequestInvalidHostAndPort", "[http]") {
-	const std::string	raw_request =
+	const std::string raw_request =
 		"GET /hello.txt HTTP/1.1\r\n"
 		"Host: :\r\n"
 		"\r\n";
 
-	REQUIRE_THROWS(HttpRequest(raw_request));
+	HttpRequest request;
+	request.ParseRawString(raw_request);
+	REQUIRE(RequestState::kInvalid == request.GetState());
 }
 
 TEST_CASE("InvalidHttpRequestNegativePort", "[http]") {
-	const std::string	raw_request =
+	const std::string raw_request =
 		"GET /hello.txt HTTP/1.1\r\n"
 		"Host: www.example.com:-18446744073709551615\r\n"
 		"\r\n";
 
-	REQUIRE_THROWS(HttpRequest(raw_request));
+	HttpRequest request;
+	request.ParseRawString(raw_request);
+	REQUIRE(RequestState::kInvalid == request.GetState());
 }
 
 TEST_CASE("ValidHttpRequestWithQuery", "[http]") {
-	const std::string	raw_request =
-		"GET /test/demo_form.php?name1=value1&name2=value2;name3=value3 HTTP/1.1\r\n"
+	const std::string raw_request =
+		"GET /test/demo_form.php?name1=value1&name2=value2&name3=value3 HTTP/1.1\r\n"
 		"Host: www.example.com\r\n"
 		"\r\n";
 
-	HttpRequest	request(raw_request);
+	HttpRequest request;
+	REQUIRE(raw_request.size() == request.ParseRawString(raw_request));
 	REQUIRE("/test/demo_form.php" == request.GetPath());
 	REQUIRE("value1" == request.GetQueryValue("name1"));
 	REQUIRE("value2" == request.GetQueryValue("name2"));
@@ -162,4 +188,110 @@ TEST_CASE("ValidHttpRequestWithQuery", "[http]") {
 	query_map.insert(std::make_pair("name2", "value2"));
 	query_map.insert(std::make_pair("name3", "value3"));
 	REQUIRE(query_map == request.GetQueries());
+}
+
+TEST_CASE("InvalidHttpRequestURI", "[http]") {
+	const std::string raw_request =
+		"GET /\r\nhello.txt HTTP/1.1\r\n"
+		"Host: localhost\r\n"
+		"\r\n";
+
+	HttpRequest	request;
+	request.ParseRawString(raw_request);
+	REQUIRE(RequestState::kInvalid == request.GetState());
+}
+
+TEST_CASE("ValidHttpRequestTwoRequests", "[http]") {
+	const std::string raw_request1 =
+		"GET /hello.txt HTTP/1.1\r\n"
+		"Host: localhost\r\n"
+		"\r\n";
+	const std::string raw_request2 =
+		"GET /hello.txt HTTP/1.1\r\n"
+		"Host: localhost\r\n"
+		"Content-Length: 37\r\n"
+		"\r\n"
+		"User=Peter+Lee&pw=123456&action=login";
+	std::string	both_requests = raw_request1 + raw_request2;
+
+	HttpRequest	request;
+	std::size_t offset = request.ParseRawString(both_requests);
+	REQUIRE(RequestState::kComplete == request.GetState());
+	REQUIRE(offset == raw_request1.size());
+}
+
+TEST_CASE("InvalidHttpRequestInvalidHttpVersion", "[http]") {
+	const std::string raw_request =
+		"GET /hello.txt http/1.1\r\n"
+		"Host: www.example.com\r\n"
+		"\r\n";
+
+	HttpRequest	request;
+	request.ParseRawString(raw_request);
+	REQUIRE(RequestState::kInvalid == request.GetState());
+}
+
+TEST_CASE("InvalidHttpRequestInvalidMethod", "[http]") {
+	const std::string raw_request =
+		"get /hello.txt HTTP/1.1\r\n"
+		"Host: www.example.com\r\n"
+		"\r\n";
+
+	HttpRequest	request;
+	request.ParseRawString(raw_request);
+	REQUIRE(RequestState::kInvalid == request.GetState());
+}
+
+TEST_CASE("ValidHttpRequestParsePartialBody", "[http]") {
+	const std::string raw_request =
+		"GET /hello.txt HTTP/1.1\r\n"
+		"Host: www.example.com\r\n"
+		"Content-Length: 1000\r\n"
+		"\r\n";
+	const std::string half_body(500, 'a');
+
+	HttpRequest	request;
+	REQUIRE(raw_request.size() == request.ParseRawString(raw_request));
+	REQUIRE(RequestState::kPartial == request.GetState());
+	REQUIRE(half_body.size() == request.ParseRawString(half_body));
+	REQUIRE(RequestState::kPartial == request.GetState());
+	REQUIRE(half_body.size() == request.ParseRawString(half_body));
+	REQUIRE(RequestState::kComplete == request.GetState());
+	REQUIRE(half_body + half_body == request.GetBody());
+}
+
+TEST_CASE("InvalidHttpRequestEmptyHeaderName", "[http]") {
+	const std::string raw_request =
+		"GET /hello.txt HTTP/1.1\r\n"
+		"Host: www.example.com\r\n"
+		": empty name\r\n"
+		"\r\n";
+
+	HttpRequest	request;
+	request.ParseRawString(raw_request);
+	REQUIRE(RequestState::kInvalid == request.GetState());
+}
+
+TEST_CASE("InvalidHttpRequestEmptyHeaderValue", "[http]") {
+	const std::string raw_request =
+		"GET /hello.txt HTTP/1.1\r\n"
+		"Host: www.example.com\r\n"
+		"Empty:\r\n"
+		"\r\n";
+
+	HttpRequest	request;
+	request.ParseRawString(raw_request);
+	REQUIRE(RequestState::kInvalid == request.GetState());
+}
+
+TEST_CASE("InvalidHttpRequestNegativeContentLength", "[http]") {
+	const std::string raw_request =
+		"GET /hello.txt HTTP/1.1\r\n"
+		"Host: www.example.com\r\n"
+		"Content-Length: -1\r\n"
+		"\r\n";
+
+	HttpRequest request;
+	request.ParseRawString(raw_request);
+	REQUIRE(RequestState::kInvalid == request.GetState());
 }

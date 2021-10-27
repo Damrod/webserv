@@ -8,6 +8,13 @@ WebServer::WebServer(const std::string &pathname) {
 	PopulateServers_();
 }
 
+WebServer::~WebServer() {
+	ServersMap_::iterator it = servers_.begin();
+	for (; it != servers_.end(); ++it) {
+		delete it->second;
+	}
+}
+
 void	WebServer::Run() {
 	AddListeningSocketsToMasterSet_();
 	while (max_sd_ != -1) {
@@ -23,16 +30,16 @@ void	WebServer::Run() {
 		for (int sd = 0; sd <= max_sd_ && ready_sockets > 0; ++sd) {
 			if (FD_ISSET(sd, &tmp_read_set_)) {
 				--ready_sockets;
-                HandleReadSocket_(sd);
+				HandleReadSocket_(sd);
 			} else if (FD_ISSET(sd, &tmp_write_set_)) {
 				--ready_sockets;
-                HandleWriteSocket_(sd);
+				HandleWriteSocket_(sd);
 			}
 		}
 	}
 }
 
-int     WebServer::BindNewListeningSocketToServer_(const ServerConfig &settings) {
+int		WebServer::BindNewListeningSocketToServer_(const ServerConfig &settings) {
 	int listen_sd = socket(AF_INET, SOCK_STREAM, 0);
 	if (listen_sd < 0) {
 		throw std::runtime_error(std::strerror(errno));
@@ -59,7 +66,7 @@ int     WebServer::BindNewListeningSocketToServer_(const ServerConfig &settings)
 	if (listen(listen_sd, SOMAXCONN) < 0) {
 		throw std::runtime_error(std::strerror(errno));
 	}
-    return listen_sd;
+	return listen_sd;
 }
 
 void	WebServer::PopulateServers_() {
@@ -69,9 +76,10 @@ void	WebServer::PopulateServers_() {
 	std::vector<ServerConfig>::iterator	settings_it = servers_settings.begin();
 
 	while (settings_it != servers_settings.end()) {
-        int listen_sd = BindNewListeningSocketToServer_(*settings_it);
+		int listen_sd = BindNewListeningSocketToServer_(*settings_it);
 
-		servers_.insert(std::make_pair(listen_sd, Server(*settings_it, listen_sd)));
+		Server	*server = new Server(*settings_it, listen_sd);
+		servers_.insert(std::make_pair(listen_sd, server));
 		++settings_it;
 	}
 }
@@ -80,7 +88,7 @@ void	WebServer::AddListeningSocketsToMasterSet_() {
 	ServersMap_::iterator	server_it = servers_.begin();
 
 	for (; server_it != servers_.end(); ++server_it) {
-		int listen_sd = server_it->second.GetListeningSocket();
+		int listen_sd = server_it->second->GetListeningSocket();
 		FD_SET(listen_sd, &all_set_);
 		if (max_sd_ < listen_sd) {
 			max_sd_ = listen_sd;
@@ -96,13 +104,13 @@ void	WebServer::SetMaxSocket_(int curr_sd) {
 	}
 }
 
-Server  *WebServer::FindListeningServer_(int sd) {
-    std::map<int, Server>::iterator server_it;
+Server	*WebServer::FindListeningServer_(int sd) {
+	std::map<int, Server *>::iterator server_it;
 	server_it = servers_.find(sd);
-    if (server_it == servers_.end()) {
-        return NULL;
-    }
-    return &server_it->second;
+	if (server_it == servers_.end()) {
+		return NULL;
+	}
+	return server_it->second;
 }
 
 void	WebServer::AcceptNewConnection_(int sd) {
@@ -126,8 +134,8 @@ Server	*WebServer::FindConnectionServer_(int sd) {
 	ServersMap_::iterator	server_it = servers_.begin();
 
 	for(; server_it!= servers_.end(); ++server_it) {
-		if (server_it->second.HasConnection(sd)) {
-			return &server_it->second;
+		if (server_it->second->HasConnection(sd)) {
+			return server_it->second;
 		}
 	}
 	return NULL;
@@ -141,38 +149,35 @@ void	WebServer::HandleReadSocket_(int sd) {
 	if (IsListeningSocket_(sd)) {
 		AcceptNewConnection_(sd);
 	} else {
-	    Server	*server = FindConnectionServer_(sd);
+		Server	*server = FindConnectionServer_(sd);
 
-       if (server) {
-	        ReceiveRequestStatus::Type status = server->ReceiveRequest(sd);
-	        if (status == ReceiveRequestStatus::kStart) {
-	        	FD_SET(sd, &write_set_);
-	        } else if (status == ReceiveRequestStatus::kFail) {
-	        	server->RemoveConnection(sd);
-	        	FD_CLR(sd, &all_set_);
-	        	FD_CLR(sd, &write_set_);
-	        	SetMaxSocket_(sd);
-              return;
-	        }
-          FD_SET(sd, &write_set_);
-       }
+		if (server) {
+			ReceiveRequestStatus::Type status = server->ReceiveRequest(sd);
+			if (status == ReceiveRequestStatus::kComplete) {
+				FD_SET(sd, &write_set_);
+			} else if (status == ReceiveRequestStatus::kFail) {
+				server->RemoveConnection(sd);
+				FD_CLR(sd, &all_set_);
+				FD_CLR(sd, &write_set_);
+				SetMaxSocket_(sd);
+			}
+		}
 	}
 }
 
 void	WebServer::HandleWriteSocket_(int sd) {
 	Server	*server = FindConnectionServer_(sd);
 
-    if (server) {
-	    SendResponseStatus::Type status = server->SendResponse(sd);
-	    if (status == SendResponseStatus::kCompleteKeep) {
-	    	FD_CLR(sd, &write_set_);
-	    } else if (status == SendResponseStatus::kFail ||
-	    			status == SendResponseStatus::kCompleteClose) {
-	    	server->RemoveConnection(sd);
-	    	FD_CLR(sd, &all_set_);
-	    	FD_CLR(sd, &write_set_);
-	    	SetMaxSocket_(sd);
-	    }
-    }
-    FD_CLR(sd, &write_set_);
+	if (server) {
+		SendResponseStatus::Type status = server->SendResponse(sd);
+		if (status == SendResponseStatus::kCompleteKeep) {
+			FD_CLR(sd, &write_set_);
+		} else if (status == SendResponseStatus::kFail ||
+					status == SendResponseStatus::kCompleteClose) {
+			server->RemoveConnection(sd);
+			FD_CLR(sd, &all_set_);
+			FD_CLR(sd, &write_set_);
+			SetMaxSocket_(sd);
+		}
+	}
 }

@@ -10,12 +10,14 @@ Server::~Server() {
 		close(it->first);
 		delete it->second;
 	}
+	close(listen_sd_);
 }
 
 // Delegate how to handle connection responsability to Server
 void	Server::AddConnection(int sd) {
-    HttpRequestHandler *handler = new HttpRequestHandler(settings_);
-	Connection *connection = new Connection(sd, handler);
+	HttpRequestHandler *handler = new HttpRequestHandler(settings_);
+	HttpRequest *request = new HttpRequest();
+	Connection *connection = new Connection(sd, handler, request);
 	connections_.insert(std::make_pair(sd, connection));
 }
 

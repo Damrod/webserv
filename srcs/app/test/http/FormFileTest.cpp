@@ -16,7 +16,8 @@ TEST_CASE("ValidFormFile", "[http]") {
 		"foobar\n\r\n"
 		"--something--\r\n";
 
-	HttpRequest request(raw_request);
+	HttpRequest request;
+	request.ParseRawString(raw_request);
 	FormFile form_file(request);
 	REQUIRE("foo.txt" == form_file.GetFilename());
 	REQUIRE("foobar\n" == form_file.GetFileContent());
@@ -36,7 +37,8 @@ TEST_CASE("ValidFormFileFieldsWithSpaces", "[http]") {
 		"foobar\n\r\n"
 		"--something--\r\n";
 
-	HttpRequest request(raw_request);
+	HttpRequest request;
+	request.ParseRawString(raw_request);
 	FormFile form_file(request);
 	REQUIRE("bar.txt" == form_file.GetFilename());
 	REQUIRE("foobar\n" == form_file.GetFileContent());
@@ -56,7 +58,8 @@ TEST_CASE("ValidFormFileFieldsNoSpaces", "[http]") {
 		"foobar\n\r\n"
 		"--something--\r\n";
 
-	HttpRequest request(raw_request);
+	HttpRequest request;
+	request.ParseRawString(raw_request);
 	FormFile form_file(request);
 	REQUIRE("bar.txt" == form_file.GetFilename());
 	REQUIRE("foobar\n" == form_file.GetFileContent());
