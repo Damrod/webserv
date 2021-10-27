@@ -1,7 +1,5 @@
 #include <StringUtils.hpp>
 #include <algorithm>
-#include <cctype>
-#include <sstream>
 
 std::string	TrimString(const std::string &str, const std::string &trim_chars) {
 	const std::size_t	start_position = str.find_first_not_of(trim_chars);
@@ -15,11 +13,4 @@ std::string	TrimString(const std::string &str, const std::string &trim_chars) {
 std::string	ToLowerString(std::string str) {
 	std::transform(str.begin(), str.end(), str.begin(), ::tolower);
 	return str;
-}
-
-template <typename T>
-std::string	ToStr(const T &value) {
-	std::stringstream out;
-	out << value;
-	return out.str();
 }
