@@ -61,16 +61,10 @@ char **CGI::MakeCEnv_(void) {
 	size_t i = 0;
 	std::map<std::string, std::string>::const_iterator it = CGIenvMap_.begin();
 	for (; it != CGIenvMap_.end(); ++it, ++i) {
-		env_[i] = StrDupWrapper_(it->first + "=" + it->second);
+		env_[i] = DuplicateString(it->first + "=" + it->second);
 	}
 	env_[i] = NULL;
 	return env_;
-}
-
-char *CGI::StrDupWrapper_(const std::string &str) {
-	char *element = new char[str.size() + 1];
-	std::memcpy(element, str.c_str(), str.size() + 1);
-	return element;
 }
 
 size_t CGI::NextStatementThrowing_(const std::string &str,
@@ -133,8 +127,8 @@ void CGI::ExecuteCGI(void) {
 			SyscallWrap::dup2Wr(pipes_[1], STDOUT_FILENO);
 			SyscallWrap::closeWr(&pipes_[0]);
 			SyscallWrap::closeWr(&pipes_[1]);
-			char * const argv[] = {StrDupWrapper_(exec_path_),
-									StrDupWrapper_(arg_path_),
+			char * const argv[] = {DuplicateString(exec_path_),
+									DuplicateString(arg_path_),
 									NULL};
 			SyscallWrap::execveWr(exec_path_.c_str(), argv, CGIenv_);
 		}

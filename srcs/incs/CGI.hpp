@@ -46,7 +46,6 @@ class CGI {
 	std::map<std::string, std::string> MakeEnv_(void);
 	char **MakeCEnv_(void);
 	void ParseCGIOut_(void);
-	char *StrDupWrapper_(const std::string &str);
 	void SetHeaders_(void);
 	size_t NextStatementThrowing_(const std::string &str,
 								  const std::string &separator,
