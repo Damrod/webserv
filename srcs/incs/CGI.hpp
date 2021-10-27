@@ -2,21 +2,16 @@
 #define SRCS_INCS_CGI_HPP_
 
 #include <unistd.h>
-#include <sys/wait.h>
-#include <stdlib.h>
-#include <string.h>
-#include <fcntl.h>
+#include <cstdlib>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <sstream>
 #include <map>
-#include <cerrno>
-#include <cstdlib>
-#include <cstring>
 #include <HttpRequest.hpp>
 #include <HttpResponse.hpp>
 #include <RequestLocation.hpp>
+#include <SyscallWrap.hpp>
 
 class CGI {
  public:
@@ -29,18 +24,6 @@ class CGI {
  private:
 	enum {
 		BUFFER_SIZE = 512,
-	};
-	class SyscallWrap {
-	public:
-		static ssize_t writeWr(int fd, const void *buf, size_t count);
-		static ssize_t readWr(int fd, void *buf, size_t count);
-		static int pipeWr(int pipefd[2]);
-		static int dup2Wr(int oldfd, int newfd);
-		static int execveWr(const char *pathname, char *const argv[],
-						   char *const envp[]);
-		static int closeWr(int *fd);
-		static pid_t forkWr(void);
-		static pid_t waitpidWr(pid_t pid, int *wstatus, int options);
 	};
 	std::string GetExecutable_(const std::string &extension);
 	std::map<std::string, std::string> MakeEnv_(void);
