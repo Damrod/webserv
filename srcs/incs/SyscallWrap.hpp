@@ -10,7 +10,7 @@ class SyscallWrap {
 		static int dup2Wr(int oldfd, int newfd);
 		static int execveWr(const char *pathname, char *const argv[],
 						   char *const envp[]);
-		static int closeWr(int *fd);
+		static int closeWr(int fd);
 		static pid_t forkWr(void);
 		static pid_t waitpidWr(pid_t pid, int *wstatus, int options);
 };

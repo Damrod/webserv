@@ -47,14 +47,10 @@ int SyscallWrap::execveWr(const char *pathname, char *const argv[],
 	return ret;
 }
 
-int SyscallWrap::closeWr(int *fd) {
-	int ret = 0;
-	if (*fd != -1) {
-		if ((ret = close(*fd)) == -1) {
-			throw std::runtime_error(std::strerror(errno));
-		}
-		*fd = -1;
-	}
+int SyscallWrap::closeWr(int fd) {
+	int ret;
+	if ((ret = close(fd)) == -1)
+		throw std::runtime_error(std::strerror(errno));
 	return ret;
 }
 
