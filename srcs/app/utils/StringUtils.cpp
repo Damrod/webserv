@@ -17,8 +17,9 @@ std::string	ToLowerString(std::string str) {
 	return str;
 }
 
-std::string	UnsignedToStr(std::size_t nbr) {
+template <typename T>
+std::string	ToStr(const T &value) {
 	std::stringstream out;
-	out << nbr;
+	out << value;
 	return out.str();
 }
