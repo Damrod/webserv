@@ -34,10 +34,10 @@ CGI::~CGI(void) {
 		delete [] CGIenv_[i];
 	}
 	delete [] CGIenv_;
-	SyscallWrap::closeWr(&pipes_[0]);
-	SyscallWrap::closeWr(&pipes_[1]);
-	SyscallWrap::closeWr(&pipes2_[0]);
-	SyscallWrap::closeWr(&pipes2_[1]);
+	CloseAssign_(&pipes_[0]);
+	CloseAssign_(&pipes_[1]);
+	CloseAssign_(&pipes2_[0]);
+	CloseAssign_(&pipes2_[1]);
 }
 
 std::map<std::string, std::string> CGI::MakeEnv_(void) {
@@ -121,12 +121,12 @@ void CGI::ExecuteCGI(void) {
 	pid_t pid = SyscallWrap::forkWr();
 	if (pid == 0) {
 		try {
-			SyscallWrap::closeWr(&pipes2_[1]);
+			CloseAssign_(&pipes2_[1]);
 			SyscallWrap::dup2Wr(pipes2_[0], STDIN_FILENO);
-			SyscallWrap::closeWr(&pipes2_[0]);
+			CloseAssign_(&pipes2_[0]);
 			SyscallWrap::dup2Wr(pipes_[1], STDOUT_FILENO);
-			SyscallWrap::closeWr(&pipes_[0]);
-			SyscallWrap::closeWr(&pipes_[1]);
+			CloseAssign_(&pipes_[0]);
+			CloseAssign_(&pipes_[1]);
 			char * const argv[] = {DuplicateString(exec_path_),
 									DuplicateString(arg_path_),
 									NULL};
@@ -137,13 +137,13 @@ void CGI::ExecuteCGI(void) {
 		}
 	} else {
 		WriteAll_(pipes2_[1], reqBody_.c_str(), reqBody_.size());
-		SyscallWrap::closeWr(&pipes2_[0]);
-		SyscallWrap::closeWr(&pipes2_[1]);
+		CloseAssign_(&pipes2_[0]);
+		CloseAssign_(&pipes2_[1]);
 		int status;
 		SyscallWrap::waitpidWr(-1, &status, 0);
 		if (WIFEXITED(status))
 			execRet_ = WEXITSTATUS(status);
-		SyscallWrap::closeWr(&pipes_[1]);
+		CloseAssign_(&pipes_[1]);
 		char buffer[BUFFER_SIZE];
 		int bytes_read;
 		while ((bytes_read = SyscallWrap::readWr(pipes_[0], buffer,
@@ -151,7 +151,7 @@ void CGI::ExecuteCGI(void) {
 			buffer[bytes_read] = '\0';
 			CGIout_ += buffer;
 		}
-		SyscallWrap::closeWr(&pipes_[0]);
+		CloseAssign_(&pipes_[0]);
 	}
 	ParseCGIOut_();
 }
