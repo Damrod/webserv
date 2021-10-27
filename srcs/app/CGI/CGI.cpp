@@ -121,17 +121,21 @@ void CGI::ExecuteCGI(void) {
 	SyscallWrap::pipeWr(pipes2);
 	pid_t pid = SyscallWrap::forkWr();
 	if (pid == 0) {
-		SyscallWrap::closeWr(pipes2[1]);
-		SyscallWrap::dup2Wr(pipes2[0], STDIN_FILENO);
-		SyscallWrap::closeWr(pipes2[0]);
-		SyscallWrap::dup2Wr(pipes[1], STDOUT_FILENO);
-		SyscallWrap::closeWr(pipes[0]);
-		SyscallWrap::closeWr(pipes[1]);
-		char * const argv[] = {StrDupWrapper_(exec_path_),
-								StrDupWrapper_(arg_path_),
-								NULL};
-		SyscallWrap::execveWr(exec_path_.c_str(), argv, CGIenv_);
-		std::exit(EXIT_FAILURE);
+		try {
+			SyscallWrap::closeWr(pipes2[1]);
+			SyscallWrap::dup2Wr(pipes2[0], STDIN_FILENO);
+			SyscallWrap::closeWr(pipes2[0]);
+			SyscallWrap::dup2Wr(pipes[1], STDOUT_FILENO);
+			SyscallWrap::closeWr(pipes[0]);
+			SyscallWrap::closeWr(pipes[1]);
+			char * const argv[] = {StrDupWrapper_(exec_path_),
+									StrDupWrapper_(arg_path_),
+									NULL};
+			SyscallWrap::execveWr(exec_path_.c_str(), argv, CGIenv_);
+		}
+		catch (const std::exception &) {
+			std::exit(EXIT_FAILURE);
+		}
 	} else {
 		WriteAll_(pipes2[1], reqBody_.c_str(), reqBody_.size());
 		SyscallWrap::closeWr(pipes2[0]);
