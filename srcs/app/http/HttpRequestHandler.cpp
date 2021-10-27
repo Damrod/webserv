@@ -313,28 +313,32 @@ void	HttpRequestHandler::UploadFile_(const HttpRequest &request) {
 	}
 }
 
+void	HttpRequestHandler::ExecuteCGI_(const HttpRequest &request,
+												const std::string &full_path) {
+	try {
+		HttpResponse response(200);
+		AddCommonHeaders_(&response);
+		CGI engine(request, *request_location_, PathExtension_(full_path),
+			&response);
+		engine.ExecuteCGI();
+		if (engine.GetExecReturn() != EXIT_SUCCESS) {
+			throw std::runtime_error("Exec error");
+	}
+	raw_response_ = response.CreateResponseString();
+	} catch (const std::exception &e) {
+		RequestError_(500);
+	}
+}
+
 void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
 	const std::string request_path = request.GetPath();
 	const std::string full_path =
 							request_location_->common.root + request_path;
 	if (IsRegularFile_(full_path)) {
-		if (!IsCGI_(full_path)) {
-			RequestError_(501);
+		if (IsCGI_(full_path)) {
+			ExecuteCGI_(request, full_path);
 		} else {
-			try {
-			HttpResponse response(200);
-			AddCommonHeaders_(&response);
-			CGI engine(request, *request_location_, PathExtension_(full_path),
-				&response);
-			engine.ExecuteCGI();
-			if (engine.GetExecReturn() != EXIT_SUCCESS) {
-				throw std::runtime_error("execve error");
-			}
-			raw_response_ = response.CreateResponseString();
-			} catch (const std::exception &e) {
-				// std::cout << e.what();
-				RequestError_(500);
-			}
+			RequestError_(501);
 		}
 	} else {
 		if (IsUploadEnabled_() && IsValidUploadPath_(request_path)) {
