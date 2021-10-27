@@ -69,8 +69,7 @@ char **CGI::MakeCEnv_(void) {
 
 char *CGI::StrDupWrapper_(const std::string &str) {
 	char *element = new char[str.size() + 1];
-	memcpy(element, str.c_str(), str.size());
-	element[str.size()] = '\0';
+	std::memcpy(element, str.c_str(), str.size() + 1);
 	return element;
 }
 
