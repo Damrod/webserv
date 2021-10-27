@@ -17,7 +17,7 @@ std::string	ToLowerString(std::string str) {
 	return str;
 }
 
-std::string UInt16ToStr(uint16_t nbr) {
+std::string	UnsignedToStr(std::size_t nbr) {
 	std::stringstream out;
 	out << nbr;
 	return out.str();

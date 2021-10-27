@@ -44,7 +44,7 @@ std::map<std::string, std::string> CGI::MakeEnv_(void) {
 	env_.insert(std::make_pair("SERVER_PROTOCOL", "HTTP/1.1"));
 	env_.insert(std::make_pair("SERVER_SOFTWARE", "webserv/1.0"));
 	env_.insert(std::make_pair("SERVER_PORT",
-									 UInt16ToStr(request_.GetPort())));
+									 UnsignedToStr(request_.GetPort())));
 	return env_;
 }
 
