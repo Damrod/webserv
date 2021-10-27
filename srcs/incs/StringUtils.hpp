@@ -5,6 +5,7 @@
 
 std::string	TrimString(const std::string &str, const std::string &trim_chars);
 std::string	ToLowerString(std::string str);
+char		*DuplicateString(const std::string &str);
 
 template <typename T>
 std::string	ValueToString(const T &value) {

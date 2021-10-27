@@ -1,5 +1,6 @@
 #include <StringUtils.hpp>
 #include <algorithm>
+#include <cstring>
 
 std::string	TrimString(const std::string &str, const std::string &trim_chars) {
 	const std::size_t	start_position = str.find_first_not_of(trim_chars);
@@ -13,4 +14,10 @@ std::string	TrimString(const std::string &str, const std::string &trim_chars) {
 std::string	ToLowerString(std::string str) {
 	std::transform(str.begin(), str.end(), str.begin(), ::tolower);
 	return str;
+}
+
+char *DuplicateString(const std::string &str) {
+	char *element = new char[str.size() + 1];
+	std::memcpy(element, str.c_str(), str.size() + 1);
+	return element;
 }
