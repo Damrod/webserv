@@ -91,7 +91,7 @@ void CGI::SetHeaders_(void) {
 																 false,
 																 __LINE__);
 		std::string statement = remain.substr(0, next_statement_delimiter);
-		size_t colonPos = NextStatementThrowing_(remain, ":", true, __LINE__);
+		size_t colonPos = NextStatementThrowing_(statement, ":", true, __LINE__);
 		response_->AddHeader(TrimString(statement.substr(0, colonPos), " "),
 							TrimString(statement.substr(colonPos + 1), " "));
 		size_t remain_delimiter = NextStatementThrowing_(remain, kCRLF_, false,
