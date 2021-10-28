@@ -1,57 +1,23 @@
 #include <Server.hpp>
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <cerrno>
-#include <cstring>
-#include <iostream>
-#include <stdexcept>
 
-Server::Server(const ServerConfig &settings)
-	: settings_(settings), listen_sd_(-1) {
+Server::Server(const ServerConfig &settings, int listen_sd)
+	: settings_(settings), listen_sd_(listen_sd) {
 }
 
 Server::~Server() {
 	std::map<int, Connection *>::iterator it = connections_.begin();
-	for (; it != connections_.end(); ++it) {
+	for (; it != connections_.end(); it++) {
+		close(it->first);
 		delete it->second;
 	}
+	close(listen_sd_);
 }
 
-void	Server::BindListeningSocket() {
-	listen_sd_ = socket(AF_INET, SOCK_STREAM, 0);
-	if (listen_sd_ < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
-	if (fcntl(listen_sd_, F_SETFL, O_NONBLOCK) < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
-
-	struct sockaddr_in addr;
-	addr.sin_family = AF_INET;  // IPv4
-	addr.sin_port = htons(settings_.listen_port);
-	addr.sin_addr.s_addr = htonl(settings_.listen_address);
-	std::memset(addr.sin_zero, 0, sizeof(addr.sin_zero));
-
-	int on = 1;
-	if (setsockopt(listen_sd_, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
-
-	if (bind(listen_sd_, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
-
-	if (listen(listen_sd_, SOMAXCONN) < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
-}
-
+// Delegate how to handle connection responsability to Server
 void	Server::AddConnection(int sd) {
-	Connection *connection = new Connection(settings_, sd);
+	HttpRequestHandler *handler = new HttpRequestHandler(settings_);
+	HttpRequest *request = new HttpRequest();
+	Connection *connection = new Connection(sd, handler, request);
 	connections_.insert(std::make_pair(sd, connection));
 }
 
@@ -69,12 +35,12 @@ bool	Server::HasConnection(int sd) {
 	return connections_.count(sd) > 0;
 }
 
-ReadRequestStatus::Type	Server::ReadRequest(int sd) {
+ReceiveRequestStatus::Type	Server::ReceiveRequest(int sd) {
 	std::map<int, Connection *>::iterator it = connections_.find(sd);
 	if (it == connections_.end()) {
-		return ReadRequestStatus::kFail;
+		return ReceiveRequestStatus::kFail;
 	}
-	return it->second->ReadRequest();
+	return it->second->ReceiveRequest();
 }
 
 SendResponseStatus::Type	Server::SendResponse(int sd) {

@@ -1,15 +1,23 @@
 #ifndef SRCS_INCS_WEBSERVER_HPP_
 #define SRCS_INCS_WEBSERVER_HPP_
+#include <arpa/inet.h>
 #include <fcntl.h>
+#include <netinet/in.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <cerrno>
+#include <cstring>
+#include <iostream>
+#include <stdexcept>
 #include <string>
 #include <map>
 #include <Config.hpp>
-#include <Server.hpp>
+#include <ConnectionIOStatus.hpp>
 #include <parser/Analyser.hpp>
+#include <Server.hpp>
+#include <ServerConfig.hpp>
 
 class WebServer {
 	private:
@@ -25,15 +33,15 @@ class WebServer {
 		int			max_sd_;
 
 	public:
-		WebServer();
-		~WebServer();
 		// Load the config file and servers settings
-		void	Init(const std::string &pathname);
+		explicit	WebServer(const std::string &pathname);
+		~WebServer();
 
 		// Run the web server
 		void	Run();
 
 	private:
+		WebServer();
 		WebServer(const WebServer &);
 		WebServer &	operator=(const WebServer &);
 
@@ -41,12 +49,16 @@ class WebServer {
 		void	AddListeningSocketsToMasterSet_();
 		void	SetMaxSocket_(int curr_sd);
 		void	AcceptNewConnection_(int sd);
-		void	ReadRequest_(int sd);
+		void	ReceiveRequest_(int sd);
 		void	SendResponse_(int sd);
 		bool	IsListeningSocket_(int sd) const;
+		int		BindNewListeningSocketToServer_(const ServerConfig &settings);
 
-		ServersMap_::iterator	FindListeningServer_(int sd);
-		ServersMap_::iterator	FindConnectionServer_(int sd);
+		Server	*FindListeningServer_(int sd);
+		Server	*FindConnectionServer_(int sd);
+
+		void	HandleReadSocket_(int sd);
+		void	HandleWriteSocket_(int sd);
 };
 
 #endif  // SRCS_INCS_WEBSERVER_HPP_

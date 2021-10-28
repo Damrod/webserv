@@ -51,6 +51,7 @@ class HttpRequest : public IRequest {
 		std::string	GetPath() const;
 		QueriesMap	GetQueries() const;
 		std::string	GetQueryValue(const std::string &query_name) const;
+		std::string	GetQueryString() const;
 		bool		HasQuery(const std::string &query_name) const;
 		std::string	GetHttpVersion() const;
 		HeadersMap	GetHeaders() const;

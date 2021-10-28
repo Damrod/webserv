@@ -3,7 +3,6 @@
 #include <WebServer.hpp>
 
 int main(int argc, char *argv[]) {
-	WebServer	webserver;
 	std::string	config_path = "config/default.conf";
 
 	if (argc == 2) {
@@ -13,12 +12,12 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 	try {
-		webserver.Init(config_path);
+		WebServer	webserver(config_path);
 		webserver.Run();
 	}
 	catch (const Analyser::SyntaxError &e) {
 		std::cerr << "Syntax error while parsing the configuration file:\n"
-				  << e.what() << '\n';
+					<< e.what() << '\n';
 		return EXIT_FAILURE;
 	}
 	catch (const std::exception &e) {

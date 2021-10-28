@@ -1,19 +1,36 @@
 #ifndef SRCS_INCS_HTTPREQUESTHANDLER_HPP_
 #define SRCS_INCS_HTTPREQUESTHANDLER_HPP_
+#include <HttpRequestHandler.hpp>
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <algorithm>
+#include <cerrno>
+#include <iostream>
+#include <ctime>
+#include <exception>
+#include <fstream>
+#include <sstream>
 #include <string>
+#include <FormFile.hpp>
 #include <HttpRequest.hpp>
 #include <HttpResponse.hpp>
+#include <HttpStatusCodes.hpp>
+#include <IRequest.hpp>
 #include <IRequestHandler.hpp>
 #include <MimeTypes.hpp>
 #include <RequestLocation.hpp>
 #include <ServerConfig.hpp>
+#include <StringUtils.hpp>
+#include <CGI.hpp>
+
 
 class HttpRequestHandler : public IRequestHandler {
 	public:
-		HttpRequestHandler(const ServerConfig &server_config,
-							const IRequest *request);
+		explicit	HttpRequestHandler(const ServerConfig &server_config);
 		~HttpRequestHandler();
-		std::string			GetRawResponse() const;
+		std::string			BuildResponse(IRequest *request);
 		bool				GetKeepAlive() const;
 
 	private:
@@ -49,6 +66,8 @@ class HttpRequestHandler : public IRequestHandler {
 		bool				IsUploadEnabled_() const;
 		bool				IsValidUploadPath_(const std::string &path) const;
 		void				UploadFile_(const HttpRequest &request);
+		void				ExecuteCGI_(const HttpRequest &request,
+										const std::string &full_path);
 		void				DoPost_(const HttpRequest &request);
 		void				DoDelete_(const HttpRequest &request);
 
