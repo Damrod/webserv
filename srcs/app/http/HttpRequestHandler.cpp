@@ -1,34 +1,14 @@
 #include <HttpRequestHandler.hpp>
-#include <dirent.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <cerrno>
-#include <ctime>
-#include <algorithm>
-#include <stdexcept>
-#include <fstream>
-#include <sstream>
-#include <FormFile.hpp>
-#include <HttpStatusCodes.hpp>
-#include <IRequest.hpp>
-#include <HttpRequest.hpp>
-#include <HttpResponse.hpp>
-#include <RequestState.hpp>
-#include <StringUtils.hpp>
 
-HttpRequestHandler::HttpRequestHandler(const ServerConfig &server_config,
-										const IRequest *request)
+HttpRequestHandler::HttpRequestHandler(const ServerConfig &server_config)
 	: server_config_(server_config), keep_alive_(true),
 		request_location_(NULL) {
+}
+
+HttpRequestHandler::~HttpRequestHandler() {}
+
+std::string	HttpRequestHandler::BuildResponse(IRequest *request) {
 	HandleRequest_(dynamic_cast<const HttpRequest *>(request));
-}
-
-HttpRequestHandler::~HttpRequestHandler() {
-	delete request_location_;
-}
-
-std::string	HttpRequestHandler::GetRawResponse() const {
 	return raw_response_;
 }
 
@@ -75,6 +55,8 @@ void		HttpRequestHandler::HandleRequest_(const HttpRequest *request) {
 	} else if (HasAcceptedFormat_(*request)) {
 		HandleMethod_(*request);
 	}
+	delete request_location_;
+	request_location_ = NULL;
 }
 
 void	HttpRequestHandler::HandleMethod_(const HttpRequest &request) {

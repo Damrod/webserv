@@ -1,7 +1,10 @@
 #ifndef SRCS_INCS_SERVER_HPP_
 #define SRCS_INCS_SERVER_HPP_
+#include <unistd.h>
 #include <map>
 #include <Connection.hpp>
+#include <HttpRequest.hpp>
+#include <HttpRequestHandler.hpp>
 #include <ServerConfig.hpp>
 
 class Server {
@@ -19,7 +22,7 @@ class Server {
 		Server &	operator=(const Server &);
 
 	public:
-		explicit Server(const ServerConfig &settings);
+		Server(const ServerConfig &settings, int listen_sd);
 		~Server();
 		void	BindListeningSocket();
 		void	AddConnection(int sd);
@@ -27,7 +30,7 @@ class Server {
 		int		GetListeningSocket() const;
 		bool	HasConnection(int sd);
 
-		ReadRequestStatus::Type		ReadRequest(int sd);
+		ReceiveRequestStatus::Type	ReceiveRequest(int sd);
 		SendResponseStatus::Type	SendResponse(int sd);
 };
 
