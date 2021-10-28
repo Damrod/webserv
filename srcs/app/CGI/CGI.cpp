@@ -53,6 +53,7 @@ std::map<std::string, std::string> CGI::MakeEnv_(void) {
 	env_.insert(std::make_pair("SERVER_SOFTWARE", "webserv/1.0"));
 	env_.insert(std::make_pair("SERVER_PORT",
 											ValueToString(request_.GetPort())));
+	env_.insert(std::make_pair("QUERY_STRING", request_.GetQueryString()));
 	return env_;
 }
 

@@ -255,7 +255,11 @@ void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
 		return;
 	}
 	if (IsRegularFile_(full_path)) {
-		ServeFile_(full_path);
+		if (IsCGI_(full_path)) {
+			ExecuteCGI_(request, full_path);
+		} else {
+			ServeFile_(full_path);
+		}
 	} else {
 		const bool has_end_slash = full_path[full_path.size() - 1] == '/';
 		if (!has_end_slash) {
