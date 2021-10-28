@@ -49,6 +49,20 @@ std::string	HttpRequest::GetQueryValue(const std::string &query_name) const {
 	return "";
 }
 
+std::string HttpRequest::GetQueryString() const {
+	if (queries_.empty()) {
+		return "";
+	}
+	QueriesMap::const_iterator	it = queries_.begin();
+	QueriesMap::const_iterator	last = --queries_.end();
+	std::string query_string;
+	for (; it != last; ++it) {
+		query_string += it->first + "=" + it->second + "&";
+	}
+	query_string += it->first + "=" + it->second;
+	return query_string;
+}
+
 bool	HttpRequest::HasQuery(const std::string &query_name) const {
 	return queries_.count(query_name) > 0;
 }

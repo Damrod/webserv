@@ -23,6 +23,8 @@
 #include <RequestLocation.hpp>
 #include <ServerConfig.hpp>
 #include <StringUtils.hpp>
+#include <CGI.hpp>
+
 
 class HttpRequestHandler : public IRequestHandler {
 	public:
@@ -64,6 +66,8 @@ class HttpRequestHandler : public IRequestHandler {
 		bool				IsUploadEnabled_() const;
 		bool				IsValidUploadPath_(const std::string &path) const;
 		void				UploadFile_(const HttpRequest &request);
+		void				ExecuteCGI_(const HttpRequest &request,
+										const std::string &full_path);
 		void				DoPost_(const HttpRequest &request);
 		void				DoDelete_(const HttpRequest &request);
 
