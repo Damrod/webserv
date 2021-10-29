@@ -1,44 +1,97 @@
+import filecmp
 import os
+from pathlib import Path
 import pytest
 import requests
+import shutil
 import subprocess
+import tempfile
 import time
 
-@pytest.fixture(scope='session')
+TMP_WEBSERV_DIR = '/tmp/webserv/'
+PROJ_DIR = str(Path(__file__).parents[1])
+TMP_UPLOAD_DIR = PROJ_DIR + '/html/web3/test/'
+
+@pytest.fixture(scope='module', autouse=True)
 def start_webserv():
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    webserv = subprocess.Popen('./webserv', cwd=dir_path + '/../')
+    webserv = subprocess.Popen('./webserv', cwd=PROJ_DIR)
     time.sleep(2)
     yield webserv
     webserv.terminate()
 
-def test_get_200_autoindex(start_webserv):
-    response = requests.get('http://localhost:8080')
+@pytest.fixture(scope='module')
+def tmp_webserv_dir():
+    if not os.path.exists(TMP_WEBSERV_DIR):
+        os.mkdir(TMP_WEBSERV_DIR)
+    yield
+    shutil.rmtree(TMP_WEBSERV_DIR)
+
+@pytest.fixture(scope='module')
+def tmp_file():
+    with tempfile.NamedTemporaryFile() as fp:
+        fp.write(os.urandom(90000000))
+        yield fp
+
+def test_get_autoindex_200():
+    url = 'http://localhost:8080'
+    response = requests.get(url, timeout=1)
     assert response.status_code == 200
 
-def test_get_200(start_webserv):
-    response = requests.get('http://localhost:8081')
+def test_get_200():
+    url = 'http://localhost:8081'
+    response = requests.get(url, timeout=1)
     assert response.status_code == 200
 
-def test_get_301(start_webserv):
-    response = requests.get('http://localhost:8083', allow_redirects=False)
+def test_get_redirect_301():
+    url = 'http://localhost:8083'
+    response = requests.get(url, allow_redirects=False, timeout=1)
+    redirect_url = "https://www.google.com"
     assert response.status_code == 301
-    assert response.headers['Location'] == "https://www.google.com"
+    assert response.headers['Location'] == redirect_url
 
-def test_get_200_after_redirect(start_webserv):
-    response = requests.get('http://localhost:8083')
+def test_get_follow_redirect_200():
+    url = 'http://localhost:8083'
+    response = requests.get(url, timeout=1)
     assert response.status_code == 200
 
-def test_get_404(start_webserv):
-    response = requests.get('http://localhost:8080/invalidpath')
+def test_get_404():
+    url = 'http://localhost:8080/invalidpath'
+    response = requests.get(url, timeout=1)
     assert response.status_code == 404
 
-def test_options_501(start_webserv):
-    response = requests.options('http://localhost:8080/invalidpath')
+def test_method_not_implemented_501():
+    url = 'http://localhost:8080/'
+    response = requests.options(url, timeout=1)
     assert response.status_code == 501
 
-def test_post_200(start_webserv):
+def test_post_cgi_200():
     payload = {'fname': 'first_name', 'lname': 'last_name'}
-    response = requests.post('http://localhost:8084/cgi-bin/hello_form.py',
-                                data=payload)
+    url = 'http://localhost:8084/cgi-bin/hello_form.py'
+    response = requests.post(url, data=payload, timeout=1)
     assert response.status_code == 200
+
+def test_get_cgi_200():
+    params = {'fname': 'first_name', 'lname': 'last_name'}
+    url = 'http://localhost:8084/cgi-bin/hello_form.py'
+    response = requests.get(url, params=params, timeout=1)
+    assert response.status_code == 200
+
+def test_post_upload_cgi_200(tmp_webserv_dir, tmp_file):
+    url =  'http://localhost:8084/cgi-bin/save_file.py'
+    filename = 'file.test'
+    files = {'filename': (filename, open(tmp_file.name, 'rb'))}
+    response = requests.post(url, files=files, timeout=2)
+    assert response.status_code == 200
+    filepath = TMP_WEBSERV_DIR + filename
+    assert filecmp.cmp(filepath, tmp_file.name)
+
+def test_post_upload_200(tmp_file):
+    url =  'http://localhost:8084/upload/'
+    filename = 'file.test'
+    mime_type = 'application/octet-stream'
+    files = {'filename': (filename, open(tmp_file.name, 'rb'), mime_type)}
+    response = requests.post(url, files=files, timeout=2)
+    assert response.status_code == 200
+    filepath = TMP_UPLOAD_DIR + filename
+    assert filecmp.cmp(filepath, tmp_file.name)
+    os.remove(filepath)
