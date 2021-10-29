@@ -1,3 +1,4 @@
+import os
 import pytest
 import requests
 import subprocess
@@ -5,7 +6,8 @@ import time
 
 @pytest.fixture(scope='session')
 def start_webserv():
-    webserv = subprocess.Popen(['./webserv'])
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    webserv = subprocess.Popen('./webserv', cwd=dir_path + '/../')
     time.sleep(2)
     yield webserv
     webserv.terminate()
