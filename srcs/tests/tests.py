@@ -9,7 +9,7 @@ import tempfile
 import time
 
 TMP_WEBSERV_DIR = '/tmp/webserv/'
-PROJ_DIR = str(Path(__file__).parents[1])
+PROJ_DIR = str(Path(__file__).parents[2])
 TMP_UPLOAD_DIR = PROJ_DIR + '/html/web3/test/'
 
 @pytest.fixture(scope='module', autouse=True)
@@ -84,6 +84,13 @@ def test_post_upload_cgi_200(tmp_webserv_dir, tmp_file):
     assert response.status_code == 200
     filepath = TMP_WEBSERV_DIR + filename
     assert filecmp.cmp(filepath, tmp_file.name)
+
+def test_post_too_large_413(tmp_webserv_dir, tmp_file):
+    url =  'http://localhost:8082'
+    filename = 'file.test'
+    files = {'filename': (filename, open(tmp_file.name, 'rb'))}
+    response = requests.post(url, files=files, timeout=2)
+    assert response.status_code == 413
 
 def test_post_upload_200(tmp_file):
     url =  'http://localhost:8084/upload/'

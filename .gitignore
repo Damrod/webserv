@@ -149,4 +149,4 @@ nocommit/*
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
-tests/__pycache__/
+srcs/tests/__pycache__/
