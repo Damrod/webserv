@@ -30,18 +30,26 @@ include $(SRC_DIR)/target/generaterules.mk
 # take a look at what does a .d file look like to understand this directive
 -include $(DEPS)
 
-.PHONY: test
-test:
+.PHONY: unit_test
+unit_test:
 	make
-	make -C srcs/app/test
+	make -C srcs/app/test/unit
 	$(BLD_DIR)/utest_app
+
+.PHONY: integration_test
+integration_test:
+	make
+	pytest
+
+.PHONY: test
+test: unit_test integration_test
 
 .PHONY: lint
 lint:
 	$(LINT) $(LINTFLAGS) .
 
 ngxsyntax:
-	cd $(SRC_DIR)/app/test/config_analyser/nginx_docker && docker-compose up
+	cd $(SRC_DIR)/app/test/unit/config_analyser/nginx_docker && docker-compose up
 
 .PHONY: clean
 clean:
