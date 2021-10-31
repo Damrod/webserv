@@ -67,7 +67,7 @@ def test_method_not_implemented_501():
 def test_post_cgi_200():
     payload = {'fname': 'first_name', 'lname': 'last_name'}
     url = 'http://localhost:8084/cgi-bin/hello_form.py'
-    response = requests.post(url, data=payload, timeout=1)
+    response = requests.post(url, data=payload, timeout=2)
     assert response.status_code == 200
 
 def test_get_cgi_200():
@@ -80,7 +80,7 @@ def test_post_upload_cgi_200(tmp_webserv_dir, tmp_file):
     url =  'http://localhost:8084/cgi-bin/save_file.py'
     filename = 'file.test'
     files = {'filename': (filename, open(tmp_file.name, 'rb'))}
-    response = requests.post(url, files=files, timeout=2)
+    response = requests.post(url, files=files, timeout=5)
     assert response.status_code == 200
     filepath = TMP_WEBSERV_DIR + filename
     assert filecmp.cmp(filepath, tmp_file.name)
@@ -89,7 +89,7 @@ def test_post_too_large_413(tmp_webserv_dir, tmp_file):
     url =  'http://localhost:8082'
     filename = 'file.test'
     files = {'filename': (filename, open(tmp_file.name, 'rb'))}
-    response = requests.post(url, files=files, timeout=2)
+    response = requests.post(url, files=files, timeout=5)
     assert response.status_code == 413
 
 def test_post_upload_200(tmp_file):
@@ -97,7 +97,7 @@ def test_post_upload_200(tmp_file):
     filename = 'file.test'
     mime_type = 'application/octet-stream'
     files = {'filename': (filename, open(tmp_file.name, 'rb'), mime_type)}
-    response = requests.post(url, files=files, timeout=2)
+    response = requests.post(url, files=files, timeout=5)
     assert response.status_code == 200
     filepath = TMP_UPLOAD_DIR + filename
     assert filecmp.cmp(filepath, tmp_file.name)
