@@ -39,7 +39,7 @@ unit_test:
 .PHONY: integration_test
 integration_test:
 	make
-	pytest $(PROJDIR)/srcs/app/test/integration/tests.py
+	pytest
 
 .PHONY: test
 test: unit_test integration_test

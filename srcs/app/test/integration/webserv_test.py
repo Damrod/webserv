@@ -69,12 +69,16 @@ def test_post_cgi_200():
     url = 'http://localhost:8084/cgi-bin/hello_form.py'
     response = requests.post(url, data=payload, timeout=2)
     assert response.status_code == 200
+    assert 'first_name' in response.text
+    assert 'last_name' in response.text
 
 def test_get_cgi_200():
     params = {'fname': 'first_name', 'lname': 'last_name'}
     url = 'http://localhost:8084/cgi-bin/hello_form.py'
     response = requests.get(url, params=params, timeout=1)
     assert response.status_code == 200
+    assert 'first_name' in response.text
+    assert 'last_name' in response.text
 
 def test_post_upload_cgi_200(tmp_webserv_dir, tmp_file):
     url =  'http://localhost:8084/cgi-bin/save_file.py'
