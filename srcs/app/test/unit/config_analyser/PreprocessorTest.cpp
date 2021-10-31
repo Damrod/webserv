@@ -46,7 +46,7 @@ TEST_CASE("Testing the preprocessor, AKA comment remover", "[parser]") {
 								"\n");
 	std::ostringstream result;
 	try {
-		std::string path = "srcs/app/test/config_analyser/"
+		std::string path = "srcs/app/test/unit/config_analyser/"
 			"nginx_docker/vol/http.d/default.conf";
 		Preprocessor file(path);
 		std::string filebuff = file.GetFileBuffer();
