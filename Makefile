@@ -30,11 +30,19 @@ include $(SRC_DIR)/target/generaterules.mk
 # take a look at what does a .d file look like to understand this directive
 -include $(DEPS)
 
-.PHONY: test
-test:
+.PHONY: unit_test
+unit_test:
 	make
 	make -C srcs/app/test/unit
 	$(BLD_DIR)/utest_app
+
+.PHONY: integration_test
+integration_test:
+	make
+	pytest $(PROJDIR)/srcs/app/test/integration/tests.py
+
+.PHONY: test
+test: unit_test integration_test
 
 .PHONY: lint
 lint:
