@@ -9,7 +9,7 @@ import tempfile
 import time
 
 TMP_WEBSERV_DIR = '/tmp/webserv/'
-PROJ_DIR = str(Path(__file__).parents[2])
+PROJ_DIR = str(Path(__file__).parents[4])
 TMP_UPLOAD_DIR = PROJ_DIR + '/html/web3/test/'
 
 @pytest.fixture(scope='module', autouse=True)
