@@ -7,7 +7,7 @@
 #include <RequestState.hpp>
 #include <StringUtils.hpp>
 
-class HttpRequestDTO : public IRequest {
+class HttpRequestDTO {
 	private:
 		typedef std::string							HeaderName;
 		typedef std::string							HeaderValue;
