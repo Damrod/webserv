@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <string>
 
 std::string	PathExtension(const std::string &path) {
@@ -16,4 +17,8 @@ std::string	PathExtension(const std::string &path) {
 		}
 	}
 	return "";
+}
+
+bool	IsExecutable(const std::string &path) {
+	return access(path.c_str(), X_OK) == 0;
 }
