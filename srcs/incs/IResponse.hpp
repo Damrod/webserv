@@ -7,4 +7,4 @@ class IResponse {
 		virtual	std::string content() = 0;
 };
 
-#endif //SRCS_INCS_ARESPONSE_HPP_
+#endif  // SRCS_INCS_IRESPONSE_HPP_

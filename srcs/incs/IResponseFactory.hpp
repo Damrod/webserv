@@ -7,4 +7,4 @@ class IResponseFactory {
 		virtual IResponse * createResponse() = 0;
 };
 
-#endif //SRCS_INCS_IRESPONSEFACTORY_HPP_
+#endif  // SRCS_INCS_IRESPONSEFACTORY_HPP_

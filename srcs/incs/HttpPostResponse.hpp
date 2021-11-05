@@ -9,4 +9,4 @@ class HttpPostResponse: public IResponse {
 		std::string content();
 };
 
-#endif //SRCS_INCS_HTTPPOSTRESPONSE_HPP_
+#endif  // SRCS_INCS_HTTPPOSTRESPONSE_HPP_

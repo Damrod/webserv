@@ -17,25 +17,25 @@ class HttpRequestDTO {
 		typedef	std::map<QueryName, QueryValue>		QueriesMap;
 
 	public:
-					                        HttpRequestDTO(const std::string &raw_request);
-					                        ~HttpRequestDTO();
-		std::string                     	GetMethod() const;
-		std::string                     	GetRequestTarget() const;
-		std::string                     	GetPath() const;
-		QueriesMap							GetQueries() const;
-		std::string                        	GetQueryValue(const std::string &query_name) const;
-		std::string                        	GetQueryString() const;
-		std::string                        	GetHttpVersion() const;
-		HeadersMap							GetHeaders() const;
-		std::string                         GetHeaderValue(const std::string &header_name) const;
-		std::string                         GetHost() const;
-		std::size_t                         GetPort() const;
-		std::string                         GetBody() const;
-		RequestState::State	                GetState() const;
-		bool		                        HasHeader(const std::string &header_name) const;
-		bool		                        HasQuery(const std::string &query_name) const;
-		//Makes sense?
-		void		                        Reset();
+		explicit HttpRequestDTO(const std::string &raw_request);
+				~HttpRequestDTO();
+		std::string	GetMethod() const;
+		std::string	GetRequestTarget() const;
+		std::string	GetPath() const;
+		QueriesMap	GetQueries() const;
+		std::string	GetQueryValue(const std::string &query_name) const;
+		std::string	GetQueryString() const;
+		std::string	GetHttpVersion() const;
+		HeadersMap	GetHeaders() const;
+		std::string	GetHeaderValue(const std::string &header_name) const;
+		std::string	GetHost() const;
+		std::size_t	GetPort() const;
+		std::string	GetBody() const;
+		RequestState::State	GetState() const;
+		bool	HasHeader(const std::string &header_name) const;
+		bool	HasQuery(const std::string &query_name) const;
+		// Makes sense?
+		void	Reset();
 
 	private:
 		HttpRequestDTO(const HttpRequestDTO &);
@@ -88,9 +88,8 @@ class HttpRequestDTO {
 		std::size_t	offset_;
 		ParseState_	parse_state_;
 		RequestState::State	state_;
-
 };
 
 std::ostream&	operator<<(std::ostream &os, const HttpRequestDTO &request);
 
-#endif  // SRCS_INCS_HTTPREQUEST_HPP_
+#endif  // SRCS_INCS_HTTPREQUESTDTO_HPP_

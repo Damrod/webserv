@@ -76,7 +76,8 @@ HttpRequestDTO::HeadersMap	HttpRequestDTO::GetHeaders() const {
 	return headers_;
 }
 
-std::string	HttpRequestDTO::GetHeaderValue(const std::string &header_name) const {
+std::string
+	HttpRequestDTO::GetHeaderValue(const std::string &header_name) const {
 	const std::string			header_name_lc = ToLowerString(header_name);
 	HeadersMap::const_iterator	map_it = headers_.find(header_name_lc);
 	if (map_it != headers_.end()) {
@@ -217,7 +218,8 @@ void	HttpRequestDTO::ParseHttpVersion_(const std::string &raw_request) {
 	}
 }
 
-bool	HttpRequestDTO::IsValidHttpVersion_(const std::string &http_version) const {
+bool
+	HttpRequestDTO::IsValidHttpVersion_(const std::string &http_version) const {
 	return http_version == "HTTP/1.1";
 }
 

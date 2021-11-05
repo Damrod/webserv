@@ -9,4 +9,4 @@ class HttpDeleteResponse: public IResponse {
 		std::string content();
 };
 
-#endif //SRCS_INCS_HTTPDELETERESPONSE_HPP_
+#endif  // SRCS_INCS_HTTPDELETERESPONSE_HPP_

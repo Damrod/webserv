@@ -6,9 +6,18 @@ HttpResponseFactory::HttpResponseFactory(
 	): server_config_(server_config) {
 	request_ = new HttpRequestDTO(raw_request);
 	request_method_ = request_->GetMethod();
-	concreteResponses_.insert(std::make_pair("GET", &HttpResponseFactory::createHttpGetResponse_));
-	concreteResponses_.insert(std::make_pair("POST", &HttpResponseFactory::createHttpPostResponse_));
-	concreteResponses_.insert(std::make_pair("DELETE", &HttpResponseFactory::createHttpDeleteResponse_));
+	concreteResponses_.insert(std::make_pair(
+		"GET",
+		&HttpResponseFactory::createHttpGetResponse_
+	));
+	concreteResponses_.insert(std::make_pair(
+		"POST",
+		&HttpResponseFactory::createHttpPostResponse_
+	));
+	concreteResponses_.insert(std::make_pair(
+		"DELETE",
+		&HttpResponseFactory::createHttpDeleteResponse_
+	));
 }
 
 HttpResponseFactory::~HttpResponseFactory() {
@@ -37,25 +46,25 @@ IResponse *HttpResponseFactory::response() {
 }
 
 bool	HttpResponseFactory::HasAcceptedFormat_() {
-	//if (request_location_->HasLocation() &&
-	//								!request_location_->limit_except->empty()) {
-	//	if (std::find(request_location_->limit_except->begin(),
-	//			request_location_->limit_except->end(),
-	//			request_->GetMethod()) ==
-	//								request_location_->limit_except->end()) {
-	//		RequestError_(405);
-	//		return false;
-	//	}
-	//}
-	//if (request_->GetBody().size() >
-	//						request_location_->common.client_max_body_size) {
-	//	RequestError_(413);
-	//	return false;
-	//}
-	//if (request_->HasHeader("Content-Encoding")) {
-	//	RequestError_(415);
-	//	return false;
-	//}
+	// if (request_location_->HasLocation() &&
+	// 								!request_location_->limit_except->empty()) {
+	// 	if (std::find(request_location_->limit_except->begin(),
+	// 			request_location_->limit_except->end(),
+	// 			request_->GetMethod()) ==
+	// 								request_location_->limit_except->end()) {
+	// 		RequestError_(405);
+	// 		return false;
+	// 	}
+	// }
+	// if (request_->GetBody().size() >
+	// 						request_location_->common.client_max_body_size) {
+	// 	RequestError_(413);
+	// 	return false;
+	// }
+	// if (request_->HasHeader("Content-Encoding")) {
+	// 	RequestError_(415);
+	// 	return false;
+	// }
 	return true;
 }
 
