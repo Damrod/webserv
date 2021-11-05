@@ -151,13 +151,6 @@ bool	HttpRequestHandler::HasAcceptedFormat_(const HttpRequest &request) {
 	return true;
 }
 
-void		HttpRequestHandler::SetKeepAlive_(const HttpRequest &request) {
-	if (request.HasHeader("Connection") &&
-			ToLowerString(request.GetHeaderValue("Connection")) == "close") {
-		keep_alive_ = false;
-	}
-}
-
 bool		HttpRequestHandler::GetKeepAlive() const {
 	return keep_alive_;
 }
