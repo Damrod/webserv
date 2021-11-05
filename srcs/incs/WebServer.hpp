@@ -13,11 +13,13 @@
 #include <stdexcept>
 #include <string>
 #include <map>
+#include <CgiHandler.hpp>
 #include <Config.hpp>
 #include <ConnectionIOStatus.hpp>
 #include <parser/Analyser.hpp>
 #include <Server.hpp>
 #include <ServerConfig.hpp>
+#include <SyscallWrap.hpp>
 
 class WebServer {
 	private:
@@ -31,6 +33,13 @@ class WebServer {
 		fd_set		tmp_read_set_;
 		fd_set		tmp_write_set_;
 		int			max_sd_;
+
+		typedef int							Fd_;
+		typedef std::map<Fd_, CgiHandler *>	CgiHandlersMap_;
+		typedef std::map<Socket_, Fd_>		CgiSocketFdsMap_;
+
+		CgiHandlersMap_ 	cgi_handlers_;
+		CgiSocketFdsMap_	cgi_fds_;
 
 	public:
 		// Load the config file and servers settings
@@ -53,12 +62,21 @@ class WebServer {
 		void	SendResponse_(int sd);
 		bool	IsListeningSocket_(int sd) const;
 		int		BindNewListeningSocketToServer_(const ServerConfig &settings);
+		void	ClearSocket_(int sd);
+		void	SafeSetSocket_(int sd, fd_set *fds);
 
 		Server	*FindListeningServer_(int sd);
 		Server	*FindConnectionServer_(int sd);
 
-		void	HandleReadSocket_(int sd);
-		void	HandleWriteSocket_(int sd);
+		void	HandleReadFd_(int sd);
+		void	HandleWriteFd_(int sd);
+
+		bool	IsCgiFd_(int fd) const;
+		bool	IsCgiSocket_(int sd) const;
+		void	RemoveCgiHandler_(CgiHandler *handler, int sd, int fd);
+		void	HandleCgiRead_(int fd);
+		void	HandleCgiSend_(int sd);
+		void	AddCgiHandler_(Server *server, int sd);
 };
 
 #endif  // SRCS_INCS_WEBSERVER_HPP_
