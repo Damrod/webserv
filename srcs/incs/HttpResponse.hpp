@@ -25,7 +25,7 @@ class HttpResponse {
 		bool		HasHeader(const std::string &header_name) const;
 		std::string	GetHeaderValue(const std::string &header_name) const;
 		std::string	GetBody() const;
-		std::string	CreateResponseString() const;
+		std::string	CreateResponseString(bool set_body = true) const;
 
 	private:
 		HttpResponse();

@@ -72,7 +72,7 @@ std::string	HttpResponse::GetBody() const {
 	return body_;
 }
 
-std::string	HttpResponse::CreateResponseString() const {
+std::string	HttpResponse::CreateResponseString(bool set_body) const {
 	std::stringstream	ss;
 
 	ss << http_version_ << ' ' << status_code_ << ' ' << reason_phrase_ <<
@@ -83,8 +83,10 @@ std::string	HttpResponse::CreateResponseString() const {
 		ss << it->first << ": " << it->second << kCRLF_;
 		++it;
 	}
-	ss << kCRLF_;
-	ss << body_;
+	if (set_body) {
+		ss << kCRLF_;
+		ss << body_;
+	}
 	return ss.str();
 }
 
