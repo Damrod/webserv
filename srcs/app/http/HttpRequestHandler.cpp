@@ -7,36 +7,10 @@ HttpRequestHandler::HttpRequestHandler(const ServerConfig &server_config)
 
 HttpRequestHandler::~HttpRequestHandler() {}
 
+// Response building
 std::string	HttpRequestHandler::BuildResponse(IRequest *request) {
 	HandleRequest_(dynamic_cast<const HttpRequest *>(request));
 	return raw_response_;
-}
-
-bool		HttpRequestHandler::GetKeepAlive() const {
-	return keep_alive_;
-}
-
-void		HttpRequestHandler::SetKeepAlive_(const HttpRequest &request) {
-	if (request.HasHeader("Connection") &&
-			ToLowerString(request.GetHeaderValue("Connection")) == "close") {
-		keep_alive_ = false;
-	}
-}
-
-void		HttpRequestHandler::DoRedirection_() {
-	const std::size_t status_code = request_location_ ?
-									request_location_->common.return_status :
-									server_config_.common.return_status;
-	const std::string return_url = request_location_ ?
-									request_location_->common.return_url :
-									server_config_.common.return_url;
-	HttpResponse response(status_code);
-	AddCommonHeaders_(&response);
-	response.AddHeader("Content-Type", "text/html");
-	response.AddHeader("Location", return_url);
-	const std::string body = DefaultResponseBody_(status_code);
-	response.SetBody(body);
-	raw_response_ = response.CreateResponseString();
 }
 
 void		HttpRequestHandler::HandleRequest_(const HttpRequest *request) {
@@ -70,6 +44,128 @@ void	HttpRequestHandler::HandleMethod_(const HttpRequest &request) {
 		DoDelete_(request);
 	} else {
 		RequestError_(501);
+	}
+}
+
+// ------- Specific Do methods
+
+void		HttpRequestHandler::DoRedirection_() {
+	const std::size_t status_code = request_location_ ?
+									request_location_->common.return_status :
+									server_config_.common.return_status;
+	const std::string return_url = request_location_ ?
+									request_location_->common.return_url :
+									server_config_.common.return_url;
+	HttpResponse response(status_code);
+	AddCommonHeaders_(&response);
+	response.AddHeader("Content-Type", "text/html");
+	response.AddHeader("Location", return_url);
+	const std::string body = DefaultResponseBody_(status_code);
+	response.SetBody(body);
+	raw_response_ = response.CreateResponseString();
+}
+
+void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
+	const std::string request_path = request.GetPath();
+	const std::string full_path =
+							request_location_->common.root + request_path;
+	if (IsRegularFile_(full_path)) {
+		if (IsCGI_(full_path)) {
+			ExecuteCGI_(request, full_path);
+		} else {
+			RequestError_(501);
+		}
+	} else {
+		if (IsUploadEnabled_() && IsValidUploadPath_(request_path)) {
+			UploadFile_(request);
+		} else {
+			RequestError_(404);
+		}
+	}
+}
+
+void	HttpRequestHandler::DoDelete_(const HttpRequest &request) {
+	// TODO(any) Implement DELETE
+	(void)request;
+	HttpResponse	response(200);
+	std::string		body = "Responding to a DELETE request\n";
+
+	response.AddHeader("Content-Type", "text/plain");
+	response.SetBody(body);
+	AddCommonHeaders_(&response);
+	raw_response_ = response.CreateResponseString();
+}
+
+void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
+	const std::string full_path =
+							request_location_->common.root + request.GetPath();
+	if (!IsValidPath_(full_path)) {
+		PathError_();
+		return;
+	}
+	if (IsRegularFile_(full_path)) {
+		if (IsCGI_(full_path)) {
+			ExecuteCGI_(request, full_path);
+		} else {
+			ServeFile_(full_path);
+		}
+	} else {
+		const bool has_end_slash = full_path[full_path.size() - 1] == '/';
+		if (!has_end_slash) {
+			MovedPermanently_(request);
+			return;
+		}
+		const std::string index_path =
+									full_path + request_location_->common.index;
+		if (!request_location_->common.autoindex ||
+												IsRegularFile_(index_path)) {
+			ServeFile_(index_path);
+		} else {
+			ListDirectory_(request.GetPath());
+		}
+	}
+}
+
+// Setup Tooling
+
+bool	HttpRequestHandler::HasAcceptedFormat_(const HttpRequest &request) {
+	if (request_location_->HasLocation() &&
+									!request_location_->limit_except->empty()) {
+		if (std::find(request_location_->limit_except->begin(),
+				request_location_->limit_except->end(),
+				request.GetMethod()) ==
+									request_location_->limit_except->end()) {
+			RequestError_(405);
+			return false;
+		}
+	}
+	if (request.GetBody().size() >
+							request_location_->common.client_max_body_size) {
+		RequestError_(413);
+		return false;
+	}
+	if (request.HasHeader("Content-Encoding")) {
+		RequestError_(415);
+		return false;
+	}
+	return true;
+}
+
+void		HttpRequestHandler::SetKeepAlive_(const HttpRequest &request) {
+	if (request.HasHeader("Connection") &&
+			ToLowerString(request.GetHeaderValue("Connection")) == "close") {
+		keep_alive_ = false;
+	}
+}
+
+bool		HttpRequestHandler::GetKeepAlive() const {
+	return keep_alive_;
+}
+
+void		HttpRequestHandler::SetKeepAlive_(const HttpRequest &request) {
+	if (request.HasHeader("Connection") &&
+			ToLowerString(request.GetHeaderValue("Connection")) == "close") {
+		keep_alive_ = false;
 	}
 }
 
@@ -174,29 +270,6 @@ void	HttpRequestHandler::ListDirectory_(const std::string &request_path) {
 	raw_response_ = response.CreateResponseString();
 }
 
-bool	HttpRequestHandler::HasAcceptedFormat_(const HttpRequest &request) {
-	if (request_location_->HasLocation() &&
-									!request_location_->limit_except->empty()) {
-		if (std::find(request_location_->limit_except->begin(),
-				request_location_->limit_except->end(),
-				request.GetMethod()) ==
-									request_location_->limit_except->end()) {
-			RequestError_(405);
-			return false;
-		}
-	}
-	if (request.GetBody().size() >
-							request_location_->common.client_max_body_size) {
-		RequestError_(413);
-		return false;
-	}
-	if (request.HasHeader("Content-Encoding")) {
-		RequestError_(415);
-		return false;
-	}
-	return true;
-}
-
 void	HttpRequestHandler::ServeFile_(const std::string &file_path) {
 	if (!IsRegularFile_(file_path)) {
 		RequestError_(403);
@@ -227,52 +300,6 @@ void	HttpRequestHandler::MovedPermanently_(const HttpRequest &request) {
 	const std::string body = DefaultResponseBody_(301);
 	response.SetBody(body);
 	raw_response_ = response.CreateResponseString();
-}
-
-void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
-	const std::string full_path =
-							request_location_->common.root + request.GetPath();
-	if (!IsValidPath_(full_path)) {
-		PathError_();
-		return;
-	}
-	if (IsRegularFile_(full_path)) {
-		if (IsCGI_(full_path)) {
-			ExecuteCGI_(request, full_path);
-		} else {
-			ServeFile_(full_path);
-		}
-	} else {
-		const bool has_end_slash = full_path[full_path.size() - 1] == '/';
-		if (!has_end_slash) {
-			MovedPermanently_(request);
-			return;
-		}
-		const std::string index_path =
-									full_path + request_location_->common.index;
-		if (!request_location_->common.autoindex ||
-												IsRegularFile_(index_path)) {
-			ServeFile_(index_path);
-		} else {
-			ListDirectory_(request.GetPath());
-		}
-	}
-}
-
-bool	HttpRequestHandler::IsCGI_(const std::string &full_path) const {
-	const std::string extension = PathExtension_(full_path);
-	return request_location_->common.cgi_assign.count(extension) > 0;
-}
-
-bool	HttpRequestHandler::IsUploadEnabled_() const {
-	return !request_location_->common.upload_store.empty();
-}
-
-bool	HttpRequestHandler::IsValidUploadPath_(const std::string &path) const {
-	if (request_location_->HasLocation()) {
-		return path == *request_location_->path;
-	}
-	return path == "/";
 }
 
 void	HttpRequestHandler::UploadFile_(const HttpRequest &request) {
@@ -315,61 +342,6 @@ void	HttpRequestHandler::ExecuteCGI_(const HttpRequest &request,
 		RequestError_(500);
 	}
 }
-
-void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
-	const std::string request_path = request.GetPath();
-	const std::string full_path =
-							request_location_->common.root + request_path;
-	if (IsRegularFile_(full_path)) {
-		if (IsCGI_(full_path)) {
-			ExecuteCGI_(request, full_path);
-		} else {
-			RequestError_(501);
-		}
-	} else {
-		if (IsUploadEnabled_() && IsValidUploadPath_(request_path)) {
-			UploadFile_(request);
-		} else {
-			RequestError_(404);
-		}
-	}
-}
-
-void	HttpRequestHandler::DoDelete_(const HttpRequest &request) {
-	// TODO(any) Implement DELETE
-	(void)request;
-	HttpResponse	response(200);
-	std::string		body = "Responding to a DELETE request\n";
-
-	response.AddHeader("Content-Type", "text/plain");
-	response.SetBody(body);
-	AddCommonHeaders_(&response);
-	raw_response_ = response.CreateResponseString();
-}
-
-bool	HttpRequestHandler::IsValidPath_(const std::string &path) const {
-	struct stat statbuf;
-	return stat(path.c_str(), &statbuf) == 0;
-}
-
-bool	HttpRequestHandler::IsDirectory_(const std::string &path) const {
-	struct stat statbuf;
-	if (lstat(path.c_str(), &statbuf) == 0 &&
-			(statbuf.st_mode & S_IFMT) == S_IFDIR) {
-		return true;
-	}
-	return false;
-}
-
-bool	HttpRequestHandler::IsRegularFile_(const std::string &path) const {
-	struct stat statbuf;
-	if (lstat(path.c_str(), &statbuf) == 0 &&
-			(statbuf.st_mode & S_IFMT) == S_IFREG) {
-		return true;
-	}
-	return false;
-}
-
 std::string	HttpRequestHandler::PathExtension_(const std::string &path) const {
 	const std::size_t extension_position = path.rfind(".");
 	if (extension_position == std::string::npos || extension_position < 2) {
@@ -400,4 +372,45 @@ std::string	HttpRequestHandler::CurrentDate_() const {
 				"%a, %d %b %Y %H:%M:%S %Z",
 				std::gmtime(&date));
 	return buffer;
+}
+
+// ------- Tooling methods
+
+bool	HttpRequestHandler::IsValidPath_(const std::string &path) const {
+	struct stat statbuf;
+	return stat(path.c_str(), &statbuf) == 0;
+}
+
+bool	HttpRequestHandler::IsDirectory_(const std::string &path) const {
+	struct stat statbuf;
+	if (lstat(path.c_str(), &statbuf) == 0 &&
+			(statbuf.st_mode & S_IFMT) == S_IFDIR) {
+		return true;
+	}
+	return false;
+}
+
+bool	HttpRequestHandler::IsRegularFile_(const std::string &path) const {
+	struct stat statbuf;
+	if (lstat(path.c_str(), &statbuf) == 0 &&
+			(statbuf.st_mode & S_IFMT) == S_IFREG) {
+		return true;
+	}
+	return false;
+}
+
+bool	HttpRequestHandler::IsCGI_(const std::string &full_path) const {
+	const std::string extension = PathExtension_(full_path);
+	return request_location_->common.cgi_assign.count(extension) > 0;
+}
+
+bool	HttpRequestHandler::IsUploadEnabled_() const {
+	return !request_location_->common.upload_store.empty();
+}
+
+bool	HttpRequestHandler::IsValidUploadPath_(const std::string &path) const {
+	if (request_location_->HasLocation()) {
+		return path == *request_location_->path;
+	}
+	return path == "/";
 }
