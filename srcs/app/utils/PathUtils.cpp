@@ -1,4 +1,4 @@
-#include <Utils.hpp>
+#include <string>
 
 std::string	PathExtension(const std::string &path) {
 	const std::size_t extension_position = path.rfind(".");
