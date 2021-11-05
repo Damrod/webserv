@@ -1,6 +1,7 @@
 #include <CGI.hpp>
 
 std::string	PathExtension(const std::string &path);
+bool	IsExecutable(const std::string &path);
 
 std::string CGI::GetExecutable_(const std::string &extension) {
 	if (request_location_->common.cgi_assign.count(extension) > 0) {
@@ -69,6 +70,9 @@ int CGI::ExecuteCGI(void) {
 	std::fwrite(body.c_str(), 1, body.size(), fp);
 	std::rewind(fp);
 	SyscallWrap::pipeWr(fds_);
+	if (!IsExecutable(exec_path_) || !IsExecutable(arg_path_)) {
+		throw std::runtime_error(std::strerror(errno));;
+	}
 	pid_t pid = SyscallWrap::forkWr();
 	if (pid == 0) {
 		std::signal(SIGCHLD, SIG_IGN);
