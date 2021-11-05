@@ -7,6 +7,8 @@ class IRequestHandler {
 	public:
 		virtual bool		GetKeepAlive() const = 0;
 		virtual std::string	BuildResponse(IRequest *) = 0;
+		virtual bool		IsCgi() const = 0;
+		virtual int			GetCgiOutputFd() const = 0;
 		virtual				~IRequestHandler() {}
 };
 

@@ -32,6 +32,8 @@ class HttpRequestHandler : public IRequestHandler {
 		~HttpRequestHandler();
 		std::string			BuildResponse(IRequest *request);
 		bool				GetKeepAlive() const;
+		bool				IsCgi() const;
+		int					GetCgiOutputFd() const;
 
 	private:
 		HttpRequestHandler();
@@ -42,6 +44,7 @@ class HttpRequestHandler : public IRequestHandler {
 		std::string			raw_response_;
 		bool				keep_alive_;
 		RequestLocation		*request_location_;
+		int					cgi_output_fd_;
 
 		void				SetKeepAlive_(const HttpRequest &request);
 		void				DoRedirection_();
@@ -62,12 +65,11 @@ class HttpRequestHandler : public IRequestHandler {
 		void				ServeFile_(const std::string &file_path);
 		void				MovedPermanently_(const HttpRequest &request);
 		void				DoGet_(const HttpRequest &request);
-		bool				IsCGI_(const std::string &full_path) const;
+		bool				IsCgiPath_(const std::string &full_path) const;
 		bool				IsUploadEnabled_() const;
 		bool				IsValidUploadPath_(const std::string &path) const;
 		void				UploadFile_(const HttpRequest &request);
-		void				ExecuteCGI_(const HttpRequest &request,
-										const std::string &full_path);
+		void				ExecuteCGI_(const HttpRequest &request);
 		void				DoPost_(const HttpRequest &request);
 		void				DoDelete_(const HttpRequest &request);
 

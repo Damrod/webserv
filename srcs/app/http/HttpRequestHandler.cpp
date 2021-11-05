@@ -2,7 +2,7 @@
 
 HttpRequestHandler::HttpRequestHandler(const ServerConfig &server_config)
 	: server_config_(server_config), keep_alive_(true),
-		request_location_(NULL) {
+	request_location_(NULL), cgi_output_fd_(-1) {
 }
 
 HttpRequestHandler::~HttpRequestHandler() {}
@@ -14,6 +14,14 @@ std::string	HttpRequestHandler::BuildResponse(IRequest *request) {
 
 bool		HttpRequestHandler::GetKeepAlive() const {
 	return keep_alive_;
+}
+
+bool		HttpRequestHandler::IsCgi() const {
+	return cgi_output_fd_ != -1;
+}
+
+int			HttpRequestHandler::GetCgiOutputFd() const {
+	return cgi_output_fd_;
 }
 
 void		HttpRequestHandler::SetKeepAlive_(const HttpRequest &request) {
@@ -45,6 +53,7 @@ void		HttpRequestHandler::HandleRequest_(const HttpRequest *request) {
 		return;
 	}
 	if (request == NULL || request->GetState() != RequestState::kComplete) {
+		keep_alive_ = false;
 		RequestError_(400);
 		return;
 	}
@@ -237,8 +246,8 @@ void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
 		return;
 	}
 	if (IsRegularFile_(full_path)) {
-		if (IsCGI_(full_path)) {
-			ExecuteCGI_(request, full_path);
+		if (IsCgiPath_(full_path)) {
+			ExecuteCGI_(request);
 		} else {
 			ServeFile_(full_path);
 		}
@@ -259,7 +268,7 @@ void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
 	}
 }
 
-bool	HttpRequestHandler::IsCGI_(const std::string &full_path) const {
+bool	HttpRequestHandler::IsCgiPath_(const std::string &full_path) const {
 	const std::string extension = PathExtension_(full_path);
 	return request_location_->common.cgi_assign.count(extension) > 0;
 }
@@ -299,18 +308,14 @@ void	HttpRequestHandler::UploadFile_(const HttpRequest &request) {
 	}
 }
 
-void	HttpRequestHandler::ExecuteCGI_(const HttpRequest &request,
-												const std::string &full_path) {
+void	HttpRequestHandler::ExecuteCGI_(const HttpRequest &request) {
+	keep_alive_ = false;
 	try {
 		HttpResponse response(200);
 		AddCommonHeaders_(&response);
-		CGI engine(request, *request_location_, PathExtension_(full_path),
-			&response);
-		engine.ExecuteCGI();
-		if (engine.GetExecReturn() != EXIT_SUCCESS) {
-			throw std::runtime_error("Exec error");
-	}
-	raw_response_ = response.CreateResponseString();
+		raw_response_ = response.CreateResponseString(false);
+		CGI engine(request, *request_location_);
+		cgi_output_fd_ = engine.ExecuteCGI();
 	} catch (const std::exception &e) {
 		RequestError_(500);
 	}
@@ -321,8 +326,8 @@ void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
 	const std::string full_path =
 							request_location_->common.root + request_path;
 	if (IsRegularFile_(full_path)) {
-		if (IsCGI_(full_path)) {
-			ExecuteCGI_(request, full_path);
+		if (IsCgiPath_(full_path)) {
+			ExecuteCGI_(request);
 		} else {
 			RequestError_(501);
 		}
