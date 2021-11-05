@@ -7,6 +7,7 @@ class SyscallWrap {
 		static ssize_t writeWr(int fd, const void *buf, size_t count);
 		static ssize_t readWr(int fd, void *buf, size_t count);
 		static int pipeWr(int pipefd[2]);
+		static int dupWr(int oldfd);
 		static int dup2Wr(int oldfd, int newfd);
 		static int execveWr(const char *pathname, char *const argv[],
 						   char *const envp[]);
