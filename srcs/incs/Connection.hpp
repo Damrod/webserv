@@ -17,6 +17,7 @@ class Connection {
 		~Connection();
 		ReceiveRequestStatus::Type	ReceiveRequest();
 		SendResponseStatus::Type	SendResponse();
+		int							GetCgiOutputFd() const;
 
 	private:
 		Connection();
@@ -27,6 +28,8 @@ class Connection {
 		IRequestHandler		*request_handler_;
 		IRequest			*request_;
 		bool				keep_alive_;
+		bool				is_cgi_;
+		int					cgi_output_fd_;
 		std::string			raw_request_;
 		std::string			raw_response_;
 };

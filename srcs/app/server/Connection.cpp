@@ -3,7 +3,7 @@
 Connection::Connection(int socket, IRequestHandler *request_handler,
 															IRequest *request)
 	: socket_(socket), request_handler_(request_handler), request_(request),
-	keep_alive_(true) {}
+	keep_alive_(true), is_cgi_(false), cgi_output_fd_(-1) {}
 
 Connection::~Connection() {
 	delete request_handler_;
@@ -33,7 +33,10 @@ SendResponseStatus::Type	Connection::SendResponse() {
 	if (raw_response_.empty()) {
 		raw_response_ = request_handler_->BuildResponse(request_);
 		keep_alive_ = request_handler_->GetKeepAlive();
-		request_->Reset();
+		is_cgi_ = request_handler_->IsCgi();
+		if (is_cgi_) {
+			cgi_output_fd_ = request_handler_->GetCgiOutputFd();
+		}
 	}
 	int nbytes = send(socket_, raw_response_.c_str(), raw_response_.size(), 0);
 	if (nbytes <= 0) {
@@ -41,11 +44,18 @@ SendResponseStatus::Type	Connection::SendResponse() {
 	}
 	raw_response_.erase(0, nbytes);
 	if (raw_response_.empty()) {
+		request_->Reset();
+		if (is_cgi_) {
+			return SendResponseStatus::kHandleCgi;
+		}
 		if (keep_alive_) {
 			return SendResponseStatus::kCompleteKeep;
-		} else {
-			return SendResponseStatus::kCompleteClose;
 		}
+		return SendResponseStatus::kCompleteClose;
 	}
 	return SendResponseStatus::kSuccess;
+}
+
+int	Connection::GetCgiOutputFd() const {
+	return cgi_output_fd_;
 }
