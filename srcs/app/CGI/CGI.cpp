@@ -41,14 +41,15 @@ CGI::~CGI(void) {
 }
 
 std::map<std::string, std::string> CGI::MakeEnv_(void) {
-	// std::map<std::string, std::string>	headers_ = request_.GetHeaders();
 	std::map<std::string, std::string>	env_;
 
 	env_.insert(std::make_pair("REDIRECT_STATUS", "200"));
 	env_.insert(std::make_pair("GATEWAY_INTERFACE", "CGI/1.1"));
 	env_.insert(std::make_pair("REQUEST_METHOD", request_.GetMethod()));
+	env_.insert(std::make_pair("CONTENT_LENGTH",
+									request_.GetHeaderValue("Content-Length")));
 	env_.insert(std::make_pair("CONTENT_TYPE",
-									 request_.GetHeaderValue("Content-Type")));
+									request_.GetHeaderValue("Content-Type")));
 	env_.insert(std::make_pair("SERVER_PROTOCOL", "HTTP/1.1"));
 	env_.insert(std::make_pair("SERVER_SOFTWARE", "webserv/1.0"));
 	env_.insert(std::make_pair("SERVER_PORT",
