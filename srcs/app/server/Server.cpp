@@ -35,6 +35,10 @@ bool	Server::HasConnection(int sd) {
 	return connections_.count(sd) > 0;
 }
 
+int	Server::GetCgiOutputFd(int sd) {
+	return connections_[sd]->GetCgiOutputFd();
+}
+
 ReceiveRequestStatus::Type	Server::ReceiveRequest(int sd) {
 	std::map<int, Connection *>::iterator it = connections_.find(sd);
 	if (it == connections_.end()) {

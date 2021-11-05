@@ -29,6 +29,7 @@ class Server {
 		void	RemoveConnection(int sd);
 		int		GetListeningSocket() const;
 		bool	HasConnection(int sd);
+		int		GetCgiOutputFd(int sd);
 
 		ReceiveRequestStatus::Type	ReceiveRequest(int sd);
 		SendResponseStatus::Type	SendResponse(int sd);
