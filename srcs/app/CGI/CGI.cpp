@@ -1,8 +1,5 @@
 #include <CGI.hpp>
 
-std::string	PathExtension(const std::string &path);
-bool	IsExecutable(const std::string &path);
-
 std::string CGI::GetExecutable_(const std::string &extension) {
 	if (request_location_->common.cgi_assign.count(extension) > 0) {
 			return request_location_->

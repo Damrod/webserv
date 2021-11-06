@@ -16,6 +16,7 @@
 #include <HttpResponse.hpp>
 #include <RequestLocation.hpp>
 #include <SyscallWrap.hpp>
+#include <Utils.hpp>
 
 class CGI {
  public:
