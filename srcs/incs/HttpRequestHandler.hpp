@@ -22,7 +22,7 @@
 #include <MimeTypes.hpp>
 #include <RequestLocation.hpp>
 #include <ServerConfig.hpp>
-#include <StringUtils.hpp>
+#include <Utils.hpp>
 #include <CGI.hpp>
 
 

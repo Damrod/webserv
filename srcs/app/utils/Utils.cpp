@@ -1,6 +1,4 @@
-#include <StringUtils.hpp>
-#include <algorithm>
-#include <cstring>
+#include <Utils.hpp>
 
 std::string	TrimString(const std::string &str, const std::string &trim_chars) {
 	const std::size_t	start_position = str.find_first_not_of(trim_chars);

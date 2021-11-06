@@ -2,7 +2,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <HttpStatusCodes.hpp>
-#include <StringUtils.hpp>
+#include <Utils.hpp>
 
 const char HttpResponse::kCRLF_[] = "\r\n";
 

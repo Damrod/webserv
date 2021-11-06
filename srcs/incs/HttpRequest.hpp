@@ -5,7 +5,7 @@
 #include <CommonDefinitions.hpp>
 #include <IRequest.hpp>
 #include <RequestState.hpp>
-#include <StringUtils.hpp>
+#include <Utils.hpp>
 
 class HttpRequest : public IRequest {
 	private:

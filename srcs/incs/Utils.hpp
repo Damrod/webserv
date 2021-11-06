@@ -1,5 +1,7 @@
-#ifndef SRCS_INCS_STRINGUTILS_HPP_
-#define SRCS_INCS_STRINGUTILS_HPP_
+#ifndef SRCS_INCS_UTILS_HPP_
+#define SRCS_INCS_UTILS_HPP_
+#include <algorithm>
+#include <cstring>
 #include <sstream>
 #include <string>
 
@@ -14,4 +16,4 @@ std::string	ValueToString(const T &value) {
 	return out.str();
 }
 
-#endif  // SRCS_INCS_STRINGUTILS_HPP_
+#endif  // SRCS_INCS_UTILS_HPP_
