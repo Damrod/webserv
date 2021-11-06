@@ -2,13 +2,10 @@
 #define SRCS_INCS_HTTPREQUESTHANDLER_HPP_
 #include <HttpRequestHandler.hpp>
 #include <dirent.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <unistd.h>
 #include <algorithm>
 #include <cerrno>
 #include <iostream>
-#include <ctime>
 #include <exception>
 #include <fstream>
 #include <sstream>
@@ -19,7 +16,6 @@
 #include <HttpStatusCodes.hpp>
 #include <IRequest.hpp>
 #include <IRequestHandler.hpp>
-#include <MimeTypes.hpp>
 #include <RequestLocation.hpp>
 #include <ServerConfig.hpp>
 #include <Utils.hpp>
@@ -72,13 +68,6 @@ class HttpRequestHandler : public IRequestHandler {
 		void				ExecuteCGI_(const HttpRequest &request);
 		void				DoPost_(const HttpRequest &request);
 		void				DoDelete_(const HttpRequest &request);
-
-		bool				IsValidPath_(const std::string &path) const;
-		bool				IsDirectory_(const std::string &path) const;
-		bool				IsRegularFile_(const std::string &path) const;
-		std::string			PathExtension_(const std::string &path) const;
-		std::string			GetMimeType_(const std::string &file_path) const;
-		std::string			CurrentDate_() const;
 };
 
 #endif  // SRCS_INCS_HTTPREQUESTHANDLER_HPP_

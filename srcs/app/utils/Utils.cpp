@@ -20,6 +20,33 @@ char *DuplicateString(const std::string &str) {
 	return element;
 }
 
+bool	IsExecutable(const std::string &path) {
+	return access(path.c_str(), X_OK) == 0;
+}
+
+bool	IsValidPath(const std::string &path) {
+	struct stat statbuf;
+	return stat(path.c_str(), &statbuf) == 0;
+}
+
+bool	IsDirectory(const std::string &path) {
+	struct stat statbuf;
+	if (lstat(path.c_str(), &statbuf) == 0 &&
+			(statbuf.st_mode & S_IFMT) == S_IFDIR) {
+		return true;
+	}
+	return false;
+}
+
+bool	IsRegularFile(const std::string &path) {
+	struct stat statbuf;
+	if (lstat(path.c_str(), &statbuf) == 0 &&
+			(statbuf.st_mode & S_IFMT) == S_IFREG) {
+		return true;
+	}
+	return false;
+}
+
 std::string	PathExtension(const std::string &path) {
 	const std::size_t extension_position = path.rfind(".");
 	if (extension_position == std::string::npos || extension_position < 2) {
@@ -38,6 +65,16 @@ std::string	PathExtension(const std::string &path) {
 	return "";
 }
 
-bool	IsExecutable(const std::string &path) {
-	return access(path.c_str(), X_OK) == 0;
+std::string	GetMimeType(const std::string &path) {
+	return MimeTypes::GetMimeType(PathExtension(path));
+}
+
+std::string	CurrentDate() {
+	char				buffer[100];
+	const std::time_t	date = std::time(NULL);
+	std::strftime(buffer,
+				sizeof(buffer),
+				"%a, %d %b %Y %H:%M:%S %Z",
+				std::gmtime(&date));
+	return buffer;
 }

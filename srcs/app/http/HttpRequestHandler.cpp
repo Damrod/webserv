@@ -89,7 +89,7 @@ void	HttpRequestHandler::AddCommonHeaders_(HttpResponse *response) {
 	} else {
 		response->AddHeader("Connection", "close");
 	}
-	response->AddHeader("Date", CurrentDate_());
+	response->AddHeader("Date", CurrentDate());
 }
 
 std::string
@@ -154,7 +154,7 @@ bool	HttpRequestHandler::TryAddDirectoryContent_(std::stringstream *body,
 			continue;
 		}
 		const std::string full_path_name = full_path + "/" + name;
-		if (IsDirectory_(full_path_name)) {
+		if (IsDirectory(full_path_name)) {
 				name.append("/");
 		}
 		*body << "<a href=\"" << name << "\">" << name << "</a>\n";
@@ -207,7 +207,7 @@ bool	HttpRequestHandler::HasAcceptedFormat_(const HttpRequest &request) {
 }
 
 void	HttpRequestHandler::ServeFile_(const std::string &file_path) {
-	if (!IsRegularFile_(file_path)) {
+	if (!IsRegularFile(file_path)) {
 		RequestError_(403);
 		return;
 	}
@@ -220,7 +220,7 @@ void	HttpRequestHandler::ServeFile_(const std::string &file_path) {
 											std::istreambuf_iterator<char>());
 	HttpResponse response(200);
 	AddCommonHeaders_(&response);
-	response.AddHeader("Content-Type", GetMimeType_(file_path));
+	response.AddHeader("Content-Type", GetMimeType(file_path));
 	response.SetBody(body);
 	raw_response_ = response.CreateResponseString();
 }
@@ -241,11 +241,11 @@ void	HttpRequestHandler::MovedPermanently_(const HttpRequest &request) {
 void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
 	const std::string full_path =
 							request_location_->common.root + request.GetPath();
-	if (!IsValidPath_(full_path)) {
+	if (!IsValidPath(full_path)) {
 		PathError_();
 		return;
 	}
-	if (IsRegularFile_(full_path)) {
+	if (IsRegularFile(full_path)) {
 		if (IsCgiPath_(full_path)) {
 			ExecuteCGI_(request);
 		} else {
@@ -260,7 +260,7 @@ void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
 		const std::string index_path =
 									full_path + request_location_->common.index;
 		if (!request_location_->common.autoindex ||
-												IsRegularFile_(index_path)) {
+												IsRegularFile(index_path)) {
 			ServeFile_(index_path);
 		} else {
 			ListDirectory_(request.GetPath());
@@ -269,7 +269,7 @@ void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
 }
 
 bool	HttpRequestHandler::IsCgiPath_(const std::string &full_path) const {
-	const std::string extension = PathExtension_(full_path);
+	const std::string extension = PathExtension(full_path);
 	return request_location_->common.cgi_assign.count(extension) > 0;
 }
 
@@ -325,7 +325,7 @@ void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
 	const std::string request_path = request.GetPath();
 	const std::string full_path =
 							request_location_->common.root + request_path;
-	if (IsRegularFile_(full_path)) {
+	if (IsRegularFile(full_path)) {
 		if (IsCgiPath_(full_path)) {
 			ExecuteCGI_(request);
 		} else {
@@ -350,59 +350,4 @@ void	HttpRequestHandler::DoDelete_(const HttpRequest &request) {
 	response.SetBody(body);
 	AddCommonHeaders_(&response);
 	raw_response_ = response.CreateResponseString();
-}
-
-bool	HttpRequestHandler::IsValidPath_(const std::string &path) const {
-	struct stat statbuf;
-	return stat(path.c_str(), &statbuf) == 0;
-}
-
-bool	HttpRequestHandler::IsDirectory_(const std::string &path) const {
-	struct stat statbuf;
-	if (lstat(path.c_str(), &statbuf) == 0 &&
-			(statbuf.st_mode & S_IFMT) == S_IFDIR) {
-		return true;
-	}
-	return false;
-}
-
-bool	HttpRequestHandler::IsRegularFile_(const std::string &path) const {
-	struct stat statbuf;
-	if (lstat(path.c_str(), &statbuf) == 0 &&
-			(statbuf.st_mode & S_IFMT) == S_IFREG) {
-		return true;
-	}
-	return false;
-}
-
-std::string	HttpRequestHandler::PathExtension_(const std::string &path) const {
-	const std::size_t extension_position = path.rfind(".");
-	if (extension_position == std::string::npos || extension_position < 2) {
-		return "";
-	}
-	const std::size_t	last_dir_position = path.rfind("/");
-	if (last_dir_position == std::string::npos) {
-		return path.substr(extension_position + 1);
-	}
-	if (last_dir_position < extension_position - 1) {
-		const std::string last_path_part = path.substr(last_dir_position + 1);
-		if (last_path_part != "." && last_path_part != "..") {
-			return path.substr(extension_position + 1);
-		}
-	}
-	return "";
-}
-
-std::string	HttpRequestHandler::GetMimeType_(const std::string &path) const {
-	return MimeTypes::GetMimeType(PathExtension_(path));
-}
-
-std::string	HttpRequestHandler::CurrentDate_() const {
-	char				buffer[100];
-	const std::time_t	date = std::time(NULL);
-	std::strftime(buffer,
-				sizeof(buffer),
-				"%a, %d %b %Y %H:%M:%S %Z",
-				std::gmtime(&date));
-	return buffer;
 }
