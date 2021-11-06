@@ -62,6 +62,9 @@ class HttpRequest : public IRequest {
 		bool		HasHeader(const std::string &header_name) const;
 		void		Reset();
 		RequestState::State	GetState() const;
+		bool		IsPartial() const;
+		bool		IsComplete() const;
+		bool		IsInvalid() const;
 
 	private:
 		HttpRequest(const HttpRequest &);

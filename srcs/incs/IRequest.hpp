@@ -8,6 +8,9 @@ class IRequest {
 		virtual std::size_t	ParseRawString(const std::string &raw_string) = 0;
 		virtual RequestState::State	GetState() const = 0;
 		virtual void		Reset() = 0;
+		virtual bool		IsPartial() const = 0;
+		virtual bool		IsComplete() const = 0;
+		virtual bool		IsInvalid() const = 0;
 		virtual				~IRequest() {}
 };
 
