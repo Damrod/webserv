@@ -18,13 +18,11 @@ ReceiveRequestStatus::Type	Connection::ReceiveRequest() {
 		return ReceiveRequestStatus::kFail;
 	}
 	raw_request_.append(&buffer[0], &buffer[nbytes]);
-	if (raw_response_.empty() &&
-							request_->GetState() == RequestState::kPartial) {
+	if (request_->IsPartial()) {
 		std::size_t offset = request_->ParseRawString(raw_request_);
 		raw_request_.erase(0, offset);
 	}
-	RequestState::State request_state = request_->GetState();
-	if (request_state == RequestState::kPartial)
+	if (request_->IsPartial())
 		return ReceiveRequestStatus::kSuccess;
 	return ReceiveRequestStatus::kComplete;
 }
