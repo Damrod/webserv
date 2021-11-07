@@ -2,10 +2,10 @@
 #define SRCS_INCS_SERVER_HPP_
 #include <unistd.h>
 #include <fcntl.h>
-#include <cstring>
-#include <map>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <cstring>
+#include <map>
 #include <Connection.hpp>
 #include <HttpRequest.hpp>
 #include <HttpRequestHandler.hpp>

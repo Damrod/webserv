@@ -15,7 +15,10 @@ WebServer::~WebServer() {
 void	WebServer::Run() {
 	while (fdSets.getMaxSocket() != -1) {
 		int ready_sockets =
-			select(fdSets.getMaxSocket() + 1, fdSets.getReadSet(), fdSets.getWriteSet(), NULL, NULL);
+			select(
+				fdSets.getMaxSocket() + 1,
+				fdSets.getReadSet(),
+				fdSets.getWriteSet(), NULL, NULL);
 		if (ready_sockets < 0) {
 			throw std::runtime_error(std::strerror(errno));
 		} else if (ready_sockets == 0) {
@@ -73,7 +76,7 @@ void	WebServer::HandleReadSocket_(int sd) {
 
 	if ((server = FindServer_(sd))) {
 		server->AcceptNewConnection();
-	} else if ((server = FindServerConnection_(sd))){
+	} else if ((server = FindServerConnection_(sd))) {
 		server->ReceiveRequest(sd);
 	}
 }

@@ -53,7 +53,6 @@ bool	FDsets::isWriteSet(int fd) const {
 	return FD_ISSET(fd, &tmp_write_set_);
 }
 
-
 void	FDsets::removeFromReadSet_(int fd) {
 	FD_CLR(fd, &read_set_);
 }
