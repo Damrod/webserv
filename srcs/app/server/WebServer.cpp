@@ -45,6 +45,7 @@ void	WebServer::PopulateServers_() {
 	while (settings_it != servers_settings.end()) {
 		int listen_sd = socket(AF_INET, SOCK_STREAM, 0);
 
+		fdSets.addToReadSet(listen_sd);
 		Server	*server = new Server(*settings_it, listen_sd, &fdSets);
 		servers_.insert(std::make_pair(listen_sd, server));
 		++settings_it;

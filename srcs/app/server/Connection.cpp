@@ -23,9 +23,9 @@ ReceiveRequestStatus::Type	Connection::ReceiveRequest() {
 		std::size_t offset = request_->ParseRawString(raw_request_);
 		raw_request_.erase(0, offset);
 	}
-	RequestState::State request_state = request_->GetState();
-	if (request_state == RequestState::kPartial)
+	if (request_->GetState() == RequestState::kPartial) {
 		return ReceiveRequestStatus::kSuccess;
+	}
 	return ReceiveRequestStatus::kComplete;
 }
 

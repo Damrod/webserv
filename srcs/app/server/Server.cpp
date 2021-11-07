@@ -40,8 +40,6 @@ void	Server::BindListeningSocket_() {
 	if (listen(listen_sd_, SOMAXCONN) < 0) {
 		throw std::runtime_error(std::strerror(errno));
 	}
-
-	fdSets_->addToReadSet(listen_sd_);
 }
 
 void	Server::AddConnection_(int sd) {
@@ -102,7 +100,3 @@ void	Server::SendResponse(int sd) {
 		RemoveConnection_(sd);
 	}
 }
-
-// Hay alguna manera de eliminar los estados?
-// Si la conexion falla, como se notificaria a Server para que la elimine
-// Donde queda el CGI para pasarle los estados?
