@@ -4,7 +4,7 @@ HttpResponseFactory::HttpResponseFactory(
 		const std::string raw_request,
 		const ServerConfig &server_config
 	): server_config_(server_config) {
-	request_ = new HttpRequestDTO(raw_request);
+	request_ = new HttpRequest(raw_request);
 	request_method_ = request_->GetMethod();
 	concreteResponses_.insert(std::make_pair(
 		"GET",
