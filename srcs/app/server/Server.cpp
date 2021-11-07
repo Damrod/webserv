@@ -1,7 +1,7 @@
 #include <Server.hpp>
 
-Server::Server(const ServerConfig &settings, int listen_sd)
-	: settings_(settings), listen_sd_(listen_sd) {
+Server::Server(const ServerConfig &settings, int listen_sd, FDsets *fdSets)
+	: settings_(settings), listen_sd_(listen_sd), fdSets_(fdSets) {
 }
 
 Server::~Server() {
@@ -22,6 +22,9 @@ void	Server::AddConnection(int sd) {
 }
 
 void	Server::RemoveConnection(int sd) {
+	fdSets_->removeFromReadSet(sd);
+	fdSets_->removeFromWriteSet(sd);
+	fdSets_->setMaxSocket(sd);
 	close(sd);
 	delete connections_[sd];
 	connections_.erase(sd);
@@ -35,18 +38,38 @@ bool	Server::HasConnection(int sd) {
 	return connections_.count(sd) > 0;
 }
 
-ReceiveRequestStatus::Type	Server::ReceiveRequest(int sd) {
+// Hay alguna manera de eliminar los estados?
+// Si la conexion falla, como se notificaria a Server para que la elimine
+// Server es responsable de sus conexiones
+// Donde queda el CGI para pasarle los estados?
+
+// Hacer removeConnection privado
+
+void	Server::ReceiveRequest(int sd) {
 	std::map<int, Connection *>::iterator it = connections_.find(sd);
 	if (it == connections_.end()) {
-		return ReceiveRequestStatus::kFail;
+		RemoveConnection(sd);
 	}
-	return it->second->ReceiveRequest();
+	ReceiveRequestStatus::Type status = it->second->ReceiveRequest();
+
+	if (status == ReceiveRequestStatus::kComplete) {
+		fdSets_->addToWriteSet(sd);
+	} else if (status == ReceiveRequestStatus::kFail) {
+		RemoveConnection(sd);
+	}
 }
 
-SendResponseStatus::Type	Server::SendResponse(int sd) {
+void	Server::SendResponse(int sd) {
 	std::map<int, Connection *>::iterator it = connections_.find(sd);
 	if (it == connections_.end()) {
-		return SendResponseStatus::kFail;
+		RemoveConnection(sd);
 	}
-	return it->second->SendResponse();
+
+	SendResponseStatus::Type status = it->second->SendResponse();
+	if (status == SendResponseStatus::kCompleteKeep) {
+		fdSets_->removeFromWriteSet(sd);
+	} else if (status == SendResponseStatus::kFail ||
+				status == SendResponseStatus::kCompleteClose) {
+		RemoveConnection(sd);
+	}
 }

@@ -1,7 +1,6 @@
 #include <WebServer.hpp>
 
 WebServer::WebServer(const std::string &pathname) {
-	max_sd_ = -1;
 	config_.LoadFile(pathname);
 	PopulateServers_();
 }
@@ -15,15 +14,15 @@ WebServer::~WebServer() {
 
 void	WebServer::Run() {
 	AddListeningSocketsToMasterSet_();
-	while (max_sd_ != -1) {
+	while (fdSets.getMaxSocket() != -1) {
 		int ready_sockets =
-			select(max_sd_ + 1, fdSets.getReadSet(), fdSets.getWriteSet(), NULL, NULL);
+			select(fdSets.getMaxSocket() + 1, fdSets.getReadSet(), fdSets.getWriteSet(), NULL, NULL);
 		if (ready_sockets < 0) {
 			throw std::runtime_error(std::strerror(errno));
 		} else if (ready_sockets == 0) {
 			throw std::runtime_error("select returned 0 with NULL timeout");
 		}
-		for (int sd = 0; sd <= max_sd_ && ready_sockets > 0; ++sd) {
+		for (int sd = 0; sd <= fdSets.getMaxSocket() && ready_sockets > 0; ++sd) {
 			if (fdSets.isReadSet(sd)) {
 				--ready_sockets;
 				HandleReadSocket_(sd);
@@ -74,7 +73,7 @@ void	WebServer::PopulateServers_() {
 	while (settings_it != servers_settings.end()) {
 		int listen_sd = BindNewListeningSocketToServer_(*settings_it);
 
-		Server	*server = new Server(*settings_it, listen_sd);
+		Server	*server = new Server(*settings_it, listen_sd, &fdSets);
 		servers_.insert(std::make_pair(listen_sd, server));
 		++settings_it;
 	}
@@ -86,17 +85,6 @@ void	WebServer::AddListeningSocketsToMasterSet_() {
 	for (; server_it != servers_.end(); ++server_it) {
 		int listen_sd = server_it->second->GetListeningSocket();
 		fdSets.addToReadSet(listen_sd);
-		if (max_sd_ < listen_sd) {
-			max_sd_ = listen_sd;
-		}
-	}
-}
-
-void	WebServer::SetMaxSocket_(int curr_sd) {
-	if (curr_sd == max_sd_) {
-		while (!fdSets.isReadSet(max_sd_)) {
-			--max_sd_;
-		}
 	}
 }
 
@@ -121,9 +109,6 @@ void	WebServer::AcceptNewConnection_(int sd) {
 	}
 	fdSets.addToReadSet(new_sd);
 	server->AddConnection(new_sd);
-	if (max_sd_ < new_sd) {
-		max_sd_ = new_sd;
-	}
 }
 
 Server	*WebServer::FindConnectionServer_(int sd) {
@@ -141,6 +126,7 @@ bool	WebServer::IsListeningSocket_(int sd) const {
 	return servers_.count(sd) > 0;
 }
 
+//is Server socker? en lugar de is listening?
 void	WebServer::HandleReadSocket_(int sd) {
 	if (IsListeningSocket_(sd)) {
 		AcceptNewConnection_(sd);
@@ -148,15 +134,7 @@ void	WebServer::HandleReadSocket_(int sd) {
 		Server	*server = FindConnectionServer_(sd);
 
 		if (server) {
-			ReceiveRequestStatus::Type status = server->ReceiveRequest(sd);
-			if (status == ReceiveRequestStatus::kComplete) {
-				fdSets.addToWriteSet(sd);
-			} else if (status == ReceiveRequestStatus::kFail) {
-				server->RemoveConnection(sd);
-				fdSets.removeFromReadSet(sd);
-				fdSets.removeFromWriteSet(sd);
-				SetMaxSocket_(sd);
-			}
+			server->ReceiveRequest(sd);
 		}
 	}
 }
@@ -165,15 +143,6 @@ void	WebServer::HandleWriteSocket_(int sd) {
 	Server	*server = FindConnectionServer_(sd);
 
 	if (server) {
-		SendResponseStatus::Type status = server->SendResponse(sd);
-		if (status == SendResponseStatus::kCompleteKeep) {
-			fdSets.removeFromWriteSet(sd);
-		} else if (status == SendResponseStatus::kFail ||
-					status == SendResponseStatus::kCompleteClose) {
-			server->RemoveConnection(sd);
-			fdSets.removeFromReadSet(sd);
-			fdSets.removeFromWriteSet(sd);
-			SetMaxSocket_(sd);
-		}
+		server->SendResponse(sd);
 	}
 }

@@ -20,6 +20,13 @@ void	FDsets::addToWriteSet(int fd) {
 
 void	FDsets::addToReadSet(int fd) {
 	FD_SET(fd, &read_set_);
+	if (max_fd_ < fd) {
+		max_fd_ = fd;
+	}
+}
+
+int			FDsets::getMaxSocket() const {
+	return max_fd_;
 }
 
 fd_set	*FDsets::getReadSet() {
@@ -30,6 +37,14 @@ fd_set	*FDsets::getReadSet() {
 fd_set	*FDsets::getWriteSet() {
 	std::memcpy(&tmp_write_set_, &write_set_, sizeof(read_set_));
 	return &tmp_write_set_;
+}
+
+void	FDsets::setMaxSocket(int fd) {
+	if (fd == max_fd_) {
+		while (!isReadSet(max_fd_)) {
+			--max_fd_;
+		}
+	}
 }
 
 bool		FDsets::isReadSet(int fd) const {

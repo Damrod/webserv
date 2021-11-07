@@ -6,12 +6,14 @@
 #include <HttpRequest.hpp>
 #include <HttpRequestHandler.hpp>
 #include <ServerConfig.hpp>
+#include <FDsets.hpp>
 
 class Server {
 	private:
 		ServerConfig			settings_;
 		// Listening socket of this server
 		int						listen_sd_;
+		FDsets					*fdSets_;
 
 		// The clients that are connected to the server
 		// The key is the socket of the connection
@@ -22,7 +24,7 @@ class Server {
 		Server &	operator=(const Server &);
 
 	public:
-		Server(const ServerConfig &settings, int listen_sd);
+		Server(const ServerConfig &settings, int listen_sd, FDsets *fdSets);
 		~Server();
 		void	BindListeningSocket();
 		void	AddConnection(int sd);
@@ -30,8 +32,8 @@ class Server {
 		int		GetListeningSocket() const;
 		bool	HasConnection(int sd);
 
-		ReceiveRequestStatus::Type	ReceiveRequest(int sd);
-		SendResponseStatus::Type	SendResponse(int sd);
+		void	ReceiveRequest(int sd);
+		void	SendResponse(int sd);
 };
 
 #endif  // SRCS_INCS_SERVER_HPP_

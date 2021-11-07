@@ -45,7 +45,6 @@ class WebServer {
 
 		void	PopulateServers_();
 		void	AddListeningSocketsToMasterSet_();
-		void	SetMaxSocket_(int curr_sd);
 		void	AcceptNewConnection_(int sd);
 		void	ReceiveRequest_(int sd);
 		void	SendResponse_(int sd);
