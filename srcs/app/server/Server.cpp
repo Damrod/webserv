@@ -2,6 +2,7 @@
 
 Server::Server(const ServerConfig &settings, int listen_sd, FDsets *fdSets)
 	: settings_(settings), listen_sd_(listen_sd), fdSets_(fdSets) {
+		BindListeningSocket_();
 }
 
 Server::~Server() {
@@ -13,15 +14,44 @@ Server::~Server() {
 	close(listen_sd_);
 }
 
-// Delegate how to handle connection responsability to Server
-void	Server::AddConnection(int sd) {
+void	Server::BindListeningSocket_() {
+	if (listen_sd_ < 0) {
+		throw std::runtime_error(std::strerror(errno));
+	}
+	if (fcntl(listen_sd_, F_SETFL, O_NONBLOCK) < 0) {
+		throw std::runtime_error(std::strerror(errno));
+	}
+
+	struct sockaddr_in addr;
+	addr.sin_family = AF_INET;  // IPv4
+	addr.sin_port = htons(settings_.listen_port);
+	addr.sin_addr.s_addr = htonl(settings_.listen_address);
+	std::memset(addr.sin_zero, 0, sizeof(addr.sin_zero));
+
+	int on = 1;
+	if (setsockopt(listen_sd_, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0) {
+		throw std::runtime_error(std::strerror(errno));
+	}
+
+	if (bind(listen_sd_, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+		throw std::runtime_error(std::strerror(errno));
+	}
+
+	if (listen(listen_sd_, SOMAXCONN) < 0) {
+		throw std::runtime_error(std::strerror(errno));
+	}
+
+	fdSets_->addToReadSet(listen_sd_);
+}
+
+void	Server::AddConnection_(int sd) {
 	HttpRequestHandler *handler = new HttpRequestHandler(settings_);
 	HttpRequest *request = new HttpRequest();
 	Connection *connection = new Connection(sd, handler, request);
 	connections_.insert(std::make_pair(sd, connection));
 }
 
-void	Server::RemoveConnection(int sd) {
+void	Server::RemoveConnection_(int sd) {
 	fdSets_->removeFromReadSet(sd);
 	fdSets_->removeFromWriteSet(sd);
 	fdSets_->setMaxSocket(sd);
@@ -30,39 +60,40 @@ void	Server::RemoveConnection(int sd) {
 	connections_.erase(sd);
 }
 
-int		Server::GetListeningSocket() const {
-	return listen_sd_;
+void	Server::AcceptNewConnection(int sd) {
+	int new_sd = accept(listen_sd_, NULL, NULL);
+	if (new_sd < 0) {
+		throw std::runtime_error(std::strerror(errno));
+	}
+	if (fcntl(new_sd, F_SETFL, O_NONBLOCK) < 0) {
+		throw std::runtime_error(std::strerror(errno));
+	}
+	fdSets_->addToReadSet(new_sd);
+	AddConnection_(new_sd);
 }
 
 bool	Server::HasConnection(int sd) {
 	return connections_.count(sd) > 0;
 }
 
-// Hay alguna manera de eliminar los estados?
-// Si la conexion falla, como se notificaria a Server para que la elimine
-// Server es responsable de sus conexiones
-// Donde queda el CGI para pasarle los estados?
-
-// Hacer removeConnection privado
-
 void	Server::ReceiveRequest(int sd) {
 	std::map<int, Connection *>::iterator it = connections_.find(sd);
 	if (it == connections_.end()) {
-		RemoveConnection(sd);
+		RemoveConnection_(sd);
 	}
 	ReceiveRequestStatus::Type status = it->second->ReceiveRequest();
 
 	if (status == ReceiveRequestStatus::kComplete) {
 		fdSets_->addToWriteSet(sd);
 	} else if (status == ReceiveRequestStatus::kFail) {
-		RemoveConnection(sd);
+		RemoveConnection_(sd);
 	}
 }
 
 void	Server::SendResponse(int sd) {
 	std::map<int, Connection *>::iterator it = connections_.find(sd);
 	if (it == connections_.end()) {
-		RemoveConnection(sd);
+		RemoveConnection_(sd);
 	}
 
 	SendResponseStatus::Type status = it->second->SendResponse();
@@ -70,6 +101,10 @@ void	Server::SendResponse(int sd) {
 		fdSets_->removeFromWriteSet(sd);
 	} else if (status == SendResponseStatus::kFail ||
 				status == SendResponseStatus::kCompleteClose) {
-		RemoveConnection(sd);
+		RemoveConnection_(sd);
 	}
 }
+
+// Hay alguna manera de eliminar los estados?
+// Si la conexion falla, como se notificaria a Server para que la elimine
+// Donde queda el CGI para pasarle los estados?

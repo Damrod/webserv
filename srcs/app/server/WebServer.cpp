@@ -13,7 +13,6 @@ WebServer::~WebServer() {
 }
 
 void	WebServer::Run() {
-	AddListeningSocketsToMasterSet_();
 	while (fdSets.getMaxSocket() != -1) {
 		int ready_sockets =
 			select(fdSets.getMaxSocket() + 1, fdSets.getReadSet(), fdSets.getWriteSet(), NULL, NULL);
@@ -34,36 +33,6 @@ void	WebServer::Run() {
 	}
 }
 
-int		WebServer::BindNewListeningSocketToServer_(const ServerConfig &settings) {
-	int listen_sd = socket(AF_INET, SOCK_STREAM, 0);
-	if (listen_sd < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
-	if (fcntl(listen_sd, F_SETFL, O_NONBLOCK) < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
-
-	struct sockaddr_in addr;
-	addr.sin_family = AF_INET;  // IPv4
-	addr.sin_port = htons(settings.listen_port);
-	addr.sin_addr.s_addr = htonl(settings.listen_address);
-	std::memset(addr.sin_zero, 0, sizeof(addr.sin_zero));
-
-	int on = 1;
-	if (setsockopt(listen_sd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
-
-	if (bind(listen_sd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
-
-	if (listen(listen_sd, SOMAXCONN) < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
-	return listen_sd;
-}
-
 void	WebServer::PopulateServers_() {
 	std::vector<ServerConfig>	servers_settings;
 
@@ -71,7 +40,7 @@ void	WebServer::PopulateServers_() {
 	std::vector<ServerConfig>::iterator	settings_it = servers_settings.begin();
 
 	while (settings_it != servers_settings.end()) {
-		int listen_sd = BindNewListeningSocketToServer_(*settings_it);
+		int listen_sd = socket(AF_INET, SOCK_STREAM, 0);
 
 		Server	*server = new Server(*settings_it, listen_sd, &fdSets);
 		servers_.insert(std::make_pair(listen_sd, server));
@@ -79,16 +48,7 @@ void	WebServer::PopulateServers_() {
 	}
 }
 
-void	WebServer::AddListeningSocketsToMasterSet_() {
-	ServersMap_::iterator	server_it = servers_.begin();
-
-	for (; server_it != servers_.end(); ++server_it) {
-		int listen_sd = server_it->second->GetListeningSocket();
-		fdSets.addToReadSet(listen_sd);
-	}
-}
-
-Server	*WebServer::FindListeningServer_(int sd) {
+Server	*WebServer::FindServer_(int sd) {
 	std::map<int, Server *>::iterator server_it;
 	server_it = servers_.find(sd);
 	if (server_it == servers_.end()) {
@@ -97,21 +57,7 @@ Server	*WebServer::FindListeningServer_(int sd) {
 	return server_it->second;
 }
 
-void	WebServer::AcceptNewConnection_(int sd) {
-	Server *server = FindListeningServer_(sd);
-
-	int new_sd = accept(server->GetListeningSocket(), NULL, NULL);
-	if (new_sd < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
-	if (fcntl(new_sd, F_SETFL, O_NONBLOCK) < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
-	fdSets.addToReadSet(new_sd);
-	server->AddConnection(new_sd);
-}
-
-Server	*WebServer::FindConnectionServer_(int sd) {
+Server	*WebServer::FindServerConnection_(int sd) {
 	ServersMap_::iterator	server_it = servers_.begin();
 
 	for(; server_it!= servers_.end(); ++server_it) {
@@ -122,25 +68,18 @@ Server	*WebServer::FindConnectionServer_(int sd) {
 	return NULL;
 }
 
-bool	WebServer::IsListeningSocket_(int sd) const {
-	return servers_.count(sd) > 0;
-}
-
-//is Server socker? en lugar de is listening?
 void	WebServer::HandleReadSocket_(int sd) {
-	if (IsListeningSocket_(sd)) {
-		AcceptNewConnection_(sd);
-	} else {
-		Server	*server = FindConnectionServer_(sd);
+	Server	*server;
 
-		if (server) {
-			server->ReceiveRequest(sd);
-		}
+	if ((server = FindServer_(sd))) {
+		server->AcceptNewConnection(sd);
+	} else if ((server = FindServerConnection_(sd))){
+		server->ReceiveRequest(sd);
 	}
 }
 
 void	WebServer::HandleWriteSocket_(int sd) {
-	Server	*server = FindConnectionServer_(sd);
+	Server	*server = FindServerConnection_(sd);
 
 	if (server) {
 		server->SendResponse(sd);
