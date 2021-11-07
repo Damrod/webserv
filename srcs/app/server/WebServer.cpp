@@ -72,7 +72,7 @@ void	WebServer::HandleReadSocket_(int sd) {
 	Server	*server;
 
 	if ((server = FindServer_(sd))) {
-		server->AcceptNewConnection(sd);
+		server->AcceptNewConnection();
 	} else if ((server = FindServerConnection_(sd))){
 		server->ReceiveRequest(sd);
 	}

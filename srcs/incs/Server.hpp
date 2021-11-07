@@ -16,7 +16,7 @@ class Server {
 	public:
 		Server(const ServerConfig &settings, int listen_sd, FDsets *fdSets);
 		~Server();
-		void	AcceptNewConnection(int sd);
+		void	AcceptNewConnection();
 		bool	HasConnection(int sd);
 		void	ReceiveRequest(int sd);
 		void	SendResponse(int sd);
@@ -33,8 +33,6 @@ class Server {
 		int						listen_sd_;
 		FDsets					*fdSets_;
 		std::map<int, Connection *>	connections_;
-
-
 };
 
 #endif  // SRCS_INCS_SERVER_HPP_

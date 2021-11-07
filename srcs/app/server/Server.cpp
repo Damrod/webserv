@@ -49,18 +49,17 @@ void	Server::AddConnection_(int sd) {
 	HttpRequest *request = new HttpRequest();
 	Connection *connection = new Connection(sd, handler, request);
 	connections_.insert(std::make_pair(sd, connection));
+	fdSets_->addToReadSet(sd);
 }
 
 void	Server::RemoveConnection_(int sd) {
-	fdSets_->removeFromReadSet(sd);
-	fdSets_->removeFromWriteSet(sd);
-	fdSets_->setMaxSocket(sd);
+	fdSets_->removeFd(sd);
 	close(sd);
 	delete connections_[sd];
 	connections_.erase(sd);
 }
 
-void	Server::AcceptNewConnection(int sd) {
+void	Server::AcceptNewConnection() {
 	int new_sd = accept(listen_sd_, NULL, NULL);
 	if (new_sd < 0) {
 		throw std::runtime_error(std::strerror(errno));
@@ -68,7 +67,6 @@ void	Server::AcceptNewConnection(int sd) {
 	if (fcntl(new_sd, F_SETFL, O_NONBLOCK) < 0) {
 		throw std::runtime_error(std::strerror(errno));
 	}
-	fdSets_->addToReadSet(new_sd);
 	AddConnection_(new_sd);
 }
 
