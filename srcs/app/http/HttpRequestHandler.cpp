@@ -18,6 +18,7 @@ void		HttpRequestHandler::HandleRequest_(const HttpRequest *request) {
 		RequestError_(400);
 		return;
 	}
+	// Rompe algo?
 	SetKeepAlive_(*request);
 	// This will be injected from factory
 	requestConfig_ = new RequestConfig(server_config_, request->GetPath());
@@ -51,7 +52,8 @@ void		HttpRequestHandler::DoRedirection_() {
 	AddCommonHeaders_(&response);
 	response.AddHeader("Content-Type", "text/html");
 	response.AddHeader("Location", requestConfig_->getReturnUrl());
-	const std::string body = DefaultResponseBody_(requestConfig_->getReturnStatus());
+	const std::string body =
+		DefaultResponseBody_(requestConfig_->getReturnStatus());
 	response.SetBody(body);
 	raw_response_ = response.CreateResponseString();
 }
@@ -181,7 +183,8 @@ HttpRequestHandler::DefaultStatusResponse_(const std::size_t status_code) {
 }
 
 void	HttpRequestHandler::RequestError_(const std::size_t error_code) {
-	const std::string error_page_path = requestConfig_->getErrorPagePath(error_code);
+	const std::string error_page_path =
+		requestConfig_->getErrorPagePath(error_code);
 
 	if (error_page_path.empty()) {
 		DefaultStatusResponse_(error_code);

@@ -27,7 +27,7 @@ class RequestConfig {
 		std::string	getErrorPagePath(std::size_t errCode) const;
 		CommonConfig::BinaryHandlerPath getCGIBin(std::string extension) const;
 
-		//temporal
+		// temporal
 		const CommonConfig	&getCommonConfig() const;
 
 	private:
