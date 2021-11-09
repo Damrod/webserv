@@ -14,16 +14,12 @@ std::string	HttpRequestHandler::BuildResponse(IRequest *request) {
 }
 
 void		HttpRequestHandler::HandleRequest_(const HttpRequest *request) {
-	// Aqui se pueden mergear ambas config para que prevalezca la del server
-	if (!server_config_.common.return_url.empty()) {
-		DoRedirection_();
-		return;
-	}
 	if (request == NULL || request->GetState() == RequestState::kInvalid) {
 		RequestError_(400);
 		return;
 	}
 	SetKeepAlive_(*request);
+	// This will be injected from factory
 	requestConfig_ = new RequestConfig(server_config_, request->GetPath());
 	if (!requestConfig_->getReturnUrl().empty()) {
 		DoRedirection_();
@@ -51,17 +47,11 @@ void	HttpRequestHandler::HandleMethod_(const HttpRequest &request) {
 // ------- Specific Do methods
 
 void		HttpRequestHandler::DoRedirection_() {
-	const std::size_t status_code = requestConfig_ ?
-									requestConfig_->getReturnStatus() :
-									server_config_.common.return_status;
-	const std::string return_url = requestConfig_ ?
-									requestConfig_->getReturnUrl() :
-									server_config_.common.return_url;
-	HttpResponse response(status_code);
+	HttpResponse response(requestConfig_->getReturnStatus());
 	AddCommonHeaders_(&response);
 	response.AddHeader("Content-Type", "text/html");
-	response.AddHeader("Location", return_url);
-	const std::string body = DefaultResponseBody_(status_code);
+	response.AddHeader("Location", requestConfig_->getReturnUrl());
+	const std::string body = DefaultResponseBody_(requestConfig_->getReturnStatus());
 	response.SetBody(body);
 	raw_response_ = response.CreateResponseString();
 }
@@ -191,15 +181,11 @@ HttpRequestHandler::DefaultStatusResponse_(const std::size_t status_code) {
 }
 
 void	HttpRequestHandler::RequestError_(const std::size_t error_code) {
-	const CommonConfig &common_cfg = requestConfig_ != NULL ?
-								requestConfig_->getCommonConfig() :
-								server_config_.common;
-	CommonConfig::ErrorPagesMap::const_iterator it =
-										common_cfg.error_pages.find(error_code);
-	if (it == common_cfg.error_pages.end()) {
+	const std::string error_page_path = requestConfig_->getErrorPagePath(error_code);
+
+	if (error_page_path.empty()) {
 		DefaultStatusResponse_(error_code);
 	} else {
-		const std::string error_page_path = common_cfg.root + it->second;
 		ServeFile_(error_page_path);
 	}
 }

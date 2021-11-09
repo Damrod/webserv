@@ -2,11 +2,24 @@
 #include <sys/types.h>
 
 RequestConfig::RequestConfig(const ServerConfig &server_config,
-		const std::string &request_path)
-	: location_(FindLocation_(server_config, request_path)),
+		const std::string &request_path) :
+	location_(FindLocation_(server_config, request_path)),
 	common_(location_ ? location_->common : server_config.common),
 	path_(location_ ? &location_->path : NULL),
-	limit_except_(location_ ? &location_->limit_except : NULL) {
+	limit_except_(location_ ? &location_->limit_except : NULL),
+	root_(common_.root),
+	client_max_body_size_(common_.client_max_body_size),
+	autoindex_(common_.autoindex),
+	index_(common_.index),
+	error_pages_(common_.error_pages),
+	upload_store_(common_.upload_store),
+	return_status_(server_config.common.return_url.empty() ?
+		server_config.common.return_status :
+		common_.return_status),
+	return_url_(server_config.common.return_url.empty() ?
+		server_config.common.return_url :
+		common_.return_url),
+	cgi_assign_(common_.cgi_assign) {
 }
 
 bool RequestConfig::limits(std::string method) const {
@@ -26,42 +39,46 @@ std::string	RequestConfig::getPath() const {
 }
 
 std::string	RequestConfig::getRoot() const {
-	return common_.root;
+	return root_;
 }
 
 uint32_t	RequestConfig::getClientMaxBodySize() const {
-	return common_.client_max_body_size;
+	return client_max_body_size_;
 }
 
 bool	RequestConfig::hasAutoindex() const {
-	return common_.autoindex;
+	return autoindex_;
 }
 
 std::string	RequestConfig::getIndex() const {
-	return common_.index;
+	return index_;
 }
 
 std::string	RequestConfig::getUploadStore() const {
-	return common_.upload_store;
+	return upload_store_;
 }
 
 uint16_t	RequestConfig::getReturnStatus() const {
-	return common_.return_status;
+	return return_status_;
 }
 
 std::string	RequestConfig::getReturnUrl() const {
-	return common_.return_url;
+	return return_url_;
 }
 
-// CommonConfig::ErrorPagesMap	RequestConfig::getErrorPages() const {}
+std::string	RequestConfig::getErrorPagePath(std::size_t errCode) const {
+	CommonConfig::ErrorPagesMap::const_iterator it =
+										error_pages_.find(errCode);
+	return it == error_pages_.end() ? "" : root_ + it->second;
+}
 
 CommonConfig::BinaryHandlerPath
 	RequestConfig::getCGIBin(std::string extension) const {
-	return common_.cgi_assign.find(extension)->second;
+	return cgi_assign_.find(extension)->second;
 }
 
 bool RequestConfig::hasCGI(std::string extension) const {
-	return common_.cgi_assign.count(extension) > 0;
+	return cgi_assign_.count(extension) > 0;
 }
 
 const Location* RequestConfig::FindLocation_(
