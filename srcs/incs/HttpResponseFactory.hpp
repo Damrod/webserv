@@ -12,32 +12,30 @@
 #include <HttpDeleteResponse.hpp>
 #include <HttpRedirectionResponse.hpp>
 #include <ServerConfig.hpp>
-#include <RequestLocation.hpp>
+#include <RequestConfig.hpp>
 
 class HttpResponseFactory: public IResponseFactory {
 	public:
 		HttpResponseFactory(
-			const std::string raw_request,
-			const ServerConfig &server_config);
+			HttpRequest *request,
+			RequestConfig *requestConfig );
 		~HttpResponseFactory();
 		IResponse *response();
 
 	private:
 		HttpResponseFactory();
-
-		typedef  IResponse *(HttpResponseFactory::* responseCreatorMethod)();
-		std::map<std::string, responseCreatorMethod>	concreteResponses_;
-		HttpRequest	*request_;
-		std::string	request_method_;
-		const ServerConfig	&server_config_;
-		RequestLocation	*request_location_;
 		bool	isKeepAlive_();
-		bool	HasAcceptedFormat_();
+		bool	hasAcceptedFormat_(HttpRequest *request_);
 		IResponse	*createHttpGetResponse_();
 		IResponse	*createHttpPostResponse_();
 		IResponse	*createHttpDeleteResponse_();
 		IResponse	*createHttpRedirectionResponse_();
 		IResponse	*createHttpErrorResponse_(int statusCode);
+
+		typedef  IResponse *(HttpResponseFactory::* responseCreatorMethod)();
+		std::map<std::string, responseCreatorMethod>	concreteResponses_;
+		HttpRequest	*request_;
+		RequestConfig	*requestConfig_;
 };
 
 #endif  // SRCS_INCS_HTTPRESPONSEFACTORY_HPP_

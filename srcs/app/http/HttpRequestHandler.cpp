@@ -318,6 +318,7 @@ void	HttpRequestHandler::ExecuteCGI_(const HttpRequest &request,
 		RequestError_(500);
 	}
 }
+
 std::string	HttpRequestHandler::PathExtension_(const std::string &path) const {
 	const std::size_t extension_position = path.rfind(".");
 	if (extension_position == std::string::npos || extension_position < 2) {
@@ -351,6 +352,7 @@ std::string	HttpRequestHandler::CurrentDate_() const {
 }
 
 // ------- Tooling methods
+
 
 bool	HttpRequestHandler::IsValidPath_(const std::string &path) const {
 	struct stat statbuf;

@@ -1,11 +1,9 @@
-#include "HttpResponseFactory.hpp"
+#include <HttpResponseFactory.hpp>
 
 HttpResponseFactory::HttpResponseFactory(
-		const std::string raw_request,
-		const ServerConfig &server_config
-	): server_config_(server_config) {
-	request_ = new HttpRequest(raw_request);
-	request_method_ = request_->GetMethod();
+		HttpRequest *request,
+		RequestConfig *requestConfig
+	): request_(request), requestConfig_(requestConfig) {
 	concreteResponses_.insert(std::make_pair(
 		"GET",
 		&HttpResponseFactory::createHttpGetResponse_
@@ -24,74 +22,58 @@ HttpResponseFactory::~HttpResponseFactory() {
 }
 
 IResponse *HttpResponseFactory::response() {
-	if (request_ == NULL || request_->GetState() != RequestState::kComplete) {
+	if (!request_ || request_->GetState() == RequestState::kInvalid) {
 		return createHttpErrorResponse_(400);
 	}
-	if (!server_config_.common.return_url.empty()) {
+	if (!requestConfig_->getReturnUrl().empty()) {
 		return createHttpRedirectionResponse_();
 	}
 
-	request_location_ = new RequestLocation(server_config_, request_->GetPath());
-	if (!request_location_->common.return_url.empty()) {
-		return createHttpRedirectionResponse_();
-	} else if (HasAcceptedFormat_()) {
-		std::map<std::string, responseCreatorMethod>::const_iterator it;
-		it = concreteResponses_.find(request_method_);
-		if (it != concreteResponses_.end()) {
-			return CALL_MEMBER_FN(*this, it->second)();
-		} else {
-			return createHttpErrorResponse_(501);
-		}
+	std::map<std::string, responseCreatorMethod>::const_iterator it;
+	it = concreteResponses_.find(request_->GetMethod());
+	if (it == concreteResponses_.end()) {
+		return createHttpErrorResponse_(501);
+	} else {
+		return CALL_MEMBER_FN(*this, it->second)();
 	}
 }
 
-bool	HttpResponseFactory::HasAcceptedFormat_() {
-	// if (request_location_->HasLocation() &&
-	// 								!request_location_->limit_except->empty()) {
-	// 	if (std::find(request_location_->limit_except->begin(),
-	// 			request_location_->limit_except->end(),
-	// 			request_->GetMethod()) ==
-	// 								request_location_->limit_except->end()) {
-	// 		RequestError_(405);
-	// 		return false;
-	// 	}
-	// }
-	// if (request_->GetBody().size() >
-	// 						request_location_->common.client_max_body_size) {
-	// 	RequestError_(413);
-	// 	return false;
-	// }
-	// if (request_->HasHeader("Content-Encoding")) {
-	// 	RequestError_(415);
-	// 	return false;
-	// }
+bool	HttpResponseFactory::hasAcceptedFormat_(HttpRequest *request_) {
 	return true;
 }
 
-// la idea es pasar esto al objeto respuesta para que lo gestione
-bool		HttpResponseFactory::isKeepAlive_() {
-	return (request_->HasHeader("Connection") &&
-			ToLowerString(request_->GetHeaderValue("Connection")) == "keep-alive");
+IResponse *HttpResponseFactory::createHttpRedirectionResponse_() {
+	return new HttpRedirectionResponse(requestConfig_, request_);
+	// delete requestConfig_;
+	// requestConfig_ = NULL;
 }
 
 IResponse *HttpResponseFactory::createHttpGetResponse_() {
-	return new HttpGetResponse();
+	return new HttpGetResponse(requestConfig_, request_);
+	// delete requestConfig_;
+	// requestConfig_ = NULL;
 }
 
 IResponse *HttpResponseFactory::createHttpPostResponse_() {
-	return new HttpPostResponse();
+	return new HttpPostResponse(requestConfig_, request_);
+	// delete requestConfig_;
+	// requestConfig_ = NULL;
 }
 
 IResponse *HttpResponseFactory::createHttpDeleteResponse_() {
-	return new HttpDeleteResponse();
-}
-
-IResponse *HttpResponseFactory::createHttpRedirectionResponse_() {
-	return new HttpRedirectionResponse();
+	return new HttpDeleteResponse(requestConfig_, request_);
+	// delete requestConfig_;
+	// requestConfig_ = NULL;
 }
 
 IResponse *HttpResponseFactory::createHttpErrorResponse_(int statusCode) {
+	// Responsabilidad de la respuesta
+	// SetKeepAlive_(*request);
+	// hasAcceptedFormat_(request_)
+
 	// Tiene que devolver un error
 	// Pasar el código (ver cómo)
-}
 
+	// delete requestConfig_;
+	// requestConfig_ = NULL;
+}
