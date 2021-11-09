@@ -1,24 +1,24 @@
 #include <CGI.hpp>
 
 std::string CGI::GetExecutable_(const std::string &extension) {
-	if (request_location_->common.cgi_assign.count(extension) > 0) {
-			return request_location_->
+	if (requestConfig_->common.cgi_assign.count(extension) > 0) {
+			return requestConfig_->
 				common.cgi_assign.find(extension)->second;
 		}
 	throw std::invalid_argument("There is no CGI handler for the "
 									"requested file");
 }
 
-CGI::CGI(const HttpRequest &request, const RequestLocation &location,
+CGI::CGI(const HttpRequest &request, const RequestConfig &location,
 		 const std::string &extension,  // we need the GetExtension
 									   // function somewhere common
 		 HttpResponse *response
 	) :
 	execRet_(0),
 	request_(request),
-	request_location_(&location),
+	requestConfig_(&location),
 	reqBody_(request.GetBody()),
-	arg_path_(request_location_->common.root + request.GetPath()),
+	arg_path_(requestConfig_->common.root + request.GetPath()),
 	exec_path_(GetExecutable_(extension)),
 	response_(response),
 	CGIenvMap_(MakeEnv_()),

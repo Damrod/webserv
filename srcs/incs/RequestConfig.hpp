@@ -1,18 +1,20 @@
-#ifndef SRCS_INCS_REQUESTLOCATION_HPP_
-#define SRCS_INCS_REQUESTLOCATION_HPP_
+#ifndef SRCS_INCS_REQUESTCONFIG_HPP_
+#define SRCS_INCS_REQUESTCONFIG_HPP_
 #include <string>
 #include <vector>
 #include <ServerConfig.hpp>
 
-class RequestLocation {
+// All config related to a request in a Sever
+
+class RequestConfig {
 	private:
 		const Location					*location_;
-		RequestLocation();
-		RequestLocation(const RequestLocation &);
-		RequestLocation &	operator=(const RequestLocation &);
+		RequestConfig();
+		RequestConfig(const RequestConfig &);
+		RequestConfig &	operator=(const RequestConfig &);
 
 	public:
-		RequestLocation(const ServerConfig &server_config,
+		RequestConfig(const ServerConfig &server_config,
 						const std::string &request_path);
 		const CommonConfig				&common;
 		const std::string				*path;
@@ -24,4 +26,4 @@ class RequestLocation {
 											const;
 };
 
-#endif  // SRCS_INCS_REQUESTLOCATION_HPP_
+#endif  // SRCS_INCS_REQUESTCONFIG_HPP_

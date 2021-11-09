@@ -1,7 +1,7 @@
-#include <RequestLocation.hpp>
+#include <RequestConfig.hpp>
 #include <sys/types.h>
 
-RequestLocation::RequestLocation(const ServerConfig &server_config,
+RequestConfig::RequestConfig(const ServerConfig &server_config,
 		const std::string &request_path)
 	: location_(FindLocation_(server_config, request_path)),
 	common(location_ ? location_->common : server_config.common),
@@ -9,12 +9,12 @@ RequestLocation::RequestLocation(const ServerConfig &server_config,
 	limit_except(location_ ? &location_->limit_except : NULL) {
 }
 
-bool	RequestLocation::HasLocation() const {
+bool	RequestConfig::HasLocation() const {
 	return location_ != NULL;
 }
 
 const Location*
-RequestLocation::FindLocation_(const ServerConfig &server_config,
+RequestConfig::FindLocation_(const ServerConfig &server_config,
 										const std::string &request_path) const {
 	const std::vector<Location>	&locations = server_config.locations;
 	if (locations.empty()) {
