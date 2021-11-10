@@ -10,12 +10,12 @@
 #include <map>
 #include <HttpRequest.hpp>
 #include <HttpResponse.hpp>
-#include <RequestLocation.hpp>
+#include <RequestConfig.hpp>
 #include <SyscallWrap.hpp>
 
 class CGI {
  public:
-	CGI(const HttpRequest &request, const RequestLocation &location,
+	CGI(const HttpRequest &request, const RequestConfig &location,
 		const std::string &extension, HttpResponse *response);
 	virtual ~CGI(void);
 	void ExecuteCGI(void);
@@ -41,7 +41,7 @@ class CGI {
 	std::string CGIoutHeaders_;
 	std::string CGIoutBody_;
 	const HttpRequest &request_;
-	const RequestLocation *request_location_;
+	const RequestConfig *requestConfig_;
 	const std::string reqBody_;
 	const std::string arg_path_;
 	const std::string exec_path_;

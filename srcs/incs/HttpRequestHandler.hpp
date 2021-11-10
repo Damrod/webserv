@@ -20,7 +20,7 @@
 #include <IRequest.hpp>
 #include <IRequestHandler.hpp>
 #include <MimeTypes.hpp>
-#include <RequestLocation.hpp>
+#include <RequestConfig.hpp>
 #include <ServerConfig.hpp>
 #include <StringUtils.hpp>
 #include <CGI.hpp>
@@ -41,7 +41,7 @@ class HttpRequestHandler : public IRequestHandler {
 		const ServerConfig	&server_config_;
 		std::string			raw_response_;
 		bool				keep_alive_;
-		RequestLocation		*request_location_;
+		RequestConfig		*requestConfig_;
 
 		void				SetKeepAlive_(const HttpRequest &request);
 		void				DoRedirection_();

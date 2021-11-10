@@ -6,7 +6,7 @@
 #include <map>
 #include <string>
 #include <IResponseFactory.hpp>
-#include <HttpRequestDTO.hpp>
+#include <HttpRequest.hpp>
 #include <HttpGetResponse.hpp>
 #include <HttpPostResponse.hpp>
 #include <HttpDeleteResponse.hpp>
@@ -27,7 +27,7 @@ class HttpResponseFactory: public IResponseFactory {
 
 		typedef  IResponse *(HttpResponseFactory::* responseCreatorMethod)();
 		std::map<std::string, responseCreatorMethod>	concreteResponses_;
-		HttpRequestDTO	*request_;
+		HttpRequest	*request_;
 		std::string	request_method_;
 		const ServerConfig	&server_config_;
 		RequestLocation	*request_location_;
