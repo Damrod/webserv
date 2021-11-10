@@ -25,7 +25,7 @@ IResponse *HttpResponseFactory::response() {
 	if (!request_ || request_->GetState() == RequestState::kInvalid) {
 		return createHttpErrorResponse_(400);
 	}
-	if (!requestConfig_->getReturnUrl().empty()) {
+	if (!requestConfig_->GetReturnUrl().empty()) {
 		return createHttpRedirectionResponse_();
 	}
 

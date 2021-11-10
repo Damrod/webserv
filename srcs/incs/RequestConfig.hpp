@@ -13,29 +13,26 @@ class RequestConfig {
 						const std::string &request_path);
 		RequestConfig();
 		RequestConfig(const RequestConfig &);
-		std::string	getPath() const;
-		bool limits(std::string method) const;
-		std::string	getRoot() const;
-		uint32_t	getClientMaxBodySize() const;
-		bool	hasAutoindex() const;
-		std::string	getIndex() const;
-		std::string	getUploadStore() const;
-		uint16_t	getReturnStatus() const;
-		std::string	getReturnUrl() const;
-		bool	hasReturnUrl() const;
-		bool	hasCGI(std::string extension) const;
-		std::string	getErrorPagePath(std::size_t errCode) const;
-		CommonConfig::BinaryHandlerPath getCGIBin(std::string extension) const;
-
-		// temporal
-		const CommonConfig	&getCommonConfig() const;
+		std::string	GetPath() const;
+		bool Limits(std::string const &method) const;
+		std::string	GetRoot() const;
+		uint32_t	GetClientMaxBodySize() const;
+		bool	HasAutoindex() const;
+		std::string	GetIndex() const;
+		std::string	GetUploadStore() const;
+		uint16_t	GetReturnStatus() const;
+		std::string	GetReturnUrl() const;
+		bool	HasCGI(std::string extension) const;
+		std::string	GetErrorPagePath(std::size_t errCode) const;
+		CommonConfig::BinaryHandlerPath GetCGIBin(std::string extension) const;
 
 	private:
-		RequestConfig &	operator=(const RequestConfig &);
 		const Location	*FindLocation_(
 			const ServerConfig &server_config,
 			const std::string &request_path)
 			const;
+
+		void SetRedirectionConfig_(const ServerConfig &server_config);
 
 		const Location	*location_;
 		const CommonConfig	&common_;

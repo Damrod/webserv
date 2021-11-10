@@ -8,7 +8,7 @@ std::string HttpGetResponse::content() {
 	//checkKeepAlive
 	//HasAcceptedFormat
 	const std::string full_path =
-							requestConfig_->getRoot() + request_->GetPath();
+							requestConfig_->GetRoot() + request_->GetPath();
 	if (!IsValidPath_(full_path)) {
 		PathError_();
 		return;
@@ -26,8 +26,8 @@ std::string HttpGetResponse::content() {
 			return;
 		}
 		const std::string index_path =
-									full_path + requestConfig_->getIndex();
-		if (requestConfig_->hasAutoindex() && !IsRegularFile_(index_path)) {
+									full_path + requestConfig_->GetIndex();
+		if (requestConfig_->HasAutoindex() && !IsRegularFile_(index_path)) {
 			ListDirectory_(request_->GetPath());
 		} else {
 			ServeFile_(index_path);
@@ -44,11 +44,11 @@ void		HttpGetResponse::CheckKeepAlive_() {
 }
 
 bool	HttpGetResponse::HasAcceptedFormat_(const HttpRequest &request) {
-	if (requestConfig_->limits(request.GetMethod())) {
+	if (requestConfig_->Limits(request.GetMethod())) {
 			errCode = 405;
 	}
 	if (request.GetBody().size() >
-							requestConfig_->getClientMaxBodySize()) {
+							requestConfig_->GetClientMaxBodySize()) {
 		errCode = 413;
 	}
 	if (request.HasHeader("Content-Encoding")) {
@@ -81,7 +81,7 @@ bool	HttpGetResponse::IsRegularFile_(const std::string &path) const {
 }
 
 bool	HttpGetResponse::IsCGI_(const std::string &full_path) const {
-	return requestConfig_->hasCGI(PathExtension_(full_path)) > 0;
+	return requestConfig_->HasCGI(PathExtension_(full_path)) > 0;
 }
 
 void	HttpGetResponse::ExecuteCGI_(const HttpRequest &request,
@@ -191,7 +191,7 @@ void	HttpGetResponse::ListDirectory_(const std::string &request_path) {
 		"<body>\n" <<
 		"<h1>Index of " << request_path <<
 		"</h1><hr><pre><a href=\"../\">../</a>\n";
-	const std::string full_path = requestConfig_->getRoot() + request_path;
+	const std::string full_path = requestConfig_->GetRoot() + request_path;
 	if (!TryAddDirectoryContent_(&body, full_path)) {
 		return;
 	}
@@ -233,7 +233,7 @@ HttpGetResponse::DefaultStatusResponse_(const std::size_t status_code) {
 
 void	HttpGetResponse::RequestError_(const std::size_t error_code) {
 	const std::string error_page_path =
-		requestConfig_->getErrorPagePath(error_code);
+		requestConfig_->GetErrorPagePath(error_code);
 
 	if (error_page_path.empty()) {
 		DefaultStatusResponse_(error_code);

@@ -5,13 +5,13 @@ HttpRedirectionResponse::HttpRedirectionResponse(
 	HttpRequest *request) : requestConfig_(requestConfig), request_(request) {}
 
 std::string HttpRedirectionResponse::content() {
-	HttpResponse response(requestConfig_->getReturnStatus());
+	HttpResponse response(requestConfig_->GetReturnStatus());
 	CheckKeepAlive_();
 	AddCommonHeaders_(&response);
 	response.AddHeader("Content-Type", "text/html");
-	response.AddHeader("Location", requestConfig_->getReturnUrl());
+	response.AddHeader("Location", requestConfig_->GetReturnUrl());
 	const std::string body =
-		DefaultResponseBody_(requestConfig_->getReturnStatus());
+		DefaultResponseBody_(requestConfig_->GetReturnStatus());
 	response.SetBody(body);
 	return response.CreateResponseString();
 }

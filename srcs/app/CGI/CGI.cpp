@@ -1,8 +1,8 @@
 #include <CGI.hpp>
 
 std::string CGI::GetExecutable_(const std::string &extension) {
-	if (requestConfig_->hasCGI(extension)) {
-		return requestConfig_->getCGIBin(extension);
+	if (requestConfig_->HasCGI(extension)) {
+		return requestConfig_->GetCGIBin(extension);
 	}
 	throw std::invalid_argument(
 		"There is no CGI handler for the requested file");
@@ -17,7 +17,7 @@ CGI::CGI(const HttpRequest &request, const RequestConfig &location,
 	request_(request),
 	requestConfig_(&location),
 	reqBody_(request.GetBody()),
-	arg_path_(requestConfig_->getRoot() + request.GetPath()),
+	arg_path_(requestConfig_->GetRoot() + request.GetPath()),
 	exec_path_(GetExecutable_(extension)),
 	response_(response),
 	CGIenvMap_(MakeEnv_()),

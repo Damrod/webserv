@@ -5,7 +5,7 @@ std::string HttpPostResponse::content() {
 	//HasAcceptedFormat
 	const std::string request_path = request_->GetPath();
 	const std::string full_path =
-							requestConfig_->getRoot() + request_path;
+							requestConfig_->GetRoot() + request_path;
 	if (IsRegularFile_(full_path)) {
 		if (IsCGI_(full_path)) {
 			ExecuteCGI_(*request_, full_path);
@@ -29,11 +29,11 @@ void		HttpPostResponse::CheckKeepAlive_() {
 }
 
 bool	HttpPostResponse::HasAcceptedFormat_(const HttpRequest &request) {
-	if (requestConfig_->limits(request.GetMethod())) {
+	if (requestConfig_->Limits(request.GetMethod())) {
 			errCode = 405;
 	}
 	if (request.GetBody().size() >
-							requestConfig_->getClientMaxBodySize()) {
+							requestConfig_->GetClientMaxBodySize()) {
 		errCode = 413;
 	}
 	if (request.HasHeader("Content-Encoding")) {
@@ -106,7 +106,7 @@ void	HttpPostResponse::ExecuteCGI_(const HttpRequest &request,
 }
 
 bool	HttpPostResponse::IsCGI_(const std::string &full_path) const {
-	return requestConfig_->hasCGI(PathExtension_(full_path)) > 0;
+	return requestConfig_->HasCGI(PathExtension_(full_path)) > 0;
 }
 
 std::string	HttpPostResponse::DefaultResponseBody_(
@@ -168,7 +168,7 @@ void	HttpPostResponse::ServeFile_(const std::string &file_path) {
 
 void	HttpPostResponse::RequestError_(const std::size_t error_code) {
 	const std::string error_page_path =
-		requestConfig_->getErrorPagePath(error_code);
+		requestConfig_->GetErrorPagePath(error_code);
 
 	if (error_page_path.empty()) {
 		DefaultStatusResponse_(error_code);
@@ -178,18 +178,18 @@ void	HttpPostResponse::RequestError_(const std::size_t error_code) {
 }
 
 bool	HttpPostResponse::IsUploadEnabled_() const {
-	return !requestConfig_->getUploadStore().empty();
+	return !requestConfig_->GetUploadStore().empty();
 }
 
 bool	HttpPostResponse::IsValidUploadPath_(const std::string &path) const {
-	return path == requestConfig_->getPath();
+	return path == requestConfig_->GetPath();
 }
 
 void	HttpPostResponse::UploadFile_(const HttpRequest &request) {
 	try {
 		FormFile form_file(request);
 		const std::string full_upload_path =
-								requestConfig_->getUploadStore() +
+								requestConfig_->GetUploadStore() +
 								form_file.GetFilename();
 		std::ofstream out(full_upload_path.c_str());
 		if (!out) {

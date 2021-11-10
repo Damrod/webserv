@@ -22,7 +22,7 @@ void		HttpRequestHandler::HandleRequest_(const HttpRequest *request) {
 	SetKeepAlive_(*request);
 	// This will be injected from factory
 	requestConfig_ = new RequestConfig(server_config_, request->GetPath());
-	if (!requestConfig_->getReturnUrl().empty()) {
+	if (!requestConfig_->GetReturnUrl().empty()) {
 		DoRedirection_();
 	} else if (HasAcceptedFormat_(*request)) {
 		HandleMethod_(*request);
@@ -48,12 +48,12 @@ void	HttpRequestHandler::HandleMethod_(const HttpRequest &request) {
 // ------- Specific Do methods
 
 void		HttpRequestHandler::DoRedirection_() {
-	HttpResponse response(requestConfig_->getReturnStatus());
+	HttpResponse response(requestConfig_->GetReturnStatus());
 	AddCommonHeaders_(&response);
 	response.AddHeader("Content-Type", "text/html");
-	response.AddHeader("Location", requestConfig_->getReturnUrl());
+	response.AddHeader("Location", requestConfig_->GetReturnUrl());
 	const std::string body =
-		DefaultResponseBody_(requestConfig_->getReturnStatus());
+		DefaultResponseBody_(requestConfig_->GetReturnStatus());
 	response.SetBody(body);
 	raw_response_ = response.CreateResponseString();
 }
@@ -61,7 +61,7 @@ void		HttpRequestHandler::DoRedirection_() {
 void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
 	const std::string request_path = request.GetPath();
 	const std::string full_path =
-							requestConfig_->getRoot() + request_path;
+							requestConfig_->GetRoot() + request_path;
 	if (IsRegularFile_(full_path)) {
 		if (IsCGI_(full_path)) {
 			ExecuteCGI_(request, full_path);
@@ -91,7 +91,7 @@ void	HttpRequestHandler::DoDelete_(const HttpRequest &request) {
 
 void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
 	const std::string full_path =
-							requestConfig_->getRoot() + request.GetPath();
+							requestConfig_->GetRoot() + request.GetPath();
 	if (!IsValidPath_(full_path)) {
 		PathError_();
 		return;
@@ -109,8 +109,8 @@ void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
 			return;
 		}
 		const std::string index_path =
-									full_path + requestConfig_->getIndex();
-		if (requestConfig_->hasAutoindex() && !IsRegularFile_(index_path)) {
+									full_path + requestConfig_->GetIndex();
+		if (requestConfig_->HasAutoindex() && !IsRegularFile_(index_path)) {
 			ListDirectory_(request.GetPath());
 		} else {
 			ServeFile_(index_path);
@@ -121,12 +121,12 @@ void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
 // Setup Tooling
 
 bool	HttpRequestHandler::HasAcceptedFormat_(const HttpRequest &request) {
-	if (requestConfig_->limits(request.GetMethod())) {
+	if (requestConfig_->Limits(request.GetMethod())) {
 			RequestError_(405);
 			return false;
 	}
 	if (request.GetBody().size() >
-							requestConfig_->getClientMaxBodySize()) {
+							requestConfig_->GetClientMaxBodySize()) {
 		RequestError_(413);
 		return false;
 	}
@@ -184,7 +184,7 @@ HttpRequestHandler::DefaultStatusResponse_(const std::size_t status_code) {
 
 void	HttpRequestHandler::RequestError_(const std::size_t error_code) {
 	const std::string error_page_path =
-		requestConfig_->getErrorPagePath(error_code);
+		requestConfig_->GetErrorPagePath(error_code);
 
 	if (error_page_path.empty()) {
 		DefaultStatusResponse_(error_code);
@@ -233,7 +233,7 @@ void	HttpRequestHandler::ListDirectory_(const std::string &request_path) {
 		"<body>\n" <<
 		"<h1>Index of " << request_path <<
 		"</h1><hr><pre><a href=\"../\">../</a>\n";
-	const std::string full_path = requestConfig_->getRoot() + request_path;
+	const std::string full_path = requestConfig_->GetRoot() + request_path;
 	if (!TryAddDirectoryContent_(&body, full_path)) {
 		return;
 	}
@@ -282,7 +282,7 @@ void	HttpRequestHandler::UploadFile_(const HttpRequest &request) {
 	try {
 		FormFile form_file(request);
 		const std::string full_upload_path =
-								requestConfig_->getUploadStore() +
+								requestConfig_->GetUploadStore() +
 								form_file.GetFilename();
 		std::ofstream out(full_upload_path.c_str());
 		if (!out) {
@@ -378,13 +378,13 @@ bool	HttpRequestHandler::IsRegularFile_(const std::string &path) const {
 }
 
 bool	HttpRequestHandler::IsCGI_(const std::string &full_path) const {
-	return requestConfig_->hasCGI(PathExtension_(full_path)) > 0;
+	return requestConfig_->HasCGI(PathExtension_(full_path)) > 0;
 }
 
 bool	HttpRequestHandler::IsUploadEnabled_() const {
-	return !requestConfig_->getUploadStore().empty();
+	return !requestConfig_->GetUploadStore().empty();
 }
 
 bool	HttpRequestHandler::IsValidUploadPath_(const std::string &path) const {
-	return path == requestConfig_->getPath();
+	return path == requestConfig_->GetPath();
 }
