@@ -21,42 +21,26 @@
 #include <FDsets.hpp>
 
 class WebServer {
-	private:
-		typedef	int							Socket_;
-		typedef std::map<Socket_, Server *>	ServersMap_;
-
-		Config		config_;
-		ServersMap_	servers_;
-		FDsets		fdSets;
-		int			max_sd_;
-
 	public:
-		// Load the config file and servers settings
 		explicit	WebServer(const std::string &pathname);
 		~WebServer();
-
-		// Run the web server
 		void	Run();
 
 	private:
 		WebServer();
 		WebServer(const WebServer &);
 		WebServer &	operator=(const WebServer &);
-
 		void	PopulateServers_();
-		void	AddListeningSocketsToMasterSet_();
-		void	SetMaxSocket_(int curr_sd);
-		void	AcceptNewConnection_(int sd);
-		void	ReceiveRequest_(int sd);
-		void	SendResponse_(int sd);
-		bool	IsListeningSocket_(int sd) const;
-		int		BindNewListeningSocketToServer_(const ServerConfig &settings);
-
-		Server	*FindListeningServer_(int sd);
-		Server	*FindConnectionServer_(int sd);
-
+		Server	*FindServer_(int sd);
+		Server	*FindServerConnection_(int sd);
 		void	HandleReadSocket_(int sd);
 		void	HandleWriteSocket_(int sd);
+
+		typedef	int							Socket_;
+		typedef std::map<Socket_, Server *>	ServersMap_;
+		Config		config_;
+		ServersMap_	servers_;
+		FDsets		fdSets;
 };
 
 #endif  // SRCS_INCS_WEBSERVER_HPP_
