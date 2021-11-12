@@ -2,14 +2,13 @@
 
 HttpGetResponse::HttpGetResponse(
 	RequestConfig *requestConfig,
-	HttpRequest *request) : requestConfig_(requestConfig), request_(request) {}
-
-std::string HttpGetResponse::content() {
+	HttpRequest *request) : requestConfig_(requestConfig), request_(request) {
 	//checkKeepAlive
 	//HasAcceptedFormat
 	const std::string full_path =
 							requestConfig_->GetRoot() + request_->GetPath();
 	if (!IsValidPath_(full_path)) {
+		// Gestión de errores
 		PathError_();
 		return;
 	}
@@ -33,6 +32,10 @@ std::string HttpGetResponse::content() {
 			ServeFile_(index_path);
 		}
 	}
+}
+
+std::string HttpGetResponse::content() {
+	// return response.CreateResponseString();
 	return raw_response_;
 }
 
@@ -82,42 +85,6 @@ bool	HttpGetResponse::IsRegularFile_(const std::string &path) const {
 
 bool	HttpGetResponse::IsCGI_(const std::string &full_path) const {
 	return requestConfig_->HasCGI(PathExtension_(full_path)) > 0;
-}
-
-void	HttpGetResponse::ExecuteCGI_(const HttpRequest &request,
-												const std::string &full_path) {
-	try {
-		HttpResponse response(200);
-		AddCommonHeaders_(&response);
-		CGI engine(request, *requestConfig_, PathExtension_(full_path),
-			&response);
-		engine.ExecuteCGI();
-		if (engine.GetExecReturn() != EXIT_SUCCESS) {
-			throw std::runtime_error("Exec error");
-	}
-	raw_response_ = response.CreateResponseString();
-	} catch (const std::exception &e) {
-		RequestError_(500);
-	}
-}
-
-void	HttpGetResponse::ServeFile_(const std::string &file_path) {
-	if (!IsRegularFile_(file_path)) {
-		RequestError_(403);
-		return;
-	}
-	std::ifstream ifs(file_path.c_str(), std::ios::in | std::ios::binary);
-	if (!ifs) {
-		PathError_();
-		return;
-	}
-	const std::string body = std::string(std::istreambuf_iterator<char>(ifs),
-											std::istreambuf_iterator<char>());
-	HttpResponse response(200);
-	AddCommonHeaders_(&response);
-	response.AddHeader("Content-Type", GetMimeType_(file_path));
-	response.SetBody(body);
-	raw_response_ = response.CreateResponseString();
 }
 
 std::string	HttpGetResponse::GetMimeType_(const std::string &path) const {
@@ -184,26 +151,6 @@ bool	HttpGetResponse::TryAddDirectoryContent_(std::stringstream *body,
 	return true;
 }
 
-void	HttpGetResponse::ListDirectory_(const std::string &request_path) {
-	std::stringstream body;
-	body << "<html>\n" <<
-		"<head><title>Index of " << request_path << "</title></head>\n" <<
-		"<body>\n" <<
-		"<h1>Index of " << request_path <<
-		"</h1><hr><pre><a href=\"../\">../</a>\n";
-	const std::string full_path = requestConfig_->GetRoot() + request_path;
-	if (!TryAddDirectoryContent_(&body, full_path)) {
-		return;
-	}
-	body << "</pre><hr></body>\n" <<
-		"</html>\n";
-	HttpResponse	response(200);
-	response.AddHeader("Content-Type", "text/html");
-	response.SetBody(body.str());
-	AddCommonHeaders_(&response);
-	raw_response_ = response.CreateResponseString();
-}
-
 std::string	HttpGetResponse::PathExtension_(const std::string &path) const {
 	const std::size_t extension_position = path.rfind(".");
 	if (extension_position == std::string::npos || extension_position < 2) {
@@ -222,13 +169,37 @@ std::string	HttpGetResponse::PathExtension_(const std::string &path) const {
 	return "";
 }
 
-void
-HttpGetResponse::DefaultStatusResponse_(const std::size_t status_code) {
-	HttpResponse		response(status_code);
-	response.SetBody(DefaultResponseBody_(status_code));
-	response.AddHeader("Content-Type", "text/html");
-	AddCommonHeaders_(&response);
-	raw_response_ = response.CreateResponseString();
+void	HttpGetResponse::RequestError_(const std::size_t error_code) {
+	const std::string error_page_path =
+		requestConfig_->GetErrorPagePath(error_code);
+
+	if (error_page_path.empty()) {
+		DefaultStatusResponse_(error_code);
+	} else {
+		ServeFile_(error_page_path);
+	}
+}
+
+// Migrado
+std::string	HttpGetResponse::CurrentDate_() const {
+	char				buffer[100];
+	const std::time_t	date = std::time(NULL);
+	std::strftime(buffer,
+				sizeof(buffer),
+				"%a, %d %b %Y %H:%M:%S %Z",
+				std::gmtime(&date));
+	return buffer;
+}
+
+// Migrado
+void	HttpGetResponse::AddCommonHeaders_(HttpResponse *response) {
+	response->AddHeader("Server", "webserv");
+	if (keep_alive_) {
+		response->AddHeader("Connection", "keep-alive");
+	} else {
+		response->AddHeader("Connection", "close");
+	}
+	response->AddHeader("Date", CurrentDate_());
 }
 
 void	HttpGetResponse::RequestError_(const std::size_t error_code) {
@@ -242,22 +213,87 @@ void	HttpGetResponse::RequestError_(const std::size_t error_code) {
 	}
 }
 
-std::string	HttpGetResponse::CurrentDate_() const {
-	char				buffer[100];
-	const std::time_t	date = std::time(NULL);
-	std::strftime(buffer,
-				sizeof(buffer),
-				"%a, %d %b %Y %H:%M:%S %Z",
-				std::gmtime(&date));
-	return buffer;
+// métodos generadores de respuesta
+
+void
+HttpGetResponse::DefaultStatusResponse_(const std::size_t status_code) {
+	HttpResponse		response(status_code);
+	response.SetBody(DefaultResponseBody_(status_code));
+	response.AddHeader("Content-Type", "text/html");
+	AddCommonHeaders_(&response);
+	raw_response_ = response.CreateResponseString();
 }
 
-void	HttpGetResponse::AddCommonHeaders_(HttpResponse *response) {
-	response->AddHeader("Server", "webserv");
-	if (keep_alive_) {
-		response->AddHeader("Connection", "keep-alive");
-	} else {
-		response->AddHeader("Connection", "close");
+
+// Common
+void	HttpGetResponse::ExecuteCGI_(const HttpRequest &request,
+												const std::string &full_path) {
+	try {
+		HttpResponse response(200);
+		AddCommonHeaders_(&response);
+		CGI engine(request, *requestConfig_, PathExtension_(full_path),
+			&response);
+		engine.ExecuteCGI();
+		if (engine.GetExecReturn() != EXIT_SUCCESS) {
+			throw std::runtime_error("Exec error");
 	}
-	response->AddHeader("Date", CurrentDate_());
+	raw_response_ = response.CreateResponseString();
+	} catch (const std::exception &e) {
+		RequestError_(500);
+	}
+}
+
+// Common
+void	HttpGetResponse::ServeFile_(const std::string &file_path) {
+	if (!IsRegularFile_(file_path)) {
+		RequestError_(403);
+		return;
+	}
+	std::ifstream ifs(file_path.c_str(), std::ios::in | std::ios::binary);
+	if (!ifs) {
+		PathError_();
+		return;
+	}
+	const std::string body = std::string(std::istreambuf_iterator<char>(ifs),
+											std::istreambuf_iterator<char>());
+	HttpResponse response(200);
+	AddCommonHeaders_(&response);
+	response.AddHeader("Content-Type", GetMimeType_(file_path));
+	response.SetBody(body);
+	raw_response_ = response.CreateResponseString();
+}
+
+// GET specific
+void	HttpGetResponse::MovedPermanently_(const HttpRequest &request) {
+	HttpResponse response(301);
+	AddCommonHeaders_(&response);
+	response.AddHeader("Content-Type", "text/html");
+	std::stringstream url;
+	url << "http://" << request.GetHost() << ":" << request.GetPort() <<
+		request.GetPath() << "/";
+	response.AddHeader("Location", url.str());
+	const std::string body = DefaultResponseBody_(301);
+	response.SetBody(body);
+	raw_response_ = response.CreateResponseString();
+}
+
+// GET specific
+void	HttpGetResponse::ListDirectory_(const std::string &request_path) {
+	std::stringstream body;
+	body << "<html>\n" <<
+		"<head><title>Index of " << request_path << "</title></head>\n" <<
+		"<body>\n" <<
+		"<h1>Index of " << request_path <<
+		"</h1><hr><pre><a href=\"../\">../</a>\n";
+	const std::string full_path = requestConfig_->GetRoot() + request_path;
+	if (!TryAddDirectoryContent_(&body, full_path)) {
+		return;
+	}
+	body << "</pre><hr></body>\n" <<
+		"</html>\n";
+	HttpResponse	response(200);
+	response.AddHeader("Content-Type", "text/html");
+	response.SetBody(body.str());
+	AddCommonHeaders_(&response);
+	raw_response_ = response.CreateResponseString();
 }

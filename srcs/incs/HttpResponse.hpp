@@ -39,6 +39,11 @@ class HttpResponse {
 		std::string	reason_phrase_;
 		HeadersMap	headers_;
 		std::string	body_;
+
+
+	// posible lógica desplazada
+	// std::string	CurrentDate_() const;
+
 };
 
 std::ostream&	operator<<(std::ostream &os, const HttpResponse &response);

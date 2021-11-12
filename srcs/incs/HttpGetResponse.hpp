@@ -24,28 +24,39 @@ class HttpGetResponse: public IResponse {
 
 	private:
 		// common
+		// Internal
 		void	CheckKeepAlive_();
 		bool	HasAcceptedFormat_(const HttpRequest &request);
+
+		// Default - base
 		void	AddCommonHeaders_(HttpResponse *response);
 		std::string DefaultResponseBody_(const std::size_t status_code) const;
-		void	PathError_();
-		bool	IsRegularFile_(const std::string &path) const;
-		bool	IsCGI_(const std::string &full_path) const;
-		void	ExecuteCGI_(const HttpRequest &request,
-							const std::string &full_path);
-		void	ServeFile_(const std::string &file_path);
-		void	RequestError_(const std::size_t error_code);
-		void	DefaultStatusResponse_(const std::size_t status_code);
-		std::string	PathExtension_(const std::string &path) const;
-		std::string	GetMimeType_(const std::string &path) const;
 		std::string	CurrentDate_() const;
 
+		// CGI
+		bool	IsCGI_(const std::string &full_path) const; // PathExtension_
 
-		// unique
+		// extrapolable
+		void	ExecuteCGI_(const HttpRequest &request,
+							const std::string &full_path); // AddCommonHeaders_, PathExtension_, RequestError_
+
+		// Error
+		void	RequestError_(const std::size_t error_code); // DefaultStatusReponse_, ServeFile_
+		void	DefaultStatusResponse_(const std::size_t status_code); //AddCommonHeaders_
+		void	PathError_(); // RequestError_
+
+		//  Files
+		void	ServeFile_(const std::string &file_path); //IsRegularFile_, RequestError_, PathError_, AddCommonHeaders_, GetMimeType_
+		std::string	GetMimeType_(const std::string &path) const; //PathExtension
+		bool	IsRegularFile_(const std::string &path) const;
+		std::string	PathExtension_(const std::string &path) const;
+
+
+		// unique -> deps externas: base (AddCommonHeaders_, DefaultResponseHeader_)
 		bool	IsValidPath_(const std::string &path) const;
-		void	MovedPermanently_(const HttpRequest &request);
-		void	ListDirectory_(const std::string &request_path);
-		bool	TryAddDirectoryContent_(std::stringstream *body,
+		void	MovedPermanently_(const HttpRequest &request); // AddCommonHeaders_, DefaultResponseHeader_
+		void	ListDirectory_(const std::string &request_path); // AddCommonHeaders_, TryAddDirectoryContent
+		bool	TryAddDirectoryContent_(std::stringstream *body, // IsDirectory
 										const std::string &full_path);
 		bool	IsDirectory_(const std::string &path) const;
 
