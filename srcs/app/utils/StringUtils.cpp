@@ -21,3 +21,27 @@ char *DuplicateString(const std::string &str) {
 	std::memcpy(element, str.c_str(), str.size() + 1);
 	return element;
 }
+
+std::string	DecodeUrl(const std::string &encoded_url) {
+	std::string decoded_url;
+	std::size_t length = encoded_url.size();
+
+	decoded_url.reserve(encoded_url.size());
+	for (std::size_t i = 0; i < length; ++i) {
+		if (encoded_url[i] == '+') {
+			decoded_url.append(1, ' ');
+		} else if (encoded_url[i] == '%' &&
+					i + 2 < length &&
+					std::isxdigit(encoded_url[i + 1]) &&
+					std::isxdigit(encoded_url[i + 2])) {
+			std::istringstream is(encoded_url.substr(i + 1, 2));
+			int value;
+			is >> std::hex >> value;
+			decoded_url.append(1, static_cast<char>(value));
+			i += 2;
+		} else {
+			decoded_url.append(1, encoded_url[i]);
+		}
+	}
+	return decoded_url;
+}

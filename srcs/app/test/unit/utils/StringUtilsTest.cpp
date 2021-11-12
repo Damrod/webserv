@@ -21,3 +21,9 @@ TEST_CASE("ToLowerString", "[utils]") {
 
 	REQUIRE("hello, world!" == ToLowerString(str));
 }
+
+TEST_CASE("DecodeUrl", "[utils]") {
+	const std::string	str = "%20http://hello+world!%20";
+
+	REQUIRE(" http://hello world! " == DecodeUrl(str));
+}
