@@ -10,7 +10,6 @@ class AHttpResponse {
 	private:
 		typedef std::string							HeaderName;
 		typedef std::string							HeaderValue;
-		typedef	std::map<HeaderName, HeaderValue>	HeadersMap;
 
 	public:
 		explicit	AHttpResponse(
@@ -18,22 +17,24 @@ class AHttpResponse {
 						std::map<HeaderName, HeaderValue> headers,
 						std::string	body,
 						bool	keep_alive,
+						// mejorar default_body
 						bool	default_body);
 					~AHttpResponse();
-		std::string	RawContent() const;
+		virtual std::string	RawContent() const;
+
+		typedef	std::map<HeaderName, HeaderValue>	HeadersMap;
 
 	private:
 		AHttpResponse();
 		AHttpResponse(const AHttpResponse &);
+		AHttpResponse &	operator=(const AHttpResponse &);
 		void	AddHeader_(const std::string &name, const std::string &val);
 		std::string	AddDefaultResponseBody_();
 		void	AddCommonHeaders_();
 		void	AddContentLength_();
 		std::string	CurrentDate_() const;
-		AHttpResponse &	operator=(const AHttpResponse &);
 
-		static const char							kCRLF_[];
-
+		static const char	kCRLF_[];
 		std::string	http_version_;
 		std::size_t	status_code_;
 		std::string	reason_phrase_;
@@ -41,12 +42,6 @@ class AHttpResponse {
 		std::string	body_;
 		bool	keep_alive_;
 		bool	default_body_;
-
-	// posible lógica desplazada
-	// std::string	CurrentDate_() const;
-	// void	AddCommonHeaders_(HttpResponse *response);
-	// std::string DefaultResponseBody_(const std::size_t status_code) const;
-
 };
 
 std::ostream&	operator<<(std::ostream &os, const AHttpResponse &response);

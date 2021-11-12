@@ -16,10 +16,13 @@
 class CGI {
  public:
 	CGI(const HttpRequest &request, const RequestConfig &location,
-		const std::string &extension, HttpResponse *response);
+		const std::string &extension);
 	virtual ~CGI(void);
 	void ExecuteCGI(void);
 	int  GetExecReturn() const;
+	std::string  GetRawOutput() const;
+	std::string  GetBody() const;
+	std::map<std::string, std::string>	GetHeaders() const;
 
  private:
 	enum {
@@ -40,6 +43,8 @@ class CGI {
 	std::string CGIout_;
 	std::string CGIoutHeaders_;
 	std::string CGIoutBody_;
+	std::string CGIoutHeaders_;
+	std::map<std::string, std::string> parsedHeaders_;
 	const HttpRequest &request_;
 	const RequestConfig *requestConfig_;
 	const std::string reqBody_;

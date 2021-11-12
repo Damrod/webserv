@@ -9,9 +9,8 @@ std::string CGI::GetExecutable_(const std::string &extension) {
 }
 
 CGI::CGI(const HttpRequest &request, const RequestConfig &location,
-		 const std::string &extension,  // we need the GetExtension
+		 const std::string &extension  // we need the GetExtension
 									   // function somewhere common
-		 HttpResponse *response
 	) :
 	execRet_(0),
 	request_(request),
@@ -19,7 +18,6 @@ CGI::CGI(const HttpRequest &request, const RequestConfig &location,
 	reqBody_(request.GetBody()),
 	arg_path_(requestConfig_->GetRoot() + request.GetPath()),
 	exec_path_(GetExecutable_(extension)),
-	response_(response),
 	CGIenvMap_(MakeEnv_()),
 	CGIenv_(MakeCEnv_()) {
 	pipes_[0] = -1;
@@ -92,8 +90,8 @@ void CGI::SetHeaders_(void) {
 																 __LINE__);
 		std::string statement = remain.substr(0, next_statement_delimiter);
 		size_t colonPos = NextStatementThrowing_(statement, ":", true, __LINE__);
-		response_->AddHeader(TrimString(statement.substr(0, colonPos), " "),
-							TrimString(statement.substr(colonPos + 1), " "));
+		parsedHeaders_.insert(std::make_pair(TrimString(statement.substr(0, colonPos), " "),
+							TrimString(statement.substr(colonPos + 1), " ")));
 		size_t remain_delimiter = NextStatementThrowing_(remain, kCRLF_, false,
 							 __LINE__) + std::string(kCRLF_).size();
 		remain = remain.substr(remain_delimiter > remain.size() ?
@@ -111,7 +109,6 @@ void CGI::ParseCGIOut_(void) {
 	CGIoutHeaders_ = CGIout_.substr(0, headers_end);
 	CGIoutBody_ = CGIout_.substr(headers_end + (std::string(kCRLF_)
 												+ kCRLF_).size());
-	response_->SetBody(CGIoutBody_);
 	SetHeaders_();
 }
 
@@ -171,4 +168,12 @@ void	CGI::CloseAssign_(int *fd) {
 		SyscallWrap::closeWr(*fd);
 		*fd = -1;
 	}
+}
+
+std::string  CGI::GetBody() const {
+	return CGIoutBody_;
+}
+
+std::map<std::string, std::string>	CGI::GetHeaders() const {
+	return parsedHeaders_;
 }

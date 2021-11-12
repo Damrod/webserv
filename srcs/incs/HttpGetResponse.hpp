@@ -2,24 +2,26 @@
 #define SRCS_INCS_HTTPGETRESPONSE_HPP_
 
 #include <string>
-#include <IResponse.hpp>
-#include <HttpResponse.hpp>
 #include <sys/stat.h>
-#include <HttpRequest.hpp>
 #include <ctime>
-#include <RequestConfig.hpp>
 #include <CGI.hpp>
-#include <MimeTypes.hpp>
 #include <fstream>
 #include <dirent.h>
 #include <sys/types.h>
 #include <iostream>
+
+#include <MimeTypes.hpp>
+#include <IResponse.hpp>
+#include <AHttpResponse.hpp>
+#include <HttpRequest.hpp>
+#include <RequestConfig.hpp>
 
 class HttpGetResponse: public IResponse {
 	public:
 		HttpGetResponse(
 			RequestConfig *requestConfig,
 			HttpRequest *request);
+		~HttpGetResponse();
 		std::string content();
 
 	private:
@@ -27,11 +29,6 @@ class HttpGetResponse: public IResponse {
 		// Internal
 		void	CheckKeepAlive_();
 		bool	HasAcceptedFormat_(const HttpRequest &request);
-
-		// Default - base
-		void	AddCommonHeaders_(HttpResponse *response);
-		std::string DefaultResponseBody_(const std::size_t status_code) const;
-		std::string	CurrentDate_() const;
 
 		// CGI
 		bool	IsCGI_(const std::string &full_path) const; // PathExtension_
@@ -65,6 +62,7 @@ class HttpGetResponse: public IResponse {
 		bool	keep_alive_;
 		std::size_t errCode;
 		std::string raw_response_;
+		AHttpResponse *response_;
 };
 
 #endif  // SRCS_INCS_HTTPGETRESPONSE_HPP_
