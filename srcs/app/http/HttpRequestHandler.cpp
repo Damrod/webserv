@@ -230,8 +230,9 @@ void	HttpRequestHandler::MovedPermanently_(const HttpRequest &request) {
 }
 
 void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
+	const std::string decoded_path = DecodeUrl(request.GetPath());
 	const std::string full_path =
-							request_location_->common.root + request.GetPath();
+					request_location_->common.root + decoded_path;
 	if (!IsValidPath_(full_path)) {
 		PathError_();
 		return;
@@ -254,7 +255,7 @@ void	HttpRequestHandler::DoGet_(const HttpRequest &request) {
 												IsRegularFile_(index_path)) {
 			ServeFile_(index_path);
 		} else {
-			ListDirectory_(request.GetPath());
+			ListDirectory_(decoded_path);
 		}
 	}
 }
@@ -317,7 +318,7 @@ void	HttpRequestHandler::ExecuteCGI_(const HttpRequest &request,
 }
 
 void	HttpRequestHandler::DoPost_(const HttpRequest &request) {
-	const std::string request_path = request.GetPath();
+	const std::string request_path = DecodeUrl(request.GetPath());
 	const std::string full_path =
 							request_location_->common.root + request_path;
 	if (IsRegularFile_(full_path)) {
