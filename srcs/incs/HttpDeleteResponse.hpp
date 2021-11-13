@@ -4,6 +4,8 @@
 #include <string>
 #include <IResponse.hpp>
 #include <HttpResponse.hpp>
+#include <HttpErrorResponse.hpp>
+#include <HttpBaseResponse.hpp>
 #include <sys/stat.h>
 #include <HttpRequest.hpp>
 #include <ctime>
@@ -15,26 +17,11 @@
 #include <sys/types.h>
 #include <iostream>
 
-class HttpDeleteResponse: public IResponse {
+class HttpDeleteResponse: public HttpBaseResponse {
 	public:
 		HttpDeleteResponse(
 			RequestConfig *requestConfig,
 			HttpRequest *request);
-		std::string Content();
-		// implement
-		bool KeepAlive();
-
-	private:
-		void	CheckKeepAlive_();
-		bool	HasAcceptedFormat_(const HttpRequest &request);
-		void	AddCommonHeaders_(HttpResponse *response);
-		std::string	CurrentDate_() const;
-
-		RequestConfig *requestConfig_;
-		HttpRequest *request_;
-		bool	keep_alive_;
-		std::size_t errCode;
-		std::string raw_response_;
 };
 
 #endif  // SRCS_INCS_HTTPDELETERESPONSE_HPP_
