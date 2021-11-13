@@ -44,7 +44,7 @@ void	HttpGetResponse::MovedPermanently_(const HttpRequest &request) {
 
 	headers.insert(std::make_pair("Content-Type", "text/html"));
 	headers.insert(std::make_pair("Location", url.str()));
-	SetRawResponse_(301, headers, NULL, keep_alive_);
+	SetRawResponse_(301, headers, NULL);
 }
 
 void	HttpGetResponse::ListDirectory_(File file, const std::string &request_path) {
@@ -66,7 +66,7 @@ void	HttpGetResponse::ListDirectory_(File file, const std::string &request_path)
 		<< "</pre><hr></body>\n"
 		<< "</html>\n";
 	body = bodyStream.str();
-	SetRawResponse_(200, headers, body, keep_alive_);
+	SetRawResponse_(200, headers, body);
 }
 
 void	HttpGetResponse::HandleRegularFile_(File file) {

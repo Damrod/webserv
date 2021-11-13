@@ -22,8 +22,7 @@ class HttpBaseResponse {
 		void	SetRawResponse_(
 								int code,
 								AHttpResponse::HeadersMap headers,
-								std::string body,
-								bool keep_alive);
+								std::string body);
 
         int	keep_alive_;
         int	error_code_;

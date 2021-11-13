@@ -29,7 +29,7 @@ void	HttpBaseResponse::Serve_(File file) {
 
 	headers.insert(std::make_pair("Content-Type", file.GetMimeType()));
 	body = file.GetContent();
-	SetRawResponse_(200, headers, body, keep_alive_);
+	SetRawResponse_(200, headers, body);
 }
 
 void	HttpBaseResponse::ExecuteCGI_(File file) {
@@ -38,14 +38,13 @@ void	HttpBaseResponse::ExecuteCGI_(File file) {
 	if (engine.GetExecReturn() != EXIT_SUCCESS) {
 		throw std::runtime_error("Exec error");
 	}
-	SetRawResponse_(200, engine.GetHeaders(), engine.GetBody(), keep_alive_);
+	SetRawResponse_(200, engine.GetHeaders(), engine.GetBody());
 }
 
 void	HttpBaseResponse::SetRawResponse_(
 										int code,
 										AHttpResponse::HeadersMap headers,
-										std::string body,
-										bool keep_alive)
+										std::string body)
 {
 	raw_response_ = AHttpResponse(
 								code,
