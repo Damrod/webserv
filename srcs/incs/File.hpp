@@ -20,6 +20,7 @@ class File {
 		bool	IsRegularFile() const;
 		bool	IsDirectory() const;
 		bool	HasEndSlash() const;
+		void	Upload(std::string upload_path, std::string content);
 
         class Error {
             public:

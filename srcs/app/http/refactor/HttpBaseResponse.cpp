@@ -41,6 +41,13 @@ void	HttpBaseResponse::ExecuteCGI_(File file) {
 	SetRawResponse_(200, engine.GetHeaders(), engine.GetBody());
 }
 
+void	HttpBaseResponse::DefaultStatusResponse_(int code) {
+	AHttpResponse::HeadersMap headers;
+	headers.insert(std::make_pair("Content-Type", "text/html"));
+
+	SetRawResponse_(code, headers, NULL);
+}
+
 void	HttpBaseResponse::SetRawResponse_(
 										int code,
 										AHttpResponse::HeadersMap headers,

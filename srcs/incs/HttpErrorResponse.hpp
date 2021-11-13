@@ -18,8 +18,6 @@ class HttpErrorResponse: public IResponse, HttpBaseResponse {
 		std::string content();
 
 	private:
-		void	DefaultStatusResponse_();
-
 		int error_code_;
 		RequestConfig *requestConfig_;
 		HttpRequest *request_;

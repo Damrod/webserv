@@ -19,6 +19,7 @@ class HttpBaseResponse {
 	protected:
 		void	ExecuteCGI_(File file);
 		void	Serve_(File file);
+		void	DefaultStatusResponse_(int code);
 		void	SetRawResponse_(
 								int code,
 								AHttpResponse::HeadersMap headers,

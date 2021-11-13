@@ -46,6 +46,18 @@ bool	File::HasEndSlash() const {
 	return file_path_[file_path_.size() - 1] == '/';
 }
 
+void	File::Upload(std::string upload_path, std::string content) {
+	std::ofstream out(upload_path.c_str());
+
+	if (!out) {
+		ThrowPathError_();
+	}
+	out.write(content.c_str(), content.size());
+	if (!out) {
+		throw File::Error(500);
+	}
+}
+
 void	File::SetPathExtension_() {
 	const std::size_t extension_position = file_path_.rfind(".");
 	if (extension_position == std::string::npos || extension_position < 2) {
