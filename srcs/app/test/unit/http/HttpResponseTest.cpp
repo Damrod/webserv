@@ -1,6 +1,5 @@
 #include <sstream>
 #include <string>
-#include <HttpResponse.hpp>
 #include <catch2.hpp>
 
 TEST_CASE("InvalidHttpResponseInvalidStatus", "[http]") {

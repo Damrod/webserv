@@ -6,7 +6,6 @@
 #include <string>
 #include <ConnectionIOStatus.hpp>
 #include <HttpRequest.hpp>
-#include <HttpResponse.hpp>
 #include <IRequest.hpp>
 #include <IResponseFactory.hpp>
 #include <ServerConfig.hpp>

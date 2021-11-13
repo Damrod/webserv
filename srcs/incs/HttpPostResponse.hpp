@@ -14,7 +14,6 @@
 #include <MimeTypes.hpp>
 #include <HttpRequest.hpp>
 #include <RequestConfig.hpp>
-#include <HttpResponse.hpp>
 #include <HttpErrorResponse.hpp>
 #include <File.hpp>
 #include <AHttpResponse.hpp>

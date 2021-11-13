@@ -25,7 +25,7 @@ class File {
         class Error {
             public:
                 Error(int errCode): errCode_(errCode) {};
-                const int what() const throw() {
+                int what() const throw() {
 	             	return errCode_;
                 }
             private:

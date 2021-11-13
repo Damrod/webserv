@@ -4,7 +4,6 @@
 #include <string>
 #include <ctime>
 #include <IResponse.hpp>
-#include <HttpResponse.hpp>
 #include <HttpBaseResponse.hpp>
 #include <HttpErrorResponse.hpp>
 #include <HttpRequest.hpp>

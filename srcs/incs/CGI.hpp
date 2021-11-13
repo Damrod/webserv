@@ -9,7 +9,6 @@
 #include <sstream>
 #include <map>
 #include <HttpRequest.hpp>
-#include <HttpResponse.hpp>
 #include <RequestConfig.hpp>
 #include <SyscallWrap.hpp>
 
@@ -41,7 +40,6 @@ class CGI {
 	void CloseAssign_(int *fd);
 	int execRet_;
 	std::string CGIout_;
-	std::string CGIoutHeaders_;
 	std::string CGIoutBody_;
 	std::string CGIoutHeaders_;
 	std::map<std::string, std::string> parsedHeaders_;
@@ -50,7 +48,6 @@ class CGI {
 	const std::string reqBody_;
 	const std::string arg_path_;
 	const std::string exec_path_;
-	HttpResponse *response_;
 	std::string raw_response_;
 	const std::map<std::string, std::string> CGIenvMap_;
 	char * const *CGIenv_;

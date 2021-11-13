@@ -3,7 +3,6 @@
 
 #include <string>
 #include <IResponse.hpp>
-#include <HttpResponse.hpp>
 #include <HttpErrorResponse.hpp>
 #include <HttpBaseResponse.hpp>
 #include <sys/stat.h>
