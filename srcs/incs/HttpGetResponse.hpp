@@ -15,54 +15,45 @@
 #include <AHttpResponse.hpp>
 #include <HttpRequest.hpp>
 #include <RequestConfig.hpp>
+#include <File.hpp>
 
 class HttpGetResponse: public IResponse {
 	public:
 		HttpGetResponse(
 			RequestConfig *requestConfig,
 			HttpRequest *request);
-		~HttpGetResponse();
 		std::string content();
 
 	private:
 		// common
-		// Internal
+		// Llevar a Factory?
 		void	CheckKeepAlive_();
 		bool	HasAcceptedFormat_(const HttpRequest &request);
 
-		// CGI
-		bool	IsCGI_(const std::string &full_path) const; // PathExtension_
-
 		// extrapolable
-		void	ExecuteCGI_(const HttpRequest &request,
-							const std::string &full_path); // AddCommonHeaders_, PathExtension_, RequestError_
+		void	ExecuteCGI_(const HttpRequest &request, File file); // AddCommonHeaders_, PathExtension_, RequestError_
 
 		// Error
+		// La idea sería que esta lógica estuviera en su propia req. Si se detecta error,
+		// entonces se construye un objeto error que devuelve una respuesta raw.
 		void	RequestError_(const std::size_t error_code); // DefaultStatusReponse_, ServeFile_
 		void	DefaultStatusResponse_(const std::size_t status_code); //AddCommonHeaders_
-		void	PathError_(); // RequestError_
 
 		//  Files
-		void	ServeFile_(const std::string &file_path); //IsRegularFile_, RequestError_, PathError_, AddCommonHeaders_, GetMimeType_
-		std::string	GetMimeType_(const std::string &path) const; //PathExtension
-		bool	IsRegularFile_(const std::string &path) const;
-		std::string	PathExtension_(const std::string &path) const;
+		// La idea sería sacar esto a un objeto externo responsable de abrir ficheros y volcar contenido
+		// Si no devuelve nada, entonces lanza excepción, entonces ha habido error y se evalúa el errno
+		void	Serve_(File file); //IsRegularFile_, RequestError_, PathError_, AddCommonHeaders_, GetMimeType_
 
 
 		// unique -> deps externas: base (AddCommonHeaders_, DefaultResponseHeader_)
-		bool	IsValidPath_(const std::string &path) const;
 		void	MovedPermanently_(const HttpRequest &request); // AddCommonHeaders_, DefaultResponseHeader_
-		void	ListDirectory_(const std::string &request_path); // AddCommonHeaders_, TryAddDirectoryContent
-		bool	TryAddDirectoryContent_(std::stringstream *body, // IsDirectory
-										const std::string &full_path);
-		bool	IsDirectory_(const std::string &path) const;
+		void	ListDirectory_(File file, const std::string &request_path); // AddCommonHeaders_, TryAddDirectoryContent
 
 		RequestConfig *requestConfig_;
 		HttpRequest *request_;
 		bool	keep_alive_;
 		std::size_t errCode;
 		std::string raw_response_;
-		AHttpResponse *response_;
 };
 
 #endif  // SRCS_INCS_HTTPGETRESPONSE_HPP_

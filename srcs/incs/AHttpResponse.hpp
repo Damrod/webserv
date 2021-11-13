@@ -16,9 +16,7 @@ class AHttpResponse {
 						std::size_t status_code,
 						std::map<HeaderName, HeaderValue> headers,
 						std::string	body,
-						bool	keep_alive,
-						// mejorar default_body
-						bool	default_body);
+						bool	keep_alive);
 					~AHttpResponse();
 		virtual std::string	RawContent() const;
 
@@ -41,7 +39,6 @@ class AHttpResponse {
 		HeadersMap	headers_;
 		std::string	body_;
 		bool	keep_alive_;
-		bool	default_body_;
 };
 
 std::ostream&	operator<<(std::ostream &os, const AHttpResponse &response);

@@ -10,13 +10,11 @@ AHttpResponse::AHttpResponse(
 			std::size_t status_code,
 			std::map<HeaderName, HeaderValue> headers,
 			std::string	body,
-			bool	keep_alive,
-			bool	default_body) :
+			bool	keep_alive) :
 			status_code_(status_code),
 			headers_(headers),
 			body_(body),
 			keep_alive_(keep_alive),
-			default_body_(default_body),
 			http_version_("HTTP/1.1"),
 			reason_phrase_(HttpStatusCodes::GetReasonPhrase(status_code))
 {
@@ -25,7 +23,7 @@ AHttpResponse::AHttpResponse(
 	}
 	AddCommonHeaders_();
 	AddContentLength_();
-	if (default_body_) {
+	if (body == NULL) {
 		AddDefaultResponseBody_();
 	}
 }
