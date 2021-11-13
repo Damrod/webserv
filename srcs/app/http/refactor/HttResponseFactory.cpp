@@ -67,13 +67,7 @@ IResponse *HttpResponseFactory::createHttpDeleteResponse_() {
 }
 
 IResponse *HttpResponseFactory::createHttpErrorResponse_(int statusCode) {
-	// Responsabilidad de la respuesta
-	// SetKeepAlive_(*request);
-	// hasAcceptedFormat_(request_)
-
-	// Tiene que devolver un error
-	// Pasar el código (ver cómo)
-
+	return new HttpErrorResponse(statusCode, requestConfig_, request_);
 	// delete requestConfig_;
 	// requestConfig_ = NULL;
 }

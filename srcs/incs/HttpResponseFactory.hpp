@@ -10,6 +10,7 @@
 #include <HttpGetResponse.hpp>
 #include <HttpPostResponse.hpp>
 #include <HttpDeleteResponse.hpp>
+#include <HttpErrorResponse.hpp>
 #include <HttpRedirectionResponse.hpp>
 #include <ServerConfig.hpp>
 #include <RequestConfig.hpp>

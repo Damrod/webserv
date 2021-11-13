@@ -13,11 +13,13 @@
 #include <MimeTypes.hpp>
 #include <IResponse.hpp>
 #include <AHttpResponse.hpp>
+#include <HttpBaseResponse.hpp>
+#include <HttpErrorResponse.hpp>
 #include <HttpRequest.hpp>
 #include <RequestConfig.hpp>
 #include <File.hpp>
 
-class HttpGetResponse: public IResponse {
+class HttpGetResponse: public IResponse, HttpBaseResponse {
 	public:
 		HttpGetResponse(
 			RequestConfig *requestConfig,
@@ -25,35 +27,9 @@ class HttpGetResponse: public IResponse {
 		std::string content();
 
 	private:
-		// common
-		// Llevar a Factory?
-		void	CheckKeepAlive_();
-		bool	HasAcceptedFormat_(const HttpRequest &request);
-
-		// extrapolable
-		void	ExecuteCGI_(const HttpRequest &request, File file); // AddCommonHeaders_, PathExtension_, RequestError_
-
-		// Error
-		// La idea sería que esta lógica estuviera en su propia req. Si se detecta error,
-		// entonces se construye un objeto error que devuelve una respuesta raw.
-		void	RequestError_(const std::size_t error_code); // DefaultStatusReponse_, ServeFile_
-		void	DefaultStatusResponse_(const std::size_t status_code); //AddCommonHeaders_
-
-		//  Files
-		// La idea sería sacar esto a un objeto externo responsable de abrir ficheros y volcar contenido
-		// Si no devuelve nada, entonces lanza excepción, entonces ha habido error y se evalúa el errno
-		void	Serve_(File file); //IsRegularFile_, RequestError_, PathError_, AddCommonHeaders_, GetMimeType_
-
-
-		// unique -> deps externas: base (AddCommonHeaders_, DefaultResponseHeader_)
-		void	MovedPermanently_(const HttpRequest &request); // AddCommonHeaders_, DefaultResponseHeader_
-		void	ListDirectory_(File file, const std::string &request_path); // AddCommonHeaders_, TryAddDirectoryContent
-
-		RequestConfig *requestConfig_;
-		HttpRequest *request_;
-		bool	keep_alive_;
-		std::size_t errCode;
-		std::string raw_response_;
+		void	ExecuteCGI_(const HttpRequest &request, File file);
+		void	ListDirectory_(File file, const std::string &request_path);
+		void	MovedPermanently_(const HttpRequest &request);
 };
 
 #endif  // SRCS_INCS_HTTPGETRESPONSE_HPP_
