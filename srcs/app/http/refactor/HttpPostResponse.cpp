@@ -25,10 +25,6 @@ HttpPostResponse::HttpPostResponse(
 	}
 }
 
-std::string HttpPostResponse::content() {
-	return raw_response_;
-}
-
 void	HttpPostResponse::HandleCGI_(File file) {
 	if (request_config_->HasCGI(file.GetPathExtension())) {
 		try {
@@ -79,5 +75,5 @@ void	HttpPostResponse::SetErrorRawResponse_(int error_code) {
 									error_code,
 									request_config_,
 									request_
-									).content();
+									).Content();
 }

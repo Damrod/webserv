@@ -20,7 +20,9 @@ class HttpDeleteResponse: public IResponse {
 		HttpDeleteResponse(
 			RequestConfig *requestConfig,
 			HttpRequest *request);
-		std::string content();
+		std::string Content();
+		// implement
+		bool KeepAlive();
 
 	private:
 		void	CheckKeepAlive_();

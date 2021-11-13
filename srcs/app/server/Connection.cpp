@@ -1,13 +1,20 @@
 #include <Connection.hpp>
 
-Connection::Connection(int socket, IRequestHandler *request_handler,
-															IRequest *request)
-	: socket_(socket), request_handler_(request_handler), request_(request),
-	keep_alive_(true) {}
+Connection::Connection(
+					int socket,
+					IResponseFactory *response_factory,
+					IRequest *request) :
+					socket_(socket),
+					response_factory_(response_factory),
+					request_(request),
+					response_(NULL),
+					keep_alive_(true) {}
 
 Connection::~Connection() {
-	delete request_handler_;
 	delete request_;
+	if (response_) {
+		delete response_;
+	}
 }
 
 ReceiveRequestStatus::Type	Connection::ReceiveRequest() {
@@ -31,8 +38,9 @@ ReceiveRequestStatus::Type	Connection::ReceiveRequest() {
 
 SendResponseStatus::Type	Connection::SendResponse() {
 	if (raw_response_.empty()) {
-		raw_response_ = request_handler_->BuildResponse(request_);
-		keep_alive_ = request_handler_->GetKeepAlive();
+		response_ = response_factory_->Response();
+		raw_response_ = response_->Content();
+		keep_alive_ = response_->KeepAlive();
 		request_->Reset();
 	}
 	int nbytes = send(socket_, raw_response_.c_str(), raw_response_.size(), 0);

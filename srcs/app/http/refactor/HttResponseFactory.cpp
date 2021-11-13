@@ -2,17 +2,20 @@
 
 HttpResponseFactory::HttpResponseFactory(
 		HttpRequest *request,
-		RequestConfig *requestConfig
-	): request_(request), requestConfig_(requestConfig) {
-	concreteResponses_.insert(std::make_pair(
+		const ServerConfig &server_config):
+		request_(request),
+		server_config_(server_config),
+		request_config_(NULL)
+{
+	concrete_responses_.insert(std::make_pair(
 		"GET",
 		&HttpResponseFactory::createHttpGetResponse_
 	));
-	concreteResponses_.insert(std::make_pair(
+	concrete_responses_.insert(std::make_pair(
 		"POST",
 		&HttpResponseFactory::createHttpPostResponse_
 	));
-	concreteResponses_.insert(std::make_pair(
+	concrete_responses_.insert(std::make_pair(
 		"DELETE",
 		&HttpResponseFactory::createHttpDeleteResponse_
 	));
@@ -21,21 +24,26 @@ HttpResponseFactory::HttpResponseFactory(
 HttpResponseFactory::~HttpResponseFactory() {
 }
 
-IResponse *HttpResponseFactory::response() {
+IResponse *HttpResponseFactory::Response() {
+	SetRequestConfig_();
 	if (!request_ || request_->GetState() == RequestState::kInvalid) {
 		return createHttpErrorResponse_(400);
 	}
-	if (!requestConfig_->GetReturnUrl().empty()) {
+	if (!request_config_->GetReturnUrl().empty()) {
 		return createHttpRedirectionResponse_();
 	}
 
 	std::map<std::string, responseCreatorMethod>::const_iterator it;
-	it = concreteResponses_.find(request_->GetMethod());
-	if (it == concreteResponses_.end()) {
+	it = concrete_responses_.find(request_->GetMethod());
+	if (it == concrete_responses_.end()) {
 		return createHttpErrorResponse_(501);
 	} else {
 		return CALL_MEMBER_FN(*this, it->second)();
 	}
+}
+
+void	HttpResponseFactory::SetRequestConfig_() {
+	request_config_ = new RequestConfig(server_config_, request_->GetPath());
 }
 
 bool	HttpResponseFactory::hasAcceptedFormat_(HttpRequest *request_) {
@@ -43,31 +51,21 @@ bool	HttpResponseFactory::hasAcceptedFormat_(HttpRequest *request_) {
 }
 
 IResponse *HttpResponseFactory::createHttpRedirectionResponse_() {
-	return new HttpRedirectionResponse(requestConfig_, request_);
-	// delete requestConfig_;
-	// requestConfig_ = NULL;
+	return new HttpRedirectionResponse(request_config_, request_);
 }
 
 IResponse *HttpResponseFactory::createHttpGetResponse_() {
-	return new HttpGetResponse(requestConfig_, request_);
-	// delete requestConfig_;
-	// requestConfig_ = NULL;
+	return new HttpGetResponse(request_config_, request_);
 }
 
 IResponse *HttpResponseFactory::createHttpPostResponse_() {
-	return new HttpPostResponse(requestConfig_, request_);
-	// delete requestConfig_;
-	// requestConfig_ = NULL;
+	return new HttpPostResponse(request_config_, request_);
 }
 
 IResponse *HttpResponseFactory::createHttpDeleteResponse_() {
-	return new HttpDeleteResponse(requestConfig_, request_);
-	// delete requestConfig_;
-	// requestConfig_ = NULL;
+	return new HttpDeleteResponse(request_config_, request_);
 }
 
 IResponse *HttpResponseFactory::createHttpErrorResponse_(int statusCode) {
-	return new HttpErrorResponse(statusCode, requestConfig_, request_);
-	// delete requestConfig_;
-	// requestConfig_ = NULL;
+	return new HttpErrorResponse(statusCode, request_config_, request_);
 }

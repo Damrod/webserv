@@ -9,7 +9,7 @@ HttpRedirectionResponse::HttpRedirectionResponse(
 										error_code_,
 										request_config_,
 										request_
-										).content();
+										).Content();
 	} else {
 		AHttpResponse::HeadersMap headers;
 
@@ -17,8 +17,4 @@ HttpRedirectionResponse::HttpRedirectionResponse(
 		headers.insert(std::make_pair("Location", request_config_->GetReturnUrl()));
 		SetRawResponse_(request_config_->GetReturnStatus(), headers, NULL);
 	}
-}
-
-std::string HttpRedirectionResponse::content() {
-	return raw_response_;
 }

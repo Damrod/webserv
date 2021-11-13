@@ -10,12 +10,11 @@
 #include <HttpRequest.hpp>
 #include <RequestConfig.hpp>
 
-class HttpRedirectionResponse: public IResponse, HttpBaseResponse  {
+class HttpRedirectionResponse: public HttpBaseResponse  {
 	public:
 		HttpRedirectionResponse(
 			RequestConfig *requestConfig,
 			HttpRequest *request);
-		std::string content();
 };
 
 #endif  // SRCS_INCS_HTTPREDIRECTIONRESPONSE_HPP_

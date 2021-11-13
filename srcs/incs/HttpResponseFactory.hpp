@@ -19,9 +19,9 @@ class HttpResponseFactory: public IResponseFactory {
 	public:
 		HttpResponseFactory(
 			HttpRequest *request,
-			RequestConfig *requestConfig );
+			const ServerConfig &server_config);
 		~HttpResponseFactory();
-		IResponse *response();
+		IResponse *Response();
 
 	private:
 		HttpResponseFactory();
@@ -32,11 +32,13 @@ class HttpResponseFactory: public IResponseFactory {
 		IResponse	*createHttpDeleteResponse_();
 		IResponse	*createHttpRedirectionResponse_();
 		IResponse	*createHttpErrorResponse_(int statusCode);
+		void	SetRequestConfig_();
 
 		typedef  IResponse *(HttpResponseFactory::* responseCreatorMethod)();
-		std::map<std::string, responseCreatorMethod>	concreteResponses_;
+		std::map<std::string, responseCreatorMethod>	concrete_responses_;
+		const ServerConfig &server_config_;
 		HttpRequest	*request_;
-		RequestConfig	*requestConfig_;
+		RequestConfig	*request_config_;
 };
 
 #endif  // SRCS_INCS_HTTPRESPONSEFACTORY_HPP_

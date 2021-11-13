@@ -9,13 +9,12 @@
 #include <HttpRequest.hpp>
 #include <RequestConfig.hpp>
 
-class HttpErrorResponse: public IResponse, HttpBaseResponse {
+class HttpErrorResponse: public HttpBaseResponse {
 	public:
 		HttpErrorResponse(
 			int error_code,
 			RequestConfig *requestConfig,
 			HttpRequest *request);
-		std::string content();
 
 	private:
 		int error_code_;

@@ -9,6 +9,7 @@
 #include <Connection.hpp>
 #include <HttpRequest.hpp>
 #include <HttpRequestHandler.hpp>
+#include <HttpResponseFactory.hpp>
 #include <ServerConfig.hpp>
 #include <FDsets.hpp>
 

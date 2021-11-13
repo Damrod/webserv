@@ -16,7 +16,3 @@ HttpErrorResponse::HttpErrorResponse(
 		Serve_(error_page_path);
 	}
 }
-
-std::string HttpErrorResponse::content() {
-	return raw_response_;
-}

@@ -10,11 +10,13 @@
 #include <RequestConfig.hpp>
 #include <File.hpp>
 
-class HttpBaseResponse {
+class HttpBaseResponse: public IResponse {
 	public:
 		HttpBaseResponse(
 			RequestConfig *requestConfig,
 			HttpRequest *request);
+		bool KeepAlive();
+		std::string	Content();
 
 	protected:
 		void	ExecuteCGI_(File file);

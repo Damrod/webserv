@@ -23,6 +23,14 @@ HttpBaseResponse::HttpBaseResponse(
 	}
 }
 
+bool HttpBaseResponse::KeepAlive() {
+	return keep_alive_;
+}
+
+std::string	 HttpBaseResponse::Content() {
+	return raw_response_;
+}
+
 void	HttpBaseResponse::Serve_(File file) {
 	AHttpResponse::HeadersMap headers;
 	std::string body;

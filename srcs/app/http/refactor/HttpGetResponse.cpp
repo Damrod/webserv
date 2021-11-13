@@ -27,10 +27,6 @@ HttpGetResponse::HttpGetResponse(
 	}
 }
 
-std::string HttpGetResponse::content() {
-	return raw_response_;
-}
-
 void	HttpGetResponse::MovedPermanently_(const HttpRequest &request) {
 	AHttpResponse::HeadersMap headers;
 	std::stringstream url;
@@ -99,5 +95,5 @@ void	HttpGetResponse::SetErrorRawResponse_(int error_code) {
 									error_code,
 									request_config_,
 									request_
-									).content();
+									).Content();
 }

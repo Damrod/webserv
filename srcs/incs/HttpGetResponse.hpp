@@ -19,12 +19,11 @@
 #include <RequestConfig.hpp>
 #include <File.hpp>
 
-class HttpGetResponse: public IResponse, HttpBaseResponse {
+class HttpGetResponse: public HttpBaseResponse {
 	public:
 		HttpGetResponse(
 			RequestConfig *requestConfig,
 			HttpRequest *request);
-		std::string content();
 
 	private:
 		void	ListDirectory_(File file, const std::string &request_path);

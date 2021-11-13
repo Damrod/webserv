@@ -21,12 +21,11 @@
 #include <HttpBaseResponse.hpp>
 
 
-class HttpPostResponse: public IResponse, HttpBaseResponse {
+class HttpPostResponse: public HttpBaseResponse {
 	public:
 		HttpPostResponse(
 			RequestConfig *requestConfig,
 			HttpRequest *request);
-		std::string content();
 
 	private:
 		bool	IsUploadEnabled_() const;

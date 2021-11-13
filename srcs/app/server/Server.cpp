@@ -40,9 +40,9 @@ void	Server::BindListeningSocket_() {
 }
 
 void	Server::AddConnection_(int sd) {
-	HttpRequestHandler *handler = new HttpRequestHandler(settings_);
 	HttpRequest *request = new HttpRequest();
-	Connection *connection = new Connection(sd, handler, request);
+	HttpResponseFactory *response_factory = new HttpResponseFactory(request, settings_);
+	Connection *connection = new Connection(sd, response_factory, request);
 	connections_.insert(std::make_pair(sd, connection));
 	fdSets_->addToReadSet(sd);
 }
