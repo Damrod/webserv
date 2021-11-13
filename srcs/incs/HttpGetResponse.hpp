@@ -27,9 +27,11 @@ class HttpGetResponse: public IResponse, HttpBaseResponse {
 		std::string content();
 
 	private:
-		void	ExecuteCGI_(const HttpRequest &request, File file);
 		void	ListDirectory_(File file, const std::string &request_path);
 		void	MovedPermanently_(const HttpRequest &request);
+		void	HandleRegularFile_(File file);
+		void	HandleSlashEndedFile_(File file);
+		void	SetErrorRawResponse_(int error_code);
 };
 
 #endif  // SRCS_INCS_HTTPGETRESPONSE_HPP_

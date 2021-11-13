@@ -1,4 +1,3 @@
-
 #ifndef SRCS_INCS_HTTPBASERESPONSE_HPP_
 #define SRCS_INCS_HTTPBASERESPONSE_HPP_
 
@@ -18,18 +17,19 @@ class HttpBaseResponse {
 			HttpRequest *request);
 
 	protected:
-		// void	ExecuteCGI_(const HttpRequest &request, File file);
+		void	ExecuteCGI_(File file);
 		void	Serve_(File file);
+		void	SetRawResponse_(
+								int code,
+								AHttpResponse::HeadersMap headers,
+								std::string body,
+								bool keep_alive);
 
         int	keep_alive_;
         int	error_code_;
 		std::string raw_response_;
 		RequestConfig *request_config_;
 		HttpRequest *request_;
-
-	private:
-		void	SetKeepAlive_();
-		void	CheckReqFormat_();
 };
 
 #endif  // SRCS_INCS_HTTPBASERESPONSE_HPP_

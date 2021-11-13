@@ -5,44 +5,25 @@ HttpGetResponse::HttpGetResponse(
 	HttpRequest *request) :
 	HttpBaseResponse(request_config, request)
 {
-	const std::string full_path =
-							request_config_->GetRoot() + request_->GetPath();
-	try {
-		File file(full_path);
+	if (error_code_) {
+			SetErrorRawResponse_(error_code_);
+	} else {
+		const std::string full_path =
+								request_config_->GetRoot() + request_->GetPath();
+		try {
+			File file(full_path);
 
-		// Encapsular lógica en alguna función privada
-		// para que no quede tan feo
-		if (file.IsRegularFile()) {
-			if (request_config_->HasCGI(file.GetPathExtension())) {
-				ExecuteCGI_(*request_, file);
-			} else {
-				if (file.IsRegularFile()) {
-					Serve_(file);
-				} else {
-					raw_response_ = HttpErrorResponse(
-													403,
-													request_config_,
-													request_
-													).content();
-				}
+			if (file.IsRegularFile()) {
+				HandleRegularFile_(file);
 			}
-		}
-		else if (file.HasEndSlash()) {
-			if (request_config_->HasAutoindex()) {
-				ListDirectory_(file, request_->GetPath());
+			else if (file.HasEndSlash()) {
+				HandleSlashEndedFile_(file);
 			} else {
-				file.SetSubpath(request_config_->GetIndex());
-				Serve_(file);
+				MovedPermanently_(*request_);
 			}
-		} else {
-			MovedPermanently_(*request_);
+		} catch(File::Error & e) {
+			SetErrorRawResponse_(e.what());
 		}
-	} catch(File::Error & e) {
-		raw_response_ = HttpErrorResponse(
-										e.what(),
-										request_config_,
-										request_
-										).content();
 	}
 }
 
@@ -50,29 +31,6 @@ std::string HttpGetResponse::content() {
 	return raw_response_;
 }
 
-// Common
-void	HttpGetResponse::ExecuteCGI_(const HttpRequest &request, File file) {
-	try {
-		CGI engine(request, *request_config_, file.GetPathExtension());
-		engine.ExecuteCGI();
-		if (engine.GetExecReturn() != EXIT_SUCCESS) {
-			throw std::runtime_error("Exec error");
-		}
-		raw_response_ = AHttpResponse(
-									200,
-									engine.GetHeaders(),
-									engine.GetBody(),
-									keep_alive_).RawContent();
-	} catch (const std::exception &e) {
-		raw_response_ = HttpErrorResponse(
-										500,
-										request_config_,
-										request_
-										).content();
-	}
-}
-
-// GET specific
 void	HttpGetResponse::MovedPermanently_(const HttpRequest &request) {
 	AHttpResponse::HeadersMap headers;
 	std::stringstream url;
@@ -86,11 +44,7 @@ void	HttpGetResponse::MovedPermanently_(const HttpRequest &request) {
 
 	headers.insert(std::make_pair("Content-Type", "text/html"));
 	headers.insert(std::make_pair("Location", url.str()));
-	raw_response_ = AHttpResponse(
-								301,
-								headers,
-								NULL,
-								keep_alive_).RawContent();
+	SetRawResponse_(301, headers, NULL, keep_alive_);
 }
 
 void	HttpGetResponse::ListDirectory_(File file, const std::string &request_path) {
@@ -112,9 +66,38 @@ void	HttpGetResponse::ListDirectory_(File file, const std::string &request_path)
 		<< "</pre><hr></body>\n"
 		<< "</html>\n";
 	body = bodyStream.str();
-	raw_response_ = AHttpResponse(
-								200,
-								headers,
-								body,
-								keep_alive_).RawContent();
+	SetRawResponse_(200, headers, body, keep_alive_);
+}
+
+void	HttpGetResponse::HandleRegularFile_(File file) {
+	if (request_config_->HasCGI(file.GetPathExtension())) {
+		try {
+			ExecuteCGI_(file);
+		} catch (const std::exception &e) {
+			SetErrorRawResponse_(500);
+		}
+	} else {
+		Serve_(file);
+	}
+}
+
+void	HttpGetResponse::HandleSlashEndedFile_(File file) {
+	if (request_config_->HasAutoindex()) {
+		ListDirectory_(file, request_->GetPath());
+	} else {
+		file.SetSubpath(request_config_->GetIndex());
+		if (file.IsRegularFile()) {
+			Serve_(file);
+		} else {
+			SetErrorRawResponse_(403);
+		}
+	}
+}
+
+void	HttpGetResponse::SetErrorRawResponse_(int error_code) {
+	raw_response_ = HttpErrorResponse(
+									error_code,
+									request_config_,
+									request_
+									).content();
 }
