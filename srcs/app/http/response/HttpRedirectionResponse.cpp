@@ -11,7 +11,7 @@ HttpRedirectionResponse::HttpRedirectionResponse(
 										request_
 										).Content();
 	} else {
-		AHttpResponse::HeadersMap headers;
+		HttpResponse::HeadersMap headers;
 
 		headers.insert(std::make_pair("Content-Type", "text/html"));
 		headers.insert(std::make_pair("Location", request_config_->GetReturnUrl()));

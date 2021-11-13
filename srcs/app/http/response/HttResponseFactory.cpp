@@ -46,10 +46,6 @@ void	HttpResponseFactory::SetRequestConfig_() {
 	request_config_ = new RequestConfig(server_config_, request_->GetPath());
 }
 
-bool	HttpResponseFactory::hasAcceptedFormat_(HttpRequest *request_) {
-	return true;
-}
-
 IResponse *HttpResponseFactory::createHttpRedirectionResponse_() {
 	return new HttpRedirectionResponse(request_config_, request_);
 }

@@ -9,7 +9,6 @@
 #include <IRequest.hpp>
 #include <IResponseFactory.hpp>
 #include <ServerConfig.hpp>
-#include <IRequestHandler.hpp>
 
 class Connection {
 	public:
@@ -28,8 +27,8 @@ class Connection {
 
 		const int			socket_;
 		IResponseFactory	*response_factory_;
-		IResponse			*response_;
 		IRequest			*request_;
+		IResponse			*response_;
 		bool				keep_alive_;
 		std::string			raw_request_;
 		std::string			raw_response_;

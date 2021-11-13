@@ -12,7 +12,7 @@
 
 #include <MimeTypes.hpp>
 #include <IResponse.hpp>
-#include <AHttpResponse.hpp>
+#include <HttpResponse.hpp>
 #include <HttpBaseResponse.hpp>
 #include <HttpErrorResponse.hpp>
 #include <HttpRequest.hpp>

@@ -25,8 +25,6 @@ class HttpResponseFactory: public IResponseFactory {
 
 	private:
 		HttpResponseFactory();
-		bool	isKeepAlive_();
-		bool	hasAcceptedFormat_(HttpRequest *request_);
 		IResponse	*createHttpGetResponse_();
 		IResponse	*createHttpPostResponse_();
 		IResponse	*createHttpDeleteResponse_();
@@ -36,13 +34,9 @@ class HttpResponseFactory: public IResponseFactory {
 
 		typedef  IResponse *(HttpResponseFactory::* responseCreatorMethod)();
 		std::map<std::string, responseCreatorMethod>	concrete_responses_;
-		const ServerConfig &server_config_;
 		HttpRequest	*request_;
+		const ServerConfig &server_config_;
 		RequestConfig	*request_config_;
 };
 
 #endif  // SRCS_INCS_HTTPRESPONSEFACTORY_HPP_
-
-// 1. Extrapolar la lógica de creación a Factory HTTP-respnse
-// 2. Extraer métodos comunes a una clase común HttpRequest
-// Tiene que manejar config también.

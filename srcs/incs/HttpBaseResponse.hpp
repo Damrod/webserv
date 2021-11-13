@@ -5,7 +5,7 @@
 #include <ctime>
 #include <CGI.hpp>
 #include <IResponse.hpp>
-#include <AHttpResponse.hpp>
+#include <HttpResponse.hpp>
 #include <HttpRequest.hpp>
 #include <RequestConfig.hpp>
 #include <File.hpp>
@@ -24,7 +24,7 @@ class HttpBaseResponse: public IResponse {
 		void	DefaultStatusResponse_(int code);
 		void	SetRawResponse_(
 								int code,
-								AHttpResponse::HeadersMap headers,
+								HttpResponse::HeadersMap headers,
 								std::string body);
 
         int	keep_alive_;

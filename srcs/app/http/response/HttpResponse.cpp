@@ -1,12 +1,12 @@
-#include <AHttpResponse.hpp>
+#include <HttpResponse.hpp>
 #include <sstream>
 #include <stdexcept>
 #include <HttpStatusCodes.hpp>
 #include <StringUtils.hpp>
 
-const char AHttpResponse::kCRLF_[] = "\r\n";
+const char HttpResponse::kCRLF_[] = "\r\n";
 
-AHttpResponse::AHttpResponse(
+HttpResponse::HttpResponse(
 			std::size_t status_code,
 			std::map<HeaderName, HeaderValue> headers,
 			std::string	body,
@@ -19,18 +19,18 @@ AHttpResponse::AHttpResponse(
 			reason_phrase_(HttpStatusCodes::GetReasonPhrase(status_code))
 {
 	if (!HttpStatusCodes::IsValid(status_code)) {
-		throw std::invalid_argument("[AHttpResponse] Invalid Status");
+		throw std::invalid_argument("[HttpResponse] Invalid Status");
 	}
 	AddCommonHeaders_();
 	AddContentLength_();
-	if (body == NULL) {
+	if (body_.empty()) {
 		AddDefaultResponseBody_();
 	}
 }
 
-AHttpResponse::~AHttpResponse() {}
+HttpResponse::~HttpResponse() {}
 
-std::string	AHttpResponse::RawContent() const {
+std::string	HttpResponse::RawContent() const {
 	std::stringstream	ss;
 
 	ss << http_version_ << ' ' << status_code_ << ' ' << reason_phrase_ <<
@@ -46,13 +46,13 @@ std::string	AHttpResponse::RawContent() const {
 	return ss.str();
 }
 
-void	AHttpResponse::AddContentLength_() {
+void	HttpResponse::AddContentLength_() {
 	std::stringstream	ss;
 	ss << body_.size();
 	headers_["content-length"] = ss.str();
 }
 
-void	AHttpResponse::AddCommonHeaders_() {
+void	HttpResponse::AddCommonHeaders_() {
 	AddHeader_("Server", "webserv");
 	if (keep_alive_) {
 		AddHeader_("Connection", "keep-alive");
@@ -62,7 +62,11 @@ void	AHttpResponse::AddCommonHeaders_() {
 	AddHeader_("Date", CurrentDate_());
 }
 
-std::string	AHttpResponse::CurrentDate_() const {
+void	HttpResponse::AddHeader_(const std::string &name, const std::string &val) {
+    headers_.insert(std::make_pair(name, val));
+}
+
+std::string	HttpResponse::CurrentDate_() const {
 	char				buffer[100];
 	const std::time_t	date = std::time(NULL);
 	std::strftime(buffer,
@@ -72,7 +76,7 @@ std::string	AHttpResponse::CurrentDate_() const {
 	return buffer;
 }
 
-std::string	AHttpResponse::AddDefaultResponseBody_() {
+void	HttpResponse::AddDefaultResponseBody_() {
 	std::stringstream	ss;
 	ss << status_code_ << " " << HttpStatusCodes::GetReasonPhrase(status_code_);
 	const std::string	message = ss.str();
@@ -85,7 +89,7 @@ std::string	AHttpResponse::AddDefaultResponseBody_() {
 		"</html>\n";
 }
 
-std::ostream&	operator<<(std::ostream &os, const AHttpResponse &response) {
+std::ostream&	operator<<(std::ostream &os, const HttpResponse &response) {
 	os << response.RawContent();
 	return os;
 }

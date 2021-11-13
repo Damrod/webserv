@@ -4,11 +4,11 @@ HttpErrorResponse::HttpErrorResponse(
 	int error_code,
 	RequestConfig *requestConfig,
 	HttpRequest *request) :
-	HttpBaseResponse(requestConfig, request),
-	error_code_(error_code)
+	HttpBaseResponse(requestConfig, request)
 {
+	error_code_ = error_code;
 	const std::string error_page_path =
-		requestConfig_->GetErrorPagePath(error_code);
+		request_config_->GetErrorPagePath(error_code_);
 
 	if (error_page_path.empty()) {
 		DefaultStatusResponse_(error_code_);

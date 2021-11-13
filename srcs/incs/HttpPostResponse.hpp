@@ -16,7 +16,7 @@
 #include <RequestConfig.hpp>
 #include <HttpErrorResponse.hpp>
 #include <File.hpp>
-#include <AHttpResponse.hpp>
+#include <HttpResponse.hpp>
 #include <HttpBaseResponse.hpp>
 
 

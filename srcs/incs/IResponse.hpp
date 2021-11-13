@@ -7,6 +7,7 @@ class IResponse {
 	public:
 		virtual	std::string Content() = 0;
 		virtual bool	KeepAlive() = 0;
+		virtual ~IResponse() {};
 };
 
 #endif  // SRCS_INCS_IRESPONSE_HPP_

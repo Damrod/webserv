@@ -6,7 +6,7 @@ HttpGetResponse::HttpGetResponse(
 	HttpBaseResponse(request_config, request)
 {
 	if (error_code_) {
-			SetErrorRawResponse_(error_code_);
+		SetErrorRawResponse_(error_code_);
 	} else {
 		const std::string full_path =
 								request_config_->GetRoot() + request_->GetPath();
@@ -15,8 +15,7 @@ HttpGetResponse::HttpGetResponse(
 
 			if (file.IsRegularFile()) {
 				HandleRegularFile_(file);
-			}
-			else if (file.HasEndSlash()) {
+			} else if (file.HasEndSlash()) {
 				HandleSlashEndedFile_(file);
 			} else {
 				MovedPermanently_(*request_);
@@ -28,7 +27,7 @@ HttpGetResponse::HttpGetResponse(
 }
 
 void	HttpGetResponse::MovedPermanently_(const HttpRequest &request) {
-	AHttpResponse::HeadersMap headers;
+	HttpResponse::HeadersMap headers;
 	std::stringstream url;
 
 	url	<< "http://"
@@ -40,11 +39,11 @@ void	HttpGetResponse::MovedPermanently_(const HttpRequest &request) {
 
 	headers.insert(std::make_pair("Content-Type", "text/html"));
 	headers.insert(std::make_pair("Location", url.str()));
-	SetRawResponse_(301, headers, NULL);
+	SetRawResponse_(301, headers, "");
 }
 
 void	HttpGetResponse::ListDirectory_(File file, const std::string &request_path) {
-	AHttpResponse::HeadersMap headers;
+	HttpResponse::HeadersMap headers;
 	std::stringstream bodyStream;
 	std::string body;
 	std::string full_path;

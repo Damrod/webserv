@@ -12,7 +12,7 @@ HttpDeleteResponse::HttpDeleteResponse(
 										request_
 										).Content();
 	} else {
-		AHttpResponse::HeadersMap headers;
+		HttpResponse::HeadersMap headers;
 		std::string	body = "Responding to a DELETE request\n";
 
 		headers.insert(std::make_pair("Content-Type", "text/plain"));

@@ -6,6 +6,7 @@ HttpBaseResponse::HttpBaseResponse(
 	request_config_(request_config),
 	request_(request)
 {
+
 	keep_alive_ = (request_->HasHeader("Connection") &&
 					ToLowerString(request_->GetHeaderValue("Connection")) == "close")
 					? false
@@ -32,7 +33,7 @@ std::string	 HttpBaseResponse::Content() {
 }
 
 void	HttpBaseResponse::Serve_(File file) {
-	AHttpResponse::HeadersMap headers;
+	HttpResponse::HeadersMap headers;
 	std::string body;
 
 	headers.insert(std::make_pair("Content-Type", file.GetMimeType()));
@@ -50,18 +51,18 @@ void	HttpBaseResponse::ExecuteCGI_(File file) {
 }
 
 void	HttpBaseResponse::DefaultStatusResponse_(int code) {
-	AHttpResponse::HeadersMap headers;
+	HttpResponse::HeadersMap headers;
 	headers.insert(std::make_pair("Content-Type", "text/html"));
 
-	SetRawResponse_(code, headers, NULL);
+	SetRawResponse_(code, headers, "");
 }
 
 void	HttpBaseResponse::SetRawResponse_(
 										int code,
-										AHttpResponse::HeadersMap headers,
+										HttpResponse::HeadersMap headers,
 										std::string body)
 {
-	raw_response_ = AHttpResponse(
+	raw_response_ = HttpResponse(
 								code,
 								headers,
 								body,
