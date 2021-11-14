@@ -9,9 +9,10 @@ HttpErrorResponse::HttpErrorResponse(
 	const std::string error_page_path =
 		request_config_->GetErrorPagePath(error_code_);
 
+	File file(error_page_path);
 	if (error_page_path.empty()) {
 		DefaultStatusResponse_(error_code_);
 	} else {
-		Serve_(error_page_path);
+		Serve_(file);
 	}
 }

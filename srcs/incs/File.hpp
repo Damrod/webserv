@@ -3,6 +3,7 @@
 
 #include <sys/stat.h>
 #include <dirent.h>
+#include <errno.h>
 #include <string>
 #include <fstream>
 #include <iostream>
