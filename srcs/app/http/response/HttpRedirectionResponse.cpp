@@ -13,6 +13,6 @@ HttpRedirectionResponse::HttpRedirectionResponse(
 
 		headers.insert(std::make_pair("Content-Type", "text/html"));
 		headers.insert(std::make_pair("Location", request_config_->GetReturnUrl()));
-		SetRawResponse_(request_config_->GetReturnStatus(), headers, NULL);
+		SetRawResponse_(request_config_->GetReturnStatus(), headers, "");
 	}
 }
