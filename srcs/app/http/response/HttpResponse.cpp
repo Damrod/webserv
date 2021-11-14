@@ -16,8 +16,7 @@ HttpResponse::HttpResponse(
 			body_(body),
 			keep_alive_(keep_alive),
 			http_version_("HTTP/1.1"),
-			reason_phrase_(HttpStatusCodes::GetReasonPhrase(status_code))
-{
+			reason_phrase_(HttpStatusCodes::GetReasonPhrase(status_code)) {
 	if (!HttpStatusCodes::IsValid(status_code)) {
 		throw std::invalid_argument("[HttpResponse] Invalid Status");
 	}

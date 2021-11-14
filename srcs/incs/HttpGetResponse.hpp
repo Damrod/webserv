@@ -1,15 +1,14 @@
 #ifndef SRCS_INCS_HTTPGETRESPONSE_HPP_
 #define SRCS_INCS_HTTPGETRESPONSE_HPP_
 
-#include <string>
-#include <sys/stat.h>
-#include <ctime>
-#include <CGI.hpp>
-#include <fstream>
 #include <dirent.h>
+#include <sys/stat.h>
 #include <sys/types.h>
+#include <string>
+#include <ctime>
+#include <fstream>
 #include <iostream>
-
+#include <CGI.hpp>
 #include <MimeTypes.hpp>
 #include <IResponse.hpp>
 #include <HttpResponse.hpp>

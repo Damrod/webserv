@@ -1,20 +1,20 @@
 #ifndef SRCS_INCS_HTTPDELETERESPONSE_HPP_
 #define SRCS_INCS_HTTPDELETERESPONSE_HPP_
 
-#include <string>
-#include <IResponse.hpp>
-#include <HttpErrorResponse.hpp>
-#include <HttpBaseResponse.hpp>
-#include <sys/stat.h>
-#include <HttpRequest.hpp>
-#include <ctime>
-#include <RequestConfig.hpp>
-#include <CGI.hpp>
-#include <MimeTypes.hpp>
-#include <fstream>
 #include <dirent.h>
+#include <sys/stat.h>
 #include <sys/types.h>
+#include <ctime>
+#include <string>
+#include <fstream>
 #include <iostream>
+#include <CGI.hpp>
+#include <IResponse.hpp>
+#include <MimeTypes.hpp>
+#include <HttpRequest.hpp>
+#include <RequestConfig.hpp>
+#include <HttpBaseResponse.hpp>
+#include <HttpErrorResponse.hpp>
 
 class HttpDeleteResponse: public HttpBaseResponse {
 	public:

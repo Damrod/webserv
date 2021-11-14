@@ -41,7 +41,8 @@ void	Server::BindListeningSocket_() {
 
 void	Server::AddConnection_(int sd) {
 	HttpRequest *request = new HttpRequest();
-	HttpResponseFactory *response_factory = new HttpResponseFactory(request, settings_);
+	HttpResponseFactory *response_factory =
+							new HttpResponseFactory(request, settings_);
 	Connection *connection = new Connection(sd, response_factory, request);
 	connections_.insert(std::make_pair(sd, connection));
 	fdSets_->addToReadSet(sd);

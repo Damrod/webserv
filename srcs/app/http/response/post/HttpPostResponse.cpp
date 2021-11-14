@@ -3,8 +3,7 @@
 HttpPostResponse::HttpPostResponse(
 	RequestConfig *request_config,
 	HttpRequest *request) :
-	HttpBaseResponse(request_config, request)
-{
+	HttpBaseResponse(request_config, request) {
 	if (error_code_) {
 			SetErrorRawResponse_(error_code_);
 	} else {
@@ -74,6 +73,5 @@ void	HttpPostResponse::SetErrorRawResponse_(int error_code) {
 	raw_response_ = HttpErrorResponse(
 									error_code,
 									request_config_,
-									request_
-									).Content();
+									request_).Content();
 }

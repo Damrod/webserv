@@ -1,23 +1,23 @@
 #ifndef SRCS_INCS_HTTPPOSTRESPONSE_HPP_
 #define SRCS_INCS_HTTPPOSTRESPONSE_HPP_
 
-#include <string>
-#include <sys/stat.h>
-#include <ctime>
-#include <CGI.hpp>
-#include <fstream>
 #include <dirent.h>
+#include <sys/stat.h>
 #include <sys/types.h>
+#include <string>
+#include <ctime>
+#include <fstream>
 #include <iostream>
-#include <FormFile.hpp>
-#include <IResponse.hpp>
-#include <MimeTypes.hpp>
-#include <HttpRequest.hpp>
-#include <RequestConfig.hpp>
-#include <HttpErrorResponse.hpp>
+#include <CGI.hpp>
 #include <File.hpp>
+#include <FormFile.hpp>
+#include <MimeTypes.hpp>
+#include <IResponse.hpp>
+#include <HttpRequest.hpp>
 #include <HttpResponse.hpp>
+#include <RequestConfig.hpp>
 #include <HttpBaseResponse.hpp>
+#include <HttpErrorResponse.hpp>
 
 
 class HttpPostResponse: public HttpBaseResponse {
@@ -36,9 +36,3 @@ class HttpPostResponse: public HttpBaseResponse {
 };
 
 #endif  // SRCS_INCS_HTTPPOSTRESPONSE_HPP_
-
-// NOTAS, siguientes pasos
-// - Crear objetos con métodos comunes. Objetos que encapsulen cierta funcionalidad (acordarse de método de error)
-// - Establecer comportamiento para cada uno de los métodos
-// - Empalmar con Connection
-// - Arreglar tests

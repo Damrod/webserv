@@ -90,8 +90,9 @@ void CGI::SetHeaders_(void) {
 																 __LINE__);
 		std::string statement = remain.substr(0, next_statement_delimiter);
 		size_t colonPos = NextStatementThrowing_(statement, ":", true, __LINE__);
-		parsedHeaders_.insert(std::make_pair(TrimString(statement.substr(0, colonPos), " "),
-							TrimString(statement.substr(colonPos + 1), " ")));
+		parsedHeaders_.insert(
+					std::make_pair(TrimString(statement.substr(0, colonPos), " "),
+					TrimString(statement.substr(colonPos + 1), " ")));
 		size_t remain_delimiter = NextStatementThrowing_(remain, kCRLF_, false,
 							 __LINE__) + std::string(kCRLF_).size();
 		remain = remain.substr(remain_delimiter > remain.size() ?

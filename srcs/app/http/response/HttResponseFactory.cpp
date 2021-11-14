@@ -5,8 +5,7 @@ HttpResponseFactory::HttpResponseFactory(
 		const ServerConfig &server_config):
 		request_(request),
 		server_config_(server_config),
-		request_config_(NULL)
-{
+		request_config_(NULL) {
 	concrete_responses_.insert(std::make_pair(
 		"GET",
 		&HttpResponseFactory::createHttpGetResponse_

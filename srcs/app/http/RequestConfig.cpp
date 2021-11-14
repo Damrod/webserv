@@ -14,8 +14,7 @@ RequestConfig::RequestConfig(const ServerConfig &server_config,
 	index_(common_.index),
 	error_pages_(common_.error_pages),
 	upload_store_(common_.upload_store),
-	cgi_assign_(common_.cgi_assign)
-{
+	cgi_assign_(common_.cgi_assign) {
 		SetRedirectionConfig_(server_config);
 }
 

@@ -3,8 +3,7 @@
 HttpGetResponse::HttpGetResponse(
 	RequestConfig *request_config,
 	HttpRequest *request) :
-	HttpBaseResponse(request_config, request)
-{
+	HttpBaseResponse(request_config, request) {
 	if (error_code_) {
 		SetErrorRawResponse_(error_code_);
 	} else {
@@ -42,7 +41,9 @@ void	HttpGetResponse::MovedPermanently_(const HttpRequest &request) {
 	SetRawResponse_(301, headers, "");
 }
 
-void	HttpGetResponse::ListDirectory_(File file, const std::string &request_path) {
+void	HttpGetResponse::ListDirectory_(
+								File file,
+								const std::string &request_path) {
 	HttpResponse::HeadersMap headers;
 	std::stringstream bodyStream;
 	std::string body;
@@ -93,6 +94,5 @@ void	HttpGetResponse::SetErrorRawResponse_(int error_code) {
 	raw_response_ = HttpErrorResponse(
 									error_code,
 									request_config_,
-									request_
-									).Content();
+									request_).Content();
 }

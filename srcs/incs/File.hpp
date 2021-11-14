@@ -1,21 +1,21 @@
 #ifndef SRCS_INCS_FILE_HPP_
 #define SRCS_INCS_FILE_HPP_
 
+#include <sys/stat.h>
+#include <dirent.h>
 #include <string>
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <sys/stat.h>
-#include <dirent.h>
 #include <MimeTypes.hpp>
 
 class File {
-    public:
-        File(const std::string &file_path);
+ public:
+    	explicit File(const std::string &file_path);
 		std::string	GetPathExtension() const;
 		std::string	GetMimeType() const;
 		std::string	GetContent();
-		std::string GetDirectoryContent();
+		std::string	GetDirectoryContent();
 		void	SetSubpath(std::string subpath);
 		bool	IsRegularFile() const;
 		bool	IsDirectory() const;
@@ -23,16 +23,17 @@ class File {
 		void	Upload(std::string upload_path, std::string content);
 
         class Error {
-            public:
-                Error(int errCode): errCode_(errCode) {};
+         public:
+            	explicit	Error(int errCode): errCode_(errCode) {}
                 int what() const throw() {
 	             	return errCode_;
                 }
-            private:
+
+         private:
                 int errCode_;
         };
 
-    private:
+ private:
 		void	SetPathExtension_();
 		void	ThrowPathError_();
 

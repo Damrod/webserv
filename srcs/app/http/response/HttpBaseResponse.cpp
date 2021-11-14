@@ -4,9 +4,7 @@ HttpBaseResponse::HttpBaseResponse(
 	RequestConfig *request_config,
 	HttpRequest *request):
 	request_config_(request_config),
-	request_(request)
-{
-
+	request_(request) {
 	keep_alive_ = (request_->HasHeader("Connection") &&
 					ToLowerString(request_->GetHeaderValue("Connection")) == "close")
 					? false
@@ -60,8 +58,7 @@ void	HttpBaseResponse::DefaultStatusResponse_(int code) {
 void	HttpBaseResponse::SetRawResponse_(
 										int code,
 										HttpResponse::HeadersMap headers,
-										std::string body)
-{
+										std::string body) {
 	raw_response_ = HttpResponse(
 								code,
 								headers,

@@ -2,15 +2,13 @@
 
 HttpDeleteResponse::HttpDeleteResponse(
 	RequestConfig *requestConfig,
-	HttpRequest *request) : HttpBaseResponse(requestConfig, request)
-{
+	HttpRequest *request) : HttpBaseResponse(requestConfig, request) {
 	// TODO(any) Implement DELETE
 	if (error_code_) {
 		raw_response_ = HttpErrorResponse(
 										error_code_,
 										request_config_,
-										request_
-										).Content();
+										request_).Content();
 	} else {
 		HttpResponse::HeadersMap headers;
 		std::string	body = "Responding to a DELETE request\n";
