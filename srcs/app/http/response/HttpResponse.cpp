@@ -27,8 +27,6 @@ HttpResponse::HttpResponse(
 	AddContentLength_();
 }
 
-HttpResponse::~HttpResponse() {}
-
 std::string	HttpResponse::RawContent() const {
 	std::stringstream	ss;
 

@@ -18,7 +18,6 @@ class HttpResponse {
 						std::map<HeaderName, HeaderValue> headers,
 						std::string	body,
 						bool	keep_alive);
-					~HttpResponse();
 		virtual std::string	RawContent() const;
 
 		typedef	std::map<HeaderName, HeaderValue>	HeadersMap;
