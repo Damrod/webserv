@@ -20,11 +20,11 @@ HttpResponse::HttpResponse(
 	if (!HttpStatusCodes::IsValid(status_code)) {
 		throw std::invalid_argument("[HttpResponse] Invalid Status");
 	}
-	AddCommonHeaders_();
-	AddContentLength_();
 	if (body_.empty()) {
 		AddDefaultResponseBody_();
 	}
+	AddCommonHeaders_();
+	AddContentLength_();
 }
 
 HttpResponse::~HttpResponse() {}
