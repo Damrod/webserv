@@ -5,10 +5,11 @@
 
 class IRequest {
 	public:
-		virtual std::size_t	ParseRawString(const std::string &raw_string) = 0;
+		virtual				~IRequest() {}
+		virtual	void		SetContent(const std::string &raw_request) = 0;
+		virtual std::size_t	ParsedOffset() const = 0;
 		virtual RequestState::State	GetState() const = 0;
 		virtual void		Reset() = 0;
-		virtual				~IRequest() {}
 };
 
 #endif  // SRCS_INCS_IREQUEST_HPP_

@@ -9,17 +9,19 @@
 #include <sstream>
 #include <map>
 #include <HttpRequest.hpp>
-#include <HttpResponse.hpp>
-#include <RequestLocation.hpp>
+#include <RequestConfig.hpp>
 #include <SyscallWrap.hpp>
 
 class CGI {
  public:
-	CGI(const HttpRequest &request, const RequestLocation &location,
-		const std::string &extension, HttpResponse *response);
+	CGI(const HttpRequest &request, const RequestConfig &location,
+		const std::string &extension);
 	virtual ~CGI(void);
 	void ExecuteCGI(void);
 	int  GetExecReturn() const;
+	std::string  GetRawOutput() const;
+	std::string  GetBody() const;
+	std::map<std::string, std::string>	GetHeaders() const;
 
  private:
 	enum {
@@ -38,14 +40,14 @@ class CGI {
 	void CloseAssign_(int *fd);
 	int execRet_;
 	std::string CGIout_;
-	std::string CGIoutHeaders_;
 	std::string CGIoutBody_;
+	std::string CGIoutHeaders_;
+	std::map<std::string, std::string> parsedHeaders_;
 	const HttpRequest &request_;
-	const RequestLocation *request_location_;
+	const RequestConfig *requestConfig_;
 	const std::string reqBody_;
 	const std::string arg_path_;
 	const std::string exec_path_;
-	HttpResponse *response_;
 	std::string raw_response_;
 	const std::map<std::string, std::string> CGIenvMap_;
 	char * const *CGIenv_;
