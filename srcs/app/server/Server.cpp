@@ -15,9 +15,6 @@ Server::~Server() {
 }
 
 void	Server::BindListeningSocket_() {
-	if (listen_sd_ < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
 	if (fcntl(listen_sd_, F_SETFL, O_NONBLOCK) < 0) {
 		throw std::runtime_error(std::strerror(errno));
 	}
@@ -43,9 +40,10 @@ void	Server::BindListeningSocket_() {
 }
 
 void	Server::AddConnection_(int sd) {
-	HttpRequestHandler *handler = new HttpRequestHandler(settings_);
 	HttpRequest *request = new HttpRequest();
-	Connection *connection = new Connection(sd, handler, request);
+	HttpResponseFactory *response_factory =
+							new HttpResponseFactory(request, settings_);
+	Connection *connection = new Connection(sd, response_factory, request);
 	connections_.insert(std::make_pair(sd, connection));
 	fdSets_->addToReadSet(sd);
 }
@@ -74,11 +72,7 @@ bool	Server::HasConnection(int sd) {
 
 void	Server::ReceiveRequest(int sd) {
 	std::map<int, Connection *>::iterator it = connections_.find(sd);
-	if (it == connections_.end()) {
-		RemoveConnection_(sd);
-	}
 	ReceiveRequestStatus::Type status = it->second->ReceiveRequest();
-
 	if (status == ReceiveRequestStatus::kComplete) {
 		fdSets_->addToWriteSet(sd);
 	} else if (status == ReceiveRequestStatus::kFail) {
@@ -88,10 +82,6 @@ void	Server::ReceiveRequest(int sd) {
 
 void	Server::SendResponse(int sd) {
 	std::map<int, Connection *>::iterator it = connections_.find(sd);
-	if (it == connections_.end()) {
-		RemoveConnection_(sd);
-	}
-
 	SendResponseStatus::Type status = it->second->SendResponse();
 	if (status == SendResponseStatus::kCompleteKeep) {
 		fdSets_->removeFromWriteSet(sd);

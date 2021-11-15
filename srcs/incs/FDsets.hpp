@@ -15,6 +15,8 @@ class FDsets {
 		fd_set		*getWriteSet();
 		bool		isReadSet(int fd) const;
 		bool		isWriteSet(int fd) const;
+		bool		isAllReadSet(int fd) const;
+		bool		isAllWriteSet(int fd) const;
 
 	private:
 		void		removeFromReadSet_(int fd);

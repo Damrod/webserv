@@ -4,7 +4,8 @@
 
 class IResponseFactory {
 	public:
-		virtual IResponse * createResponse() = 0;
+		virtual IResponse * Response() = 0;
+		virtual ~IResponseFactory() {}
 };
 
 #endif  // SRCS_INCS_IRESPONSEFACTORY_HPP_

@@ -2,11 +2,18 @@
 #define SRCS_INCS_HTTPREDIRECTIONRESPONSE_HPP_
 
 #include <string>
-#include "IResponse.hpp"
+#include <ctime>
+#include <IResponse.hpp>
+#include <HttpBaseResponse.hpp>
+#include <HttpErrorResponse.hpp>
+#include <HttpRequest.hpp>
+#include <RequestConfig.hpp>
 
-class HttpRedirectionResponse: public IResponse {
+class HttpRedirectionResponse: public HttpBaseResponse  {
 	public:
-		std::string content();
+		HttpRedirectionResponse(
+			RequestConfig *requestConfig,
+			HttpRequest *request);
 };
 
 #endif  // SRCS_INCS_HTTPREDIRECTIONRESPONSE_HPP_

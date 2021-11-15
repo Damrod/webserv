@@ -8,6 +8,9 @@ FDsets::FDsets() {
 
 void	FDsets::addToWriteSet(int fd) {
 	FD_SET(fd, &write_set_);
+	if (max_fd_ < fd) {
+		max_fd_ = fd;
+	}
 }
 
 void	FDsets::addToReadSet(int fd) {
@@ -25,7 +28,7 @@ void	FDsets::removeFd(int fd) {
 	removeFromReadSet_(fd);
 	removeFromWriteSet(fd);
 	if (fd == max_fd_) {
-		while (!isReadSet(max_fd_)) {
+		while (!isAllReadSet(max_fd_) && !isAllWriteSet(max_fd_)) {
 			--max_fd_;
 		}
 	}
@@ -41,7 +44,7 @@ fd_set	*FDsets::getReadSet() {
 }
 
 fd_set	*FDsets::getWriteSet() {
-	std::memcpy(&tmp_write_set_, &write_set_, sizeof(read_set_));
+	std::memcpy(&tmp_write_set_, &write_set_, sizeof(write_set_));
 	return &tmp_write_set_;
 }
 
@@ -51,6 +54,14 @@ bool	FDsets::isReadSet(int fd) const {
 
 bool	FDsets::isWriteSet(int fd) const {
 	return FD_ISSET(fd, &tmp_write_set_);
+}
+
+bool	FDsets::isAllReadSet(int fd) const {
+	return FD_ISSET(fd, &read_set_);
+}
+
+bool	FDsets::isAllWriteSet(int fd) const {
+	return FD_ISSET(fd, &write_set_);
 }
 
 void	FDsets::removeFromReadSet_(int fd) {
