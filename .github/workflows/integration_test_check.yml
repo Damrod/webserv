@@ -29,5 +29,5 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Run integration tests
-        timeout-minutes: 2
+        timeout-minutes: 3
         run: make integration_test -j12
