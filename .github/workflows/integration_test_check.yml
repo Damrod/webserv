@@ -30,4 +30,4 @@ jobs:
 
       - name: Run integration tests
         timeout-minutes: 2
-        run: make integration_test
+        run: make integration_test -j12
