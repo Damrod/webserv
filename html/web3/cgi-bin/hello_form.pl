@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 local ($buffer, @pairs, $pair, $name, $value, %FORM);
 # Read in text
