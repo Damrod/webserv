@@ -16,7 +16,7 @@ CGI::CGI(const HttpRequest &request, const RequestConfig &location,
 	request_(request),
 	requestConfig_(&location),
 	reqBody_(request.GetBody()),
-	arg_path_(requestConfig_->GetRoot() + request.GetPath()),
+	arg_path_(requestConfig_->GetRoot() + DecodeUrl(request.GetPath())),
 	exec_path_(GetExecutable_(extension)),
 	CGIenvMap_(MakeEnv_()),
 	CGIenv_(MakeCEnv_()) {
