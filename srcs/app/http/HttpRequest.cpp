@@ -16,13 +16,11 @@ HttpRequest::HttpRequest()
 
 HttpRequest::~HttpRequest() {}
 
-std::size_t
-HttpRequest::ParseRawString(const std::string &raw_request) {
+void	HttpRequest::SetContent(const std::string &raw_request) {
 	offset_ = 0;
 	ParseRequestLine_(raw_request);
 	ParseHeaders_(raw_request);
 	ParseBody_(raw_request);
-	return offset_;
 }
 
 std::string	HttpRequest::GetMethod() const {
@@ -37,7 +35,7 @@ std::string	HttpRequest::GetPath() const {
 	return path_;
 }
 
-std::map<std::string, std::string>	HttpRequest::GetQueries() const {
+HttpRequest::QueriesMap	HttpRequest::GetQueries() const {
 	return queries_;
 }
 
@@ -71,11 +69,12 @@ std::string	HttpRequest::GetHttpVersion() const {
 	return http_version_;
 }
 
-std::map<std::string, std::string>	HttpRequest::GetHeaders() const {
+HttpRequest::HeadersMap	HttpRequest::GetHeaders() const {
 	return headers_;
 }
 
-std::string	HttpRequest::GetHeaderValue(const std::string &header_name) const {
+std::string
+	HttpRequest::GetHeaderValue(const std::string &header_name) const {
 	const std::string			header_name_lc = ToLowerString(header_name);
 	HeadersMap::const_iterator	map_it = headers_.find(header_name_lc);
 	if (map_it != headers_.end()) {
@@ -94,6 +93,10 @@ std::size_t	HttpRequest::GetPort() const {
 
 std::string HttpRequest::GetBody() const {
 	return body_;
+}
+
+std::size_t	HttpRequest::ParsedOffset() const {
+	return offset_;
 }
 
 bool	HttpRequest::HasHeader(const std::string &header_name) const {
@@ -216,7 +219,8 @@ void	HttpRequest::ParseHttpVersion_(const std::string &raw_request) {
 	}
 }
 
-bool	HttpRequest::IsValidHttpVersion_(const std::string &http_version) const {
+bool
+	HttpRequest::IsValidHttpVersion_(const std::string &http_version) const {
 	return http_version == "HTTP/1.1";
 }
 
