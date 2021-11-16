@@ -73,6 +73,7 @@ int CGI::ExecuteCGI(void) {
 	pid_t pid = SyscallWrap::forkWr();
 	if (pid == 0) {
 		std::signal(SIGCHLD, SIG_IGN);
+		std::signal(SIGPIPE, SIG_DFL);
 		try {
 			CloseAssign_(&fds_[0]);
 			int cgi_input = fileno(fp);
