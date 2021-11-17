@@ -8,7 +8,7 @@ HttpPostResponse::HttpPostResponse(
 			SetErrorRawResponse_(error_code_);
 	} else {
 		const std::string full_path =
-								request_config_->GetRoot() + request_->GetPath();
+						request_config_->GetRoot() + request_->GetDecodedPath();
 		// Mirar este try-catch en POST?
 		try {
 			File file(full_path);
@@ -37,7 +37,7 @@ void	HttpPostResponse::HandleCGI_(File file) {
 }
 
 void	HttpPostResponse::HandleUpload_(File file) {
-	if (IsUploadEnabled_() && IsValidUploadPath_(request_->GetPath())) {
+	if (IsUploadEnabled_() && IsValidUploadPath_(request_->GetDecodedPath())) {
 		Upload_(file);
 	} else {
 		SetErrorRawResponse_(404);

@@ -8,7 +8,7 @@ HttpGetResponse::HttpGetResponse(
 		SetErrorRawResponse_(error_code_);
 	} else {
 		const std::string full_path =
-								request_config_->GetRoot() + request_->GetPath();
+				request_config_->GetRoot() + request_->GetDecodedPath();
 		try {
 			File file(full_path);
 
@@ -33,7 +33,7 @@ void	HttpGetResponse::MovedPermanently_(const HttpRequest &request) {
 		<< request.GetHost()
 		<< ":"
 		<< request.GetPort()
-		<< request.GetPath()
+		<< request.GetDecodedPath()
 		<< "/";
 
 	headers.insert(std::make_pair("Content-Type", "text/html"));
@@ -79,7 +79,7 @@ void	HttpGetResponse::HandleRegularFile_(File file) {
 
 void	HttpGetResponse::HandleSlashEndedFile_(File file) {
 	if (request_config_->HasAutoindex()) {
-		ListDirectory_(file, request_->GetPath());
+		ListDirectory_(file, request_->GetDecodedPath());
 	} else {
 		file.SetSubpath(request_config_->GetIndex());
 		if (file.IsRegularFile()) {

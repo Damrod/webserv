@@ -16,7 +16,7 @@ CGI::CGI(const HttpRequest &request, const RequestConfig &location,
 	request_(request),
 	requestConfig_(&location),
 	reqBody_(request.GetBody()),
-	arg_path_(requestConfig_->GetRoot() + request.GetPath()),
+	arg_path_(requestConfig_->GetRoot() + request.GetDecodedPath()),
 	exec_path_(GetExecutable_(extension)),
 	CGIenvMap_(MakeEnv_()),
 	CGIenv_(MakeCEnv_()) {
@@ -44,6 +44,8 @@ std::map<std::string, std::string> CGI::MakeEnv_(void) {
 	env_.insert(std::make_pair("REDIRECT_STATUS", "200"));
 	env_.insert(std::make_pair("GATEWAY_INTERFACE", "CGI/1.1"));
 	env_.insert(std::make_pair("REQUEST_METHOD", request_.GetMethod()));
+	env_.insert(std::make_pair("CONTENT_LENGTH",
+									 request_.GetHeaderValue("Content-Length")));
 	env_.insert(std::make_pair("CONTENT_TYPE",
 									 request_.GetHeaderValue("Content-Type")));
 	env_.insert(std::make_pair("SERVER_PROTOCOL", "HTTP/1.1"));
@@ -51,6 +53,7 @@ std::map<std::string, std::string> CGI::MakeEnv_(void) {
 	env_.insert(std::make_pair("SERVER_PORT",
 											ValueToString(request_.GetPort())));
 	env_.insert(std::make_pair("QUERY_STRING", request_.GetQueryString()));
+	env_.insert(std::make_pair("SCRIPT_FILENAME", arg_path_));
 	return env_;
 }
 
