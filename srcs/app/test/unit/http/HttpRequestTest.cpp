@@ -11,7 +11,8 @@ TEST_CASE("ValidHttpGetRequestWithoutBody", "[http]") {
 	 	"\r\n";
 
 	HttpRequest	request;
-	REQUIRE(raw_request.size() == request.ParseRawString(raw_request));
+	request.SetContent(raw_request);
+	REQUIRE(raw_request.size() == request.ParsedOffset());
 	REQUIRE(RequestState::kComplete == request.GetState());
 	REQUIRE("GET" == request.GetMethod());
 	REQUIRE("/hello.txt" == request.GetRequestTarget());
@@ -39,7 +40,8 @@ TEST_CASE("ValidHttpPostRequestWithBody", "[http]") {
 		"User=Peter+Lee&pw=123456&action=login";
 
 	HttpRequest	request;
-	REQUIRE(raw_request.size() == request.ParseRawString(raw_request));
+	request.SetContent(raw_request);
+	REQUIRE(raw_request.size() == request.ParsedOffset());
 	REQUIRE("POST" == request.GetMethod());
 	REQUIRE("/bin/login" == request.GetRequestTarget());
 	REQUIRE("HTTP/1.1" == request.GetHttpVersion());
@@ -56,7 +58,7 @@ TEST_CASE("InvalidHttpRequestNoHost", "[http]") {
 		"GET /hello.txt HTTP/1.1\r\n"
 		"\r\n";
 	HttpRequest request;
-	request.ParseRawString(raw_request);
+	request.SetContent(raw_request);
 	REQUIRE(RequestState::kInvalid == request.GetState());
 }
 
@@ -66,7 +68,7 @@ TEST_CASE("InvalidHttpRequestHeaderWithoutDelimiter", "[http]") {
 		"Host 127.0.0.1:8000\r\n"
 		"\r\n";
 	HttpRequest request;
-	request.ParseRawString(raw_request);
+	request.SetContent(raw_request);
 	REQUIRE(RequestState::kInvalid == request.GetState());
 }
 
@@ -76,7 +78,7 @@ TEST_CASE("InvalidHttpRequestRelativeRequestTarget", "[http]") {
 		"Host: 127.0.0.1:8000\r\n"
 		"\r\n";
 	HttpRequest request;
-	request.ParseRawString(raw_request);
+	request.SetContent(raw_request);
 	REQUIRE(RequestState::kInvalid == request.GetState());
 }
 
@@ -88,10 +90,10 @@ TEST_CASE("ValidPartialHttpRequestTwoParts", "[http]") {
 		"\r\n";
 
 	HttpRequest request;
-	request.ParseRawString(raw_request);
+	request.SetContent(raw_request);
 	REQUIRE(RequestState::kPartial == request.GetState());
 	const std::string body(42, 'a');
-	request.ParseRawString(body);
+	request.SetContent(body);
 	REQUIRE(RequestState::kComplete == request.GetState());
 }
 
@@ -103,7 +105,8 @@ TEST_CASE("ValidHttpRequestZeroContentLengthWithoutBody", "[http]") {
 		"\r\n";
 
 	HttpRequest	request;
-	REQUIRE(raw_request.size() == request.ParseRawString(raw_request));
+	request.SetContent(raw_request);
+	REQUIRE(raw_request.size() == request.ParsedOffset());
 	REQUIRE("0" == request.GetHeaderValue("Content-Length"));
 }
 
@@ -116,7 +119,7 @@ TEST_CASE("InvalidHttpRequestContentLengthInvalidCharacters", "[http]") {
 		"User=Peter+Lee&pw=123456&action=login";
 
 	HttpRequest request;
-	request.ParseRawString(raw_request);
+	request.SetContent(raw_request);
 	REQUIRE(RequestState::kInvalid == request.GetState());
 }
 
@@ -127,7 +130,7 @@ TEST_CASE("ValidHttpRequestHostWithPort", "[http]") {
 		"\r\n";
 
 	HttpRequest	request;
-	request.ParseRawString(raw_request);
+	request.SetContent(raw_request);
 	REQUIRE(RequestState::kComplete == request.GetState());
 	REQUIRE("localhost" == request.GetHost());
 	REQUIRE(8080 == request.GetPort());
@@ -140,7 +143,7 @@ TEST_CASE("ValidHttpRequestHostWithoutPort", "[http]") {
 		"\r\n";
 
 	HttpRequest	request;
-	request.ParseRawString(raw_request);
+	request.SetContent(raw_request);
 	REQUIRE(RequestState::kComplete == request.GetState());
 	REQUIRE("localhost" == request.GetHost());
 	REQUIRE(80 == request.GetPort());
@@ -153,7 +156,7 @@ TEST_CASE("InvalidHttpRequestInvalidHostAndPort", "[http]") {
 		"\r\n";
 
 	HttpRequest request;
-	request.ParseRawString(raw_request);
+	request.SetContent(raw_request);
 	REQUIRE(RequestState::kInvalid == request.GetState());
 }
 
@@ -164,7 +167,7 @@ TEST_CASE("InvalidHttpRequestNegativePort", "[http]") {
 		"\r\n";
 
 	HttpRequest request;
-	request.ParseRawString(raw_request);
+	request.SetContent(raw_request);
 	REQUIRE(RequestState::kInvalid == request.GetState());
 }
 
@@ -175,7 +178,8 @@ TEST_CASE("ValidHttpRequestWithQuery", "[http]") {
 		"\r\n";
 
 	HttpRequest request;
-	REQUIRE(raw_request.size() == request.ParseRawString(raw_request));
+	request.SetContent(raw_request);
+	REQUIRE(raw_request.size() == request.ParsedOffset());
 	REQUIRE("/test/demo_form.php" == request.GetPath());
 	REQUIRE("value1" == request.GetQueryValue("name1"));
 	REQUIRE("value2" == request.GetQueryValue("name2"));
@@ -197,7 +201,7 @@ TEST_CASE("InvalidHttpRequestURI", "[http]") {
 		"\r\n";
 
 	HttpRequest	request;
-	request.ParseRawString(raw_request);
+	request.SetContent(raw_request);
 	REQUIRE(RequestState::kInvalid == request.GetState());
 }
 
@@ -215,7 +219,8 @@ TEST_CASE("ValidHttpRequestTwoRequests", "[http]") {
 	std::string	both_requests = raw_request1 + raw_request2;
 
 	HttpRequest	request;
-	std::size_t offset = request.ParseRawString(both_requests);
+    request.SetContent(both_requests);
+	std::size_t offset = request.ParsedOffset();
 	REQUIRE(RequestState::kComplete == request.GetState());
 	REQUIRE(offset == raw_request1.size());
 }
@@ -227,7 +232,7 @@ TEST_CASE("InvalidHttpRequestInvalidHttpVersion", "[http]") {
 		"\r\n";
 
 	HttpRequest	request;
-	request.ParseRawString(raw_request);
+    request.SetContent(raw_request);
 	REQUIRE(RequestState::kInvalid == request.GetState());
 }
 
@@ -238,7 +243,7 @@ TEST_CASE("InvalidHttpRequestInvalidMethod", "[http]") {
 		"\r\n";
 
 	HttpRequest	request;
-	request.ParseRawString(raw_request);
+    request.SetContent(raw_request);
 	REQUIRE(RequestState::kInvalid == request.GetState());
 }
 
@@ -251,11 +256,14 @@ TEST_CASE("ValidHttpRequestParsePartialBody", "[http]") {
 	const std::string half_body(500, 'a');
 
 	HttpRequest	request;
-	REQUIRE(raw_request.size() == request.ParseRawString(raw_request));
+    request.SetContent(raw_request);
+	REQUIRE(raw_request.size() == request.ParsedOffset());
 	REQUIRE(RequestState::kPartial == request.GetState());
-	REQUIRE(half_body.size() == request.ParseRawString(half_body));
+    request.SetContent(half_body);
+	REQUIRE(half_body.size() == request.ParsedOffset());
 	REQUIRE(RequestState::kPartial == request.GetState());
-	REQUIRE(half_body.size() == request.ParseRawString(half_body));
+    request.SetContent(half_body);
+	REQUIRE(half_body.size() == request.ParsedOffset());
 	REQUIRE(RequestState::kComplete == request.GetState());
 	REQUIRE(half_body + half_body == request.GetBody());
 }
@@ -268,7 +276,7 @@ TEST_CASE("InvalidHttpRequestEmptyHeaderName", "[http]") {
 		"\r\n";
 
 	HttpRequest	request;
-	request.ParseRawString(raw_request);
+    request.SetContent(raw_request);
 	REQUIRE(RequestState::kInvalid == request.GetState());
 }
 
@@ -280,7 +288,7 @@ TEST_CASE("InvalidHttpRequestEmptyHeaderValue", "[http]") {
 		"\r\n";
 
 	HttpRequest	request;
-	request.ParseRawString(raw_request);
+    request.SetContent(raw_request);
 	REQUIRE(RequestState::kInvalid == request.GetState());
 }
 
@@ -292,6 +300,6 @@ TEST_CASE("InvalidHttpRequestNegativeContentLength", "[http]") {
 		"\r\n";
 
 	HttpRequest request;
-	request.ParseRawString(raw_request);
+    request.SetContent(raw_request);
 	REQUIRE(RequestState::kInvalid == request.GetState());
 }

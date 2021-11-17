@@ -9,11 +9,6 @@
 
 class HttpRequest : public IRequest {
 	private:
-		enum ParseState_ {
-			kParseRequestLine,
-			kParseHeaders,
-			kParseBody
-		};
 		typedef std::string							HeaderName;
 		typedef std::string							HeaderValue;
 		typedef	std::map<HeaderName, HeaderValue>	HeadersMap;
@@ -21,50 +16,30 @@ class HttpRequest : public IRequest {
 		typedef std::string							QueryValue;
 		typedef	std::map<QueryName, QueryValue>		QueriesMap;
 
-		static const char			kCRLF_[];
-		static const char			kWhitespace_[];
-		static const std::size_t	kPortMax_;
-
-		std::string	method_;
-		std::string	request_target_;
-		std::string	path_;
-		QueriesMap	queries_;
-		std::string	http_version_;
-		HeadersMap	headers_;
-		std::string	host_;
-		std::size_t	port_;
-		std::string	body_;
-		std::size_t	content_length_;
-
-		// This is an index into the raw_request string
-		// that keeps track of the characters parsed so far.
-		std::size_t	offset_;
-		ParseState_	parse_state_;
-		RequestState::State	state_;
-
 	public:
-					HttpRequest();
-					~HttpRequest();
-		std::size_t	ParseRawString(const std::string &raw_request);
+		HttpRequest();
+		~HttpRequest();
 		std::string	GetMethod() const;
 		std::string	GetRequestTarget() const;
 		std::string	GetPath() const;
 		QueriesMap	GetQueries() const;
 		std::string	GetQueryValue(const std::string &query_name) const;
 		std::string	GetQueryString() const;
-		bool		HasQuery(const std::string &query_name) const;
 		std::string	GetHttpVersion() const;
 		HeadersMap	GetHeaders() const;
 		std::string	GetHeaderValue(const std::string &header_name) const;
 		std::string	GetHost() const;
 		std::size_t	GetPort() const;
 		std::string	GetBody() const;
-		bool		HasHeader(const std::string &header_name) const;
-		void		Reset();
 		RequestState::State	GetState() const;
 		bool		IsPartial() const;
 		bool		IsComplete() const;
 		bool		IsInvalid() const;
+		bool		HasHeader(const std::string &header_name) const;
+		bool		HasQuery(const std::string &query_name) const;
+		void		Reset();
+		void		SetContent(const std::string &raw_request);
+		std::size_t	ParsedOffset() const;
 
 	private:
 		HttpRequest(const HttpRequest &);
@@ -90,6 +65,32 @@ class HttpRequest : public IRequest {
 		bool		IsValidHeaderName_(const std::string &header_name) const;
 		bool		IsValidHeaderValue_(const std::string &header_value) const;
 		bool		ContainOnlyVisibleChars_(const std::string &str) const;
+
+		enum ParseState_ {
+			kParseRequestLine,
+			kParseHeaders,
+			kParseBody
+		};
+
+		static const char			        kCRLF_[];
+		static const char			        kWhitespace_[];
+		static const std::size_t	        kPortMax_;
+		std::string                         method_;
+		std::string                         request_target_;
+		std::string                         path_;
+		std::string                         http_version_;
+		std::string                         host_;
+		std::size_t                         port_;
+		std::string                         body_;
+		std::size_t                         content_length_;
+		HeadersMap							headers_;
+		QueriesMap							queries_;
+
+		// This is an index into the raw_request string
+		// that keeps track of the characters parsed so far.
+		std::size_t	offset_;
+		ParseState_	parse_state_;
+		RequestState::State	state_;
 };
 
 std::ostream&	operator<<(std::ostream &os, const HttpRequest &request);

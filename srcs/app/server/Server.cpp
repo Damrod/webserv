@@ -1,7 +1,8 @@
 #include <Server.hpp>
 
-Server::Server(const ServerConfig &settings, int listen_sd)
-	: settings_(settings), listen_sd_(listen_sd) {
+Server::Server(const ServerConfig &settings, int listen_sd, FDsets *fdSets)
+	: settings_(settings), listen_sd_(listen_sd), fdSets_(fdSets) {
+		BindListeningSocket_();
 }
 
 Server::~Server() {
@@ -13,22 +14,56 @@ Server::~Server() {
 	close(listen_sd_);
 }
 
-// Delegate how to handle connection responsability to Server
-void	Server::AddConnection(int sd) {
-	HttpRequestHandler *handler = new HttpRequestHandler(settings_);
+void	Server::BindListeningSocket_() {
+	if (fcntl(listen_sd_, F_SETFL, O_NONBLOCK) < 0) {
+		throw std::runtime_error(std::strerror(errno));
+	}
+
+	struct sockaddr_in addr;
+	addr.sin_family = AF_INET;  // IPv4
+	addr.sin_port = htons(settings_.listen_port);
+	addr.sin_addr.s_addr = htonl(settings_.listen_address);
+	std::memset(addr.sin_zero, 0, sizeof(addr.sin_zero));
+
+	int on = 1;
+	if (setsockopt(listen_sd_, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0) {
+		throw std::runtime_error(std::strerror(errno));
+	}
+
+	if (bind(listen_sd_, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+		throw std::runtime_error(std::strerror(errno));
+	}
+
+	if (listen(listen_sd_, SOMAXCONN) < 0) {
+		throw std::runtime_error(std::strerror(errno));
+	}
+}
+
+void	Server::AddConnection_(int sd) {
 	HttpRequest *request = new HttpRequest();
-	Connection *connection = new Connection(sd, handler, request);
+	HttpResponseFactory *response_factory =
+							new HttpResponseFactory(request, settings_);
+	Connection *connection = new Connection(sd, response_factory, request);
 	connections_.insert(std::make_pair(sd, connection));
+	fdSets_->addToReadSet(sd);
 }
 
 void	Server::RemoveConnection(int sd) {
+	fdSets_->removeFd(sd);
 	close(sd);
 	delete connections_[sd];
 	connections_.erase(sd);
 }
 
-int		Server::GetListeningSocket() const {
-	return listen_sd_;
+void	Server::AcceptNewConnection() {
+	int new_sd = accept(listen_sd_, NULL, NULL);
+	if (new_sd < 0) {
+		throw std::runtime_error(std::strerror(errno));
+	}
+	if (fcntl(new_sd, F_SETFL, O_NONBLOCK) < 0) {
+		throw std::runtime_error(std::strerror(errno));
+	}
+	AddConnection_(new_sd);
 }
 
 bool	Server::HasConnection(int sd) {
@@ -39,18 +74,24 @@ int	Server::GetCgiOutputFd(int sd) {
 	return connections_[sd]->GetCgiOutputFd();
 }
 
-ReceiveRequestStatus::Type	Server::ReceiveRequest(int sd) {
+void	Server::ReceiveRequest(int sd) {
 	std::map<int, Connection *>::iterator it = connections_.find(sd);
-	if (it == connections_.end()) {
-		return ReceiveRequestStatus::kFail;
+	ReceiveRequestStatus::Type status = it->second->ReceiveRequest();
+	if (status == ReceiveRequestStatus::kComplete) {
+		fdSets_->addToWriteSet(sd);
+	} else if (status == ReceiveRequestStatus::kFail) {
+		RemoveConnection(sd);
 	}
-	return it->second->ReceiveRequest();
 }
 
 SendResponseStatus::Type	Server::SendResponse(int sd) {
 	std::map<int, Connection *>::iterator it = connections_.find(sd);
-	if (it == connections_.end()) {
-		return SendResponseStatus::kFail;
+	SendResponseStatus::Type status = it->second->SendResponse();
+	if (status == SendResponseStatus::kCompleteKeep) {
+		fdSets_->removeFromWriteSet(sd);
+	} else if (status == SendResponseStatus::kFail ||
+				status == SendResponseStatus::kCompleteClose) {
+		RemoveConnection(sd);
 	}
-	return it->second->SendResponse();
+	return status;
 }

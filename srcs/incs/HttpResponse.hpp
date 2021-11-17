@@ -1,6 +1,9 @@
 #ifndef SRCS_INCS_HTTPRESPONSE_HPP_
 #define SRCS_INCS_HTTPRESPONSE_HPP_
+
+#include <ctime>
 #include <map>
+#include <utility>
 #include <string>
 #include <HttpStatusCodes.hpp>
 
@@ -8,37 +11,36 @@ class HttpResponse {
 	private:
 		typedef std::string							HeaderName;
 		typedef std::string							HeaderValue;
-		typedef	std::map<HeaderName, HeaderValue>	HeadersMap;
 
 	public:
-		explicit	HttpResponse(std::size_t status_code);
-					~HttpResponse();
-		void		SetHttpVersion(const std::string &http_version);
-		void		SetStatusCode(std::size_t status_code);
-		void		SetReasonPhrase(const std::string &reason_phrase);
-		void		AddHeader(const std::string &name, const std::string &val);
-		void		SetBody(const std::string &body);
-		std::string	GetHttpVersion() const;
-		std::size_t	GetStatusCode() const;
-		std::string	GetReasonPhrase() const;
-		HeadersMap	GetHeaders() const;
-		bool		HasHeader(const std::string &header_name) const;
-		std::string	GetHeaderValue(const std::string &header_name) const;
-		std::string	GetBody() const;
-		std::string	CreateResponseString(bool set_body = true) const;
+		HttpResponse(
+					const std::size_t status_code,
+					const std::map<HeaderName, HeaderValue> &headers,
+					const std::string &body,
+					const bool keep_alive,
+					const bool is_cgi);
+		std::string	RawContent() const;
+
+		typedef	std::map<HeaderName, HeaderValue>	HeadersMap;
 
 	private:
 		HttpResponse();
 		HttpResponse(const HttpResponse &);
 		HttpResponse &	operator=(const HttpResponse &);
+		void	AddHeader_(const std::string &name, const std::string &val);
+		void	AddDefaultResponseBody_();
+		void	AddCommonHeaders_();
+		void	AddContentLength_();
+		std::string	CurrentDate_() const;
 
-		static const char							kCRLF_[];
-
-		std::string	http_version_;
+		static const char	kCRLF_[];
 		std::size_t	status_code_;
-		std::string	reason_phrase_;
 		HeadersMap	headers_;
 		std::string	body_;
+		bool		keep_alive_;
+		bool		is_cgi_;
+		std::string	http_version_;
+		std::string	reason_phrase_;
 };
 
 std::ostream&	operator<<(std::ostream &os, const HttpResponse &response);

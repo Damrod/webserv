@@ -1,13 +1,21 @@
 #include <Connection.hpp>
 
-Connection::Connection(int socket, IRequestHandler *request_handler,
-															IRequest *request)
-	: socket_(socket), request_handler_(request_handler), request_(request),
-	keep_alive_(true), is_cgi_(false), cgi_output_fd_(-1) {}
+Connection::Connection(
+					int socket,
+					IResponseFactory *response_factory,
+					IRequest *request) :
+					socket_(socket),
+					response_factory_(response_factory),
+					request_(request),
+					response_(NULL),
+					keep_alive_(true),
+					is_cgi_(false),
+					cgi_output_fd_(-1) {}
 
 Connection::~Connection() {
-	delete request_handler_;
+	delete response_factory_;
 	delete request_;
+	delete response_;
 }
 
 ReceiveRequestStatus::Type	Connection::ReceiveRequest() {
@@ -19,22 +27,26 @@ ReceiveRequestStatus::Type	Connection::ReceiveRequest() {
 	}
 	raw_request_.append(&buffer[0], &buffer[nbytes]);
 	if (request_->IsPartial()) {
-		std::size_t offset = request_->ParseRawString(raw_request_);
-		raw_request_.erase(0, offset);
+		request_->SetContent(raw_request_);
+		raw_request_.erase(0, request_->ParsedOffset());
 	}
-	if (request_->IsPartial())
+	if (request_->IsPartial()) {
 		return ReceiveRequestStatus::kSuccess;
+	}
 	return ReceiveRequestStatus::kComplete;
 }
 
 SendResponseStatus::Type	Connection::SendResponse() {
 	if (raw_response_.empty()) {
-		raw_response_ = request_handler_->BuildResponse(request_);
-		keep_alive_ = request_handler_->GetKeepAlive();
-		is_cgi_ = request_handler_->IsCgi();
+		response_ = response_factory_->Response();
+		raw_response_ = response_->Content();
+		keep_alive_ = response_->KeepAlive();
+		is_cgi_ = response_->IsCgi();
 		if (is_cgi_) {
-			cgi_output_fd_ = request_handler_->GetCgiOutputFd();
+			cgi_output_fd_ = response_->GetCgiOutputFd();
 		}
+		delete response_;
+		response_ = NULL;
 	}
 	int nbytes = send(socket_, raw_response_.c_str(), raw_response_.size(), 0);
 	if (nbytes <= 0) {

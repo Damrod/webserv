@@ -13,18 +13,19 @@
 #include <sstream>
 #include <map>
 #include <HttpRequest.hpp>
-#include <HttpResponse.hpp>
-#include <RequestLocation.hpp>
+#include <RequestConfig.hpp>
 #include <SyscallWrap.hpp>
 #include <Utils.hpp>
 
 class CGI {
  public:
-	CGI(const HttpRequest &request, const RequestLocation &location);
 	virtual ~CGI(void);
 	int ExecuteCGI(void);
+	CGI(const HttpRequest &request, const RequestConfig &location,
+		const std::string &extension);
 
  private:
+	CGI();
 	CGI(const CGI &);
 	CGI & operator=(const CGI &);
 
@@ -33,7 +34,7 @@ class CGI {
 	char **MakeCEnv_(void);
 	void CloseAssign_(int *fd);
 	const HttpRequest &request_;
-	const RequestLocation *request_location_;
+	const RequestConfig *requestConfig_;
 	const std::string arg_path_;
 	const std::string exec_path_;
 	const std::map<std::string, std::string> CGIenvMap_;

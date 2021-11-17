@@ -1,19 +1,21 @@
 #include <CGI.hpp>
 
 std::string CGI::GetExecutable_(const std::string &extension) {
-	if (request_location_->common.cgi_assign.count(extension) > 0) {
-			return request_location_->
-				common.cgi_assign.find(extension)->second;
-		}
-	throw std::invalid_argument("There is no CGI handler for the "
-									"requested file");
+	if (requestConfig_->HasCGI(extension)) {
+		return requestConfig_->GetCGIBin(extension);
+	}
+	throw std::invalid_argument(
+		"There is no CGI handler for the requested file");
 }
 
-CGI::CGI(const HttpRequest &request, const RequestLocation &location) :
+CGI::CGI(const HttpRequest &request, const RequestConfig &location,
+		 const std::string &extension  // we need the GetExtension
+									   // function somewhere common
+	) :
 	request_(request),
-	request_location_(&location),
-	arg_path_(request_location_->common.root + request.GetPath()),
-	exec_path_(GetExecutable_(PathExtension(arg_path_))),
+	requestConfig_(&location),
+	arg_path_(requestConfig_->GetRoot() + request.GetPath()),
+	exec_path_(GetExecutable_(extension)),
 	CGIenvMap_(MakeEnv_()),
 	CGIenv_(MakeCEnv_()) {
 	fds_[0] = -1;
@@ -67,7 +69,7 @@ int CGI::ExecuteCGI(void) {
 	std::fwrite(body.c_str(), 1, body.size(), fp);
 	std::rewind(fp);
 	SyscallWrap::pipeWr(fds_);
-	if (!IsExecutable(exec_path_) || !IsExecutable(arg_path_)) {
+	if (!IsExecutable(exec_path_)) {
 		throw std::runtime_error(std::strerror(errno));;
 	}
 	pid_t pid = SyscallWrap::forkWr();
