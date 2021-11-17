@@ -106,3 +106,8 @@ def test_post_upload_200(tmp_file):
     filepath = TMP_UPLOAD_DIR + filename
     assert filecmp.cmp(filepath, tmp_file.name)
     os.remove(filepath)
+
+def test_path_traversal():
+    url = 'http://localhost:8080/../../../../../../../../../../../../../../etc/passwd'
+    response = requests.get(url)
+    assert response.status_code == 400
