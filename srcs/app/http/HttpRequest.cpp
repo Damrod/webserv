@@ -35,6 +35,10 @@ std::string	HttpRequest::GetPath() const {
 	return path_;
 }
 
+std::string	HttpRequest::GetDecodedPath() const {
+	return decoded_path_;
+}
+
 HttpRequest::QueriesMap	HttpRequest::GetQueries() const {
 	return queries_;
 }
@@ -153,6 +157,7 @@ void	HttpRequest::ParseRequestTarget_(const std::string &raw_request) {
 	} else {
 		path_ = request_target_.substr(0, query_delimiter);
 	}
+	decoded_path_ = DecodeUrl(path_);
 	if (!IsValidPath_(path_)) {
 		state_ = RequestState::kInvalid;
 		return;
