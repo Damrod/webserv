@@ -207,7 +207,21 @@ bool	HttpRequest::IsValidPath_(const std::string &path) const {
 }
 
 bool	HttpRequest::IsValidDecodedPath_(const std::string &path) const {
-	return !path.empty() && path.find("/..") == std::string::npos;
+	if (path.empty()) {
+		return false;
+	}
+	std::size_t last = 0;
+	std::size_t next = 0;
+	while ((next = path.find('/', last)) != std::string::npos) {
+		if (path.substr(last, next - last) == "..") {
+			return false;
+		}
+		last = next + 1;
+	}
+	if (path.substr(last) == "..") {
+		return false;
+	}
+	return true;
 }
 
 void	HttpRequest::ParseHttpVersion_(const std::string &raw_request) {
