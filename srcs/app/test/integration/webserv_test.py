@@ -60,7 +60,7 @@ def test_get_follow_redirect_200():
     assert response.status_code == 200
 
 def test_get_404():
-    url = 'http://localhost:8080/invalidpath'
+    url = 'http://localhost:8080/..invalidpath'
     response = requests.get(url)
     assert response.status_code == 404
 
