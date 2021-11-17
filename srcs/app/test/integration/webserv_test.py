@@ -113,7 +113,7 @@ def test_post_upload_200(tmp_file):
     os.remove(filepath)
 
 def test_path_traversal():
-    url = 'http://localhost:8080/../../../../../../../../../../../../../../etc/passwd'
+    url = 'http://localhost:8080/../config/default.conf'
     response = requests.get(url)
     assert response.status_code == 400
 
