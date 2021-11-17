@@ -59,6 +59,7 @@ class HttpRequest : public IRequest  {
 		void		ParseContentLength_();
 		void		ParseBody_(const std::string &raw_request);
 		bool		IsValidPath_(const std::string &path) const;
+		bool		IsValidDecodedPath_(const std::string &decoded_path) const;
 		bool		IsValidHttpVersion_(const std::string &http_version) const;
 		bool		IsValidHeaderName_(const std::string &header_name) const;
 		bool		IsValidHeaderValue_(const std::string &header_value) const;

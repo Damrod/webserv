@@ -158,7 +158,7 @@ void	HttpRequest::ParseRequestTarget_(const std::string &raw_request) {
 		path_ = request_target_.substr(0, query_delimiter);
 	}
 	decoded_path_ = DecodeUrl(path_);
-	if (!IsValidPath_(path_)) {
+	if (!IsValidPath_(path_) || !IsValidDecodedPath_(decoded_path_)) {
 		state_ = RequestState::kInvalid;
 		return;
 	}
@@ -204,6 +204,10 @@ void	HttpRequest::AddQuery_(
 
 bool	HttpRequest::IsValidPath_(const std::string &path) const {
 	return !path.empty() && path[0] == '/';
+}
+
+bool	HttpRequest::IsValidDecodedPath_(const std::string &path) const {
+	return !path.empty() && path.find("/..") == std::string::npos;
 }
 
 void	HttpRequest::ParseHttpVersion_(const std::string &raw_request) {
