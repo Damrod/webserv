@@ -113,8 +113,13 @@ def test_post_upload_200(tmp_file):
     os.remove(filepath)
 
 def test_path_traversal():
+    headers = {'Host': 'localhost:8080'}
     url = 'http://localhost:8080/../config/default.conf'
-    response = requests.get(url)
+    session = requests.Session()
+    request = requests.Request(method='GET', url=url, headers=headers)
+    prep = request.prepare()
+    prep.url = url
+    response = session.send(prep)
     assert response.status_code == 400
 
 def test_file_upload_path_traversal(tmp_webserv_dir, tmp_file, random_filename):
