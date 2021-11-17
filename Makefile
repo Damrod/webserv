@@ -1,7 +1,7 @@
 NAME = webserv
 CXX ?= clang++
 export CXX
-CXXFLAGS = -Wall -Werror -Wextra -std=c++98 -g3
+CXXFLAGS = -Wall -Werror -Wextra -std=c++98 -O3 -g3
 LINT = cpplint
 LINTFLAGS = --recursive --exclude=srcs/incs/test/catch2.hpp \
 		--exclude=nocommit/ --exclude=*.nocommit
@@ -32,14 +32,12 @@ include $(SRC_DIR)/target/generaterules.mk
 -include $(DEPS)
 
 .PHONY: unit_test
-unit_test:
-	make
-	make -C srcs/app/test/unit
+unit_test: all
+	$(MAKE) -C srcs/app/test/unit
 	$(BLD_DIR)/utest_app
 
 .PHONY: integration_test
-integration_test:
-	make
+integration_test: all
 	pytest
 
 .PHONY: test
