@@ -26,6 +26,7 @@ class HttpBaseResponse: public IResponse {
 								int code,
 								HttpResponse::HeadersMap headers,
 								std::string body);
+		void	SetKeepAlive_();
 
         int	keep_alive_;
         int	error_code_;
