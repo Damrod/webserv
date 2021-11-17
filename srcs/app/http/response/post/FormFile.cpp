@@ -119,6 +119,9 @@ void	FormFile::ParseFormContentDisposition_(const std::string &header) {
 		throw std::invalid_argument("[FormFile] Invalid Content-Disposition");
 	}
 	filename_ = TrimString(quoted_filename, "\"");
+	if (!IsValidFilename(filename_)) {
+		throw std::invalid_argument("[FormFile] Invalid filename");
+	}
 }
 
 std::string
@@ -202,4 +205,8 @@ FormFile::SkipWhitespace_(const std::string &str, std::size_t index) const {
 		throw std::invalid_argument("[FormFile] Invalid form");
 	}
 	return index;
+}
+
+bool	FormFile::IsValidFilename(const std::string &filename) const {
+	return !filename.empty() && filename.find("/") == std::string::npos;
 }
