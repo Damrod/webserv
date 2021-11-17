@@ -5,11 +5,7 @@ HttpBaseResponse::HttpBaseResponse(
 	HttpRequest *request):
 	request_config_(request_config),
 	request_(request) {
-	keep_alive_ = (request_->HasHeader("Connection") &&
-					ToLowerString(request_->GetHeaderValue("Connection")) == "close")
-					? false
-					: true;
-
+	SetKeepAlive_();
 	if (request_config_->Limits(request_->GetMethod())) {
 		error_code_ = 405;
 	} else if (request_->GetBody().size() >
@@ -64,4 +60,14 @@ void	HttpBaseResponse::SetRawResponse_(
 								headers,
 								body,
 								keep_alive_).RawContent();
+}
+
+void	HttpBaseResponse::SetKeepAlive_() {
+	if (request_->GetState() == RequestState::kInvalid ||
+			(request_->HasHeader("Connection") &&
+			 request_->GetHeaderValue("Connection") == "close")) {
+		keep_alive_ = false;
+	} else {
+		keep_alive_ = true;
+	}
 }
