@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import tempfile
 import time
+import uuid
 
 TMP_WEBSERV_DIR = '/tmp/webserv/'
 PROJ_DIR = str(Path(__file__).parents[4])
@@ -31,6 +32,10 @@ def tmp_file():
     with tempfile.NamedTemporaryFile() as fp:
         fp.write(os.urandom(90000000))
         yield fp
+
+@pytest.fixture(scope='function')
+def random_filename():
+    return str(uuid.uuid4())
 
 def test_get_autoindex_200():
     url = 'http://localhost:8080'
@@ -110,4 +115,13 @@ def test_post_upload_200(tmp_file):
 def test_path_traversal():
     url = 'http://localhost:8080/../../../../../../../../../../../../../../etc/passwd'
     response = requests.get(url)
+    assert response.status_code == 400
+
+def test_file_upload_path_traversal(tmp_webserv_dir, tmp_file, random_filename):
+    url =  'http://localhost:8084/upload/'
+    filename = '../../../../../../../../../../../../../../tmp/webserv/' + random_filename
+    mime_type = 'application/octet-stream'
+    files = {'filename': (filename, open(tmp_file.name, 'rb'), mime_type)}
+    response = requests.post(url, files=files)
+    assert not os.path.exists('/tmp/webserv/' + random_filename)
     assert response.status_code == 400
