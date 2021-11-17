@@ -17,7 +17,6 @@
 #include <HttpRequest.hpp>
 #include <RequestConfig.hpp>
 #include <File.hpp>
-#include <StringUtils.hpp>
 
 class HttpGetResponse: public HttpBaseResponse {
 	public:

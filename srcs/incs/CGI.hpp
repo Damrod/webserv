@@ -10,7 +10,6 @@
 #include <map>
 #include <HttpRequest.hpp>
 #include <RequestConfig.hpp>
-#include <StringUtils.hpp>
 #include <SyscallWrap.hpp>
 
 class CGI {
