@@ -112,7 +112,7 @@ def test_post_upload_200(tmp_file):
     assert filecmp.cmp(filepath, tmp_file.name)
     os.remove(filepath)
 
-def test_path_traversal():
+def test_url_path_traversal():
     headers = {'Host': 'localhost:8080'}
     url = 'http://localhost:8080/../config/default.conf'
     session = requests.Session()
@@ -122,11 +122,11 @@ def test_path_traversal():
     response = session.send(prep)
     assert response.status_code == 400
 
-def test_file_upload_path_traversal(tmp_webserv_dir, tmp_file, random_filename):
+def test_file_upload_path_traversal(tmp_webserv_dir, random_filename):
     url =  'http://localhost:8084/upload/'
     filename = '../../../../../../../../../../../../../../tmp/webserv/' + random_filename
     mime_type = 'application/octet-stream'
-    files = {'filename': (filename, open(tmp_file.name, 'rb'), mime_type)}
+    files = {'file': (random_filename, 'random text\n')}
     response = requests.post(url, files=files)
     assert not os.path.exists('/tmp/webserv/' + random_filename)
     assert response.status_code == 400
