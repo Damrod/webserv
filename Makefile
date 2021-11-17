@@ -17,8 +17,9 @@ INC_DIR = $(SRC_DIR)/incs
 
 # if you create a new folder with source files, it should be in the srcs
 # folder, and you should put its name here:
-DIRS = app app/http app/utils app/config app/config/analyser app/server \
-	   app/CGI
+DIRS = app app/utils app/config app/config/analyser app/server \
+	   app/CGI app/http app/http/response app/http/response/get \
+	   app/http/response/post app/http/response/delete
 
 include $(SRC_DIR)/target/common.mk
 

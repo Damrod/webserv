@@ -32,6 +32,7 @@ class FormFile {
 									const std::string &word) const;
 		std::size_t	SkipWhitespace_(const std::string &str,
 									std::size_t index) const;
+		bool		IsValidFilename(const std::string &filename) const;
 };
 
 #endif  // SRCS_INCS_FORMFILE_HPP_

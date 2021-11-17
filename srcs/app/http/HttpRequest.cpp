@@ -16,13 +16,11 @@ HttpRequest::HttpRequest()
 
 HttpRequest::~HttpRequest() {}
 
-std::size_t
-HttpRequest::ParseRawString(const std::string &raw_request) {
+void	HttpRequest::SetContent(const std::string &raw_request) {
 	offset_ = 0;
 	ParseRequestLine_(raw_request);
 	ParseHeaders_(raw_request);
 	ParseBody_(raw_request);
-	return offset_;
 }
 
 std::string	HttpRequest::GetMethod() const {
@@ -37,7 +35,11 @@ std::string	HttpRequest::GetPath() const {
 	return path_;
 }
 
-std::map<std::string, std::string>	HttpRequest::GetQueries() const {
+std::string	HttpRequest::GetDecodedPath() const {
+	return decoded_path_;
+}
+
+HttpRequest::QueriesMap	HttpRequest::GetQueries() const {
 	return queries_;
 }
 
@@ -71,11 +73,12 @@ std::string	HttpRequest::GetHttpVersion() const {
 	return http_version_;
 }
 
-std::map<std::string, std::string>	HttpRequest::GetHeaders() const {
+HttpRequest::HeadersMap	HttpRequest::GetHeaders() const {
 	return headers_;
 }
 
-std::string	HttpRequest::GetHeaderValue(const std::string &header_name) const {
+std::string
+	HttpRequest::GetHeaderValue(const std::string &header_name) const {
 	const std::string			header_name_lc = ToLowerString(header_name);
 	HeadersMap::const_iterator	map_it = headers_.find(header_name_lc);
 	if (map_it != headers_.end()) {
@@ -94,6 +97,10 @@ std::size_t	HttpRequest::GetPort() const {
 
 std::string HttpRequest::GetBody() const {
 	return body_;
+}
+
+std::size_t	HttpRequest::ParsedOffset() const {
+	return offset_;
 }
 
 bool	HttpRequest::HasHeader(const std::string &header_name) const {
@@ -150,7 +157,8 @@ void	HttpRequest::ParseRequestTarget_(const std::string &raw_request) {
 	} else {
 		path_ = request_target_.substr(0, query_delimiter);
 	}
-	if (!IsValidPath_(path_)) {
+	decoded_path_ = DecodeUrl(path_);
+	if (!IsValidPath_(path_) || !IsValidDecodedPath_(decoded_path_)) {
 		state_ = RequestState::kInvalid;
 		return;
 	}
@@ -198,6 +206,24 @@ bool	HttpRequest::IsValidPath_(const std::string &path) const {
 	return !path.empty() && path[0] == '/';
 }
 
+bool	HttpRequest::IsValidDecodedPath_(const std::string &path) const {
+	if (path.empty()) {
+		return false;
+	}
+	std::size_t last = 0;
+	std::size_t next = 0;
+	while ((next = path.find('/', last)) != std::string::npos) {
+		if (path.substr(last, next - last) == "..") {
+			return false;
+		}
+		last = next + 1;
+	}
+	if (path.substr(last) == "..") {
+		return false;
+	}
+	return true;
+}
+
 void	HttpRequest::ParseHttpVersion_(const std::string &raw_request) {
 	if (!http_version_.empty()) {
 		return;
@@ -216,7 +242,8 @@ void	HttpRequest::ParseHttpVersion_(const std::string &raw_request) {
 	}
 }
 
-bool	HttpRequest::IsValidHttpVersion_(const std::string &http_version) const {
+bool
+	HttpRequest::IsValidHttpVersion_(const std::string &http_version) const {
 	return http_version == "HTTP/1.1";
 }
 

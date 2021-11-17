@@ -1,26 +1,23 @@
 #include <CGI.hpp>
 
 std::string CGI::GetExecutable_(const std::string &extension) {
-	if (request_location_->common.cgi_assign.count(extension) > 0) {
-			return request_location_->
-				common.cgi_assign.find(extension)->second;
-		}
-	throw std::invalid_argument("There is no CGI handler for the "
-									"requested file");
+	if (requestConfig_->HasCGI(extension)) {
+		return requestConfig_->GetCGIBin(extension);
+	}
+	throw std::invalid_argument(
+		"There is no CGI handler for the requested file");
 }
 
-CGI::CGI(const HttpRequest &request, const RequestLocation &location,
-		 const std::string &extension,  // we need the GetExtension
+CGI::CGI(const HttpRequest &request, const RequestConfig &location,
+		 const std::string &extension  // we need the GetExtension
 									   // function somewhere common
-		 HttpResponse *response
 	) :
 	execRet_(0),
 	request_(request),
-	request_location_(&location),
+	requestConfig_(&location),
 	reqBody_(request.GetBody()),
-	arg_path_(request_location_->common.root + request.GetPath()),
+	arg_path_(requestConfig_->GetRoot() + request.GetDecodedPath()),
 	exec_path_(GetExecutable_(extension)),
-	response_(response),
 	CGIenvMap_(MakeEnv_()),
 	CGIenv_(MakeCEnv_()) {
 	pipes_[0] = -1;
@@ -47,6 +44,8 @@ std::map<std::string, std::string> CGI::MakeEnv_(void) {
 	env_.insert(std::make_pair("REDIRECT_STATUS", "200"));
 	env_.insert(std::make_pair("GATEWAY_INTERFACE", "CGI/1.1"));
 	env_.insert(std::make_pair("REQUEST_METHOD", request_.GetMethod()));
+	env_.insert(std::make_pair("CONTENT_LENGTH",
+									 request_.GetHeaderValue("Content-Length")));
 	env_.insert(std::make_pair("CONTENT_TYPE",
 									 request_.GetHeaderValue("Content-Type")));
 	env_.insert(std::make_pair("SERVER_PROTOCOL", "HTTP/1.1"));
@@ -54,6 +53,7 @@ std::map<std::string, std::string> CGI::MakeEnv_(void) {
 	env_.insert(std::make_pair("SERVER_PORT",
 											ValueToString(request_.GetPort())));
 	env_.insert(std::make_pair("QUERY_STRING", request_.GetQueryString()));
+	env_.insert(std::make_pair("SCRIPT_FILENAME", arg_path_));
 	return env_;
 }
 
@@ -93,8 +93,9 @@ void CGI::SetHeaders_(void) {
 																 __LINE__);
 		std::string statement = remain.substr(0, next_statement_delimiter);
 		size_t colonPos = NextStatementThrowing_(statement, ":", true, __LINE__);
-		response_->AddHeader(TrimString(statement.substr(0, colonPos), " "),
-							TrimString(statement.substr(colonPos + 1), " "));
+		parsedHeaders_.insert(
+					std::make_pair(TrimString(statement.substr(0, colonPos), " "),
+					TrimString(statement.substr(colonPos + 1), " ")));
 		size_t remain_delimiter = NextStatementThrowing_(remain, kCRLF_, false,
 							 __LINE__) + std::string(kCRLF_).size();
 		remain = remain.substr(remain_delimiter > remain.size() ?
@@ -112,7 +113,6 @@ void CGI::ParseCGIOut_(void) {
 	CGIoutHeaders_ = CGIout_.substr(0, headers_end);
 	CGIoutBody_ = CGIout_.substr(headers_end + (std::string(kCRLF_)
 												+ kCRLF_).size());
-	response_->SetBody(CGIoutBody_);
 	SetHeaders_();
 }
 
@@ -172,4 +172,12 @@ void	CGI::CloseAssign_(int *fd) {
 		SyscallWrap::closeWr(*fd);
 		*fd = -1;
 	}
+}
+
+std::string  CGI::GetBody() const {
+	return CGIoutBody_;
+}
+
+std::map<std::string, std::string>	CGI::GetHeaders() const {
+	return parsedHeaders_;
 }

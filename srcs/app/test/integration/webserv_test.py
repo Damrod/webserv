@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import tempfile
 import time
+import uuid
 
 TMP_WEBSERV_DIR = '/tmp/webserv/'
 PROJ_DIR = str(Path(__file__).parents[4])
@@ -32,6 +33,10 @@ def tmp_file():
         fp.write(os.urandom(90000000))
         yield fp
 
+@pytest.fixture(scope='function')
+def random_filename():
+    return str(uuid.uuid4())
+
 def test_get_autoindex_200():
     url = 'http://localhost:8080'
     response = requests.get(url)
@@ -55,7 +60,7 @@ def test_get_follow_redirect_200():
     assert response.status_code == 200
 
 def test_get_404():
-    url = 'http://localhost:8080/invalidpath'
+    url = 'http://localhost:8080/..invalidpath'
     response = requests.get(url)
     assert response.status_code == 404
 
@@ -106,3 +111,22 @@ def test_post_upload_200(tmp_file):
     filepath = TMP_UPLOAD_DIR + filename
     assert filecmp.cmp(filepath, tmp_file.name)
     os.remove(filepath)
+
+def test_url_path_traversal():
+    headers = {'Host': 'localhost:8080'}
+    url = 'http://localhost:8080/../config/default.conf'
+    session = requests.Session()
+    request = requests.Request(method='GET', url=url, headers=headers)
+    prep = request.prepare()
+    prep.url = url
+    response = session.send(prep)
+    assert response.status_code == 400
+
+def test_file_upload_path_traversal(tmp_webserv_dir, random_filename):
+    url =  'http://localhost:8084/upload/'
+    filename = '../../../../../../../../../../../../../../tmp/webserv/' + random_filename
+    mime_type = 'application/octet-stream'
+    files = {'file': (random_filename, 'random text\n')}
+    response = requests.post(url, files=files)
+    assert not os.path.exists('/tmp/webserv/' + random_filename)
+    assert response.status_code == 400
