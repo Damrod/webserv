@@ -19,10 +19,10 @@
 
 class CGI {
  public:
-	virtual ~CGI(void);
-	int ExecuteCGI(void);
 	CGI(const HttpRequest &request, const RequestConfig &location,
 		const std::string &extension);
+	virtual ~CGI(void);
+	int ExecuteCGI(void);
 
  private:
 	CGI();

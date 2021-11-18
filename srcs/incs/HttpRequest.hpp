@@ -33,14 +33,14 @@ class HttpRequest : public IRequest {
 		std::size_t	GetPort() const;
 		std::string	GetBody() const;
 		RequestState::State	GetState() const;
-		bool		IsPartial() const;
-		bool		IsComplete() const;
-		bool		IsInvalid() const;
 		bool		HasHeader(const std::string &header_name) const;
 		bool		HasQuery(const std::string &query_name) const;
 		void		Reset();
 		void		SetContent(const std::string &raw_request);
 		std::size_t	ParsedOffset() const;
+		bool		IsPartial() const;
+		bool		IsComplete() const;
+		bool		IsInvalid() const;
 
 	private:
 		HttpRequest(const HttpRequest &);
