@@ -21,6 +21,7 @@ HttpResponseFactory::HttpResponseFactory(
 }
 
 HttpResponseFactory::~HttpResponseFactory() {
+	delete request_config_;
 }
 
 IResponse *HttpResponseFactory::Response() {
@@ -47,21 +48,27 @@ void	HttpResponseFactory::SetRequestConfig_() {
 }
 
 IResponse *HttpResponseFactory::createHttpRedirectionResponse_() {
-	return new HttpRedirectionResponse(request_config_, request_);
+	return Free_(new HttpRedirectionResponse(request_config_, request_));
 }
 
 IResponse *HttpResponseFactory::createHttpGetResponse_() {
-	return new HttpGetResponse(request_config_, request_);
+	return Free_(new HttpGetResponse(request_config_, request_));
 }
 
 IResponse *HttpResponseFactory::createHttpPostResponse_() {
-	return new HttpPostResponse(request_config_, request_);
+	return Free_(new HttpPostResponse(request_config_, request_));
 }
 
 IResponse *HttpResponseFactory::createHttpDeleteResponse_() {
-	return new HttpDeleteResponse(request_config_, request_);
+	return Free_(new HttpDeleteResponse(request_config_, request_));
 }
 
 IResponse *HttpResponseFactory::createHttpErrorResponse_(int statusCode) {
-	return new HttpErrorResponse(statusCode, request_config_, request_);
+	return Free_(new HttpErrorResponse(statusCode, request_config_, request_));
+}
+
+IResponse *HttpResponseFactory::Free_(IResponse *response) {
+	delete request_config_;
+	request_config_ = NULL;
+	return response;
 }
