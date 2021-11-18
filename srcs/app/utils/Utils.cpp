@@ -88,17 +88,3 @@ std::string	PathExtension(const std::string &path) {
 	}
 	return "";
 }
-
-std::string	GetMimeType(const std::string &path) {
-	return MimeTypes::GetMimeType(PathExtension(path));
-}
-
-std::string	CurrentDate() {
-	char				buffer[100];
-	const std::time_t	date = std::time(NULL);
-	std::strftime(buffer,
-				sizeof(buffer),
-				"%a, %d %b %Y %H:%M:%S %Z",
-				std::gmtime(&date));
-	return buffer;
-}

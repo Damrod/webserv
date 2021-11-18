@@ -19,8 +19,6 @@ bool		IsValidPath(const std::string &path);
 bool		IsDirectory(const std::string &path);
 bool		IsRegularFile(const std::string &path);
 std::string	PathExtension(const std::string &path);
-std::string	GetMimeType(const std::string &file_path);
-std::string	CurrentDate();
 
 template <typename T>
 std::string	ValueToString(const T &value) {
