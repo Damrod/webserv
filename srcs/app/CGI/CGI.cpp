@@ -14,7 +14,7 @@ CGI::CGI(const HttpRequest &request, const RequestConfig &location,
 	) :
 	request_(request),
 	requestConfig_(&location),
-	arg_path_(requestConfig_->GetRoot() + request.GetPath()),
+	arg_path_(requestConfig_->GetRoot() + request.GetDecodedPath()),
 	exec_path_(GetExecutable_(extension)),
 	CGIenvMap_(MakeEnv_()),
 	CGIenv_(MakeCEnv_()) {
@@ -46,6 +46,7 @@ std::map<std::string, std::string> CGI::MakeEnv_(void) {
 	env_.insert(std::make_pair("SERVER_PORT",
 											ValueToString(request_.GetPort())));
 	env_.insert(std::make_pair("QUERY_STRING", request_.GetQueryString()));
+	env_.insert(std::make_pair("SCRIPT_FILENAME", arg_path_));
 	return env_;
 }
 

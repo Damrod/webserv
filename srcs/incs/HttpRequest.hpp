@@ -22,6 +22,7 @@ class HttpRequest : public IRequest {
 		std::string	GetMethod() const;
 		std::string	GetRequestTarget() const;
 		std::string	GetPath() const;
+		std::string	GetDecodedPath() const;
 		QueriesMap	GetQueries() const;
 		std::string	GetQueryValue(const std::string &query_name) const;
 		std::string	GetQueryString() const;
@@ -61,6 +62,7 @@ class HttpRequest : public IRequest {
 		void		ParseContentLength_();
 		void		ParseBody_(const std::string &raw_request);
 		bool		IsValidPath_(const std::string &path) const;
+		bool		IsValidDecodedPath_(const std::string &decoded_path) const;
 		bool		IsValidHttpVersion_(const std::string &http_version) const;
 		bool		IsValidHeaderName_(const std::string &header_name) const;
 		bool		IsValidHeaderValue_(const std::string &header_value) const;
@@ -78,6 +80,7 @@ class HttpRequest : public IRequest {
 		std::string                         method_;
 		std::string                         request_target_;
 		std::string                         path_;
+		std::string                         decoded_path_;
 		std::string                         http_version_;
 		std::string                         host_;
 		std::size_t                         port_;

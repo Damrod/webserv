@@ -18,6 +18,6 @@ jobs:
 
       - name: Compile with clang++ and g++
         run: |
-            CXX=clang++ make
+            CXX=clang++ make -j12
             make fclean
-            CXX=g++ make
+            CXX=g++ make -j12

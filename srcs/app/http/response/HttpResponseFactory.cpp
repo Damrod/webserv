@@ -42,7 +42,8 @@ IResponse *HttpResponseFactory::Response() {
 }
 
 void	HttpResponseFactory::SetRequestConfig_() {
-	request_config_ = new RequestConfig(server_config_, request_->GetPath());
+	request_config_ =
+				new RequestConfig(server_config_, request_->GetDecodedPath());
 }
 
 IResponse *HttpResponseFactory::createHttpRedirectionResponse_() {

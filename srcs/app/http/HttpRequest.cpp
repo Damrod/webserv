@@ -35,6 +35,10 @@ std::string	HttpRequest::GetPath() const {
 	return path_;
 }
 
+std::string	HttpRequest::GetDecodedPath() const {
+	return decoded_path_;
+}
+
 HttpRequest::QueriesMap	HttpRequest::GetQueries() const {
 	return queries_;
 }
@@ -153,7 +157,8 @@ void	HttpRequest::ParseRequestTarget_(const std::string &raw_request) {
 	} else {
 		path_ = request_target_.substr(0, query_delimiter);
 	}
-	if (!IsValidPath_(path_)) {
+	decoded_path_ = DecodeUrl(path_);
+	if (!IsValidPath_(path_) || !IsValidDecodedPath_(decoded_path_)) {
 		state_ = RequestState::kInvalid;
 		return;
 	}
@@ -199,6 +204,24 @@ void	HttpRequest::AddQuery_(
 
 bool	HttpRequest::IsValidPath_(const std::string &path) const {
 	return !path.empty() && path[0] == '/';
+}
+
+bool	HttpRequest::IsValidDecodedPath_(const std::string &path) const {
+	if (path.empty()) {
+		return false;
+	}
+	std::size_t last = 0;
+	std::size_t next = 0;
+	while ((next = path.find('/', last)) != std::string::npos) {
+		if (path.substr(last, next - last) == "..") {
+			return false;
+		}
+		last = next + 1;
+	}
+	if (path.substr(last) == "..") {
+		return false;
+	}
+	return true;
 }
 
 void	HttpRequest::ParseHttpVersion_(const std::string &raw_request) {
