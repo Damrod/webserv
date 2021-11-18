@@ -21,7 +21,7 @@ Connection::~Connection() {
 ReceiveRequestStatus::Type	Connection::ReceiveRequest() {
 	char	buffer[4096];
 
-	int nbytes = recv(socket_, buffer, sizeof(buffer), 0);
+	ssize_t nbytes = recv(socket_, buffer, sizeof(buffer), 0);
 	if (nbytes <= 0) {
 		return ReceiveRequestStatus::kFail;
 	}
@@ -48,7 +48,7 @@ SendResponseStatus::Type	Connection::SendResponse() {
 		delete response_;
 		response_ = NULL;
 	}
-	int nbytes = send(socket_, raw_response_.c_str(), raw_response_.size(), 0);
+	ssize_t nbytes = send(socket_, raw_response_.c_str(), raw_response_.size(), 0);
 	if (nbytes <= 0) {
 		return SendResponseStatus::kFail;
 	}
