@@ -118,7 +118,7 @@ void	WebServer::RemoveCgiHandler_(CgiHandler *handler, int sd, int fd) {
 
 void	WebServer::HandleCgiRead_(int fd) {
 	CgiHandler *handler = cgi_handlers_[fd];
-	int nbytes = handler->ReadCgiOutput();
+	ssize_t nbytes = handler->ReadCgiOutput();
 	int handler_socket = handler->GetSocket();
 
 	fdSets.addToWriteSet(handler_socket);
@@ -136,7 +136,7 @@ void	WebServer::HandleCgiRead_(int fd) {
 void WebServer::HandleCgiSend_(int sd) {
 	int cgi_output_fd = cgi_fds_[sd];
 	CgiHandler *handler = cgi_handlers_[cgi_output_fd];
-	int nbytes = handler->SendCgiOutput();
+	ssize_t nbytes = handler->SendCgiOutput();
 
 	if (nbytes <= 0) {
 		fdSets.removeFd(sd);
