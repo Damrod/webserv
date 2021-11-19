@@ -14,7 +14,8 @@ struct SendResponseStatus {
 		kFail,
 		kSuccess,
 		kCompleteClose,
-		kCompleteKeep
+		kCompleteKeep,
+		kHandleCgi
 	};
 };
 

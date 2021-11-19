@@ -1,8 +1,10 @@
 #include <iostream>
+#include <csignal>
 #include <cstdlib>
 #include <WebServer.hpp>
 
 int main(int argc, char *argv[]) {
+	std::signal(SIGPIPE, SIG_IGN);
 	std::string	config_path = "config/default.conf";
 
 	if (argc == 2) {

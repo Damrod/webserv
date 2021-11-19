@@ -18,9 +18,11 @@ class Server {
 		Server(const ServerConfig &settings, int listen_sd, FDsets *fdSets);
 		~Server();
 		void	AcceptNewConnection();
+		void	RemoveConnection(int sd);
 		bool	HasConnection(int sd);
 		void	ReceiveRequest(int sd);
-		void	SendResponse(int sd);
+		SendResponseStatus::Type	SendResponse(int sd);
+		int		GetCgiOutputFd(int sd);
 
 	private:
 		Server();
@@ -28,7 +30,6 @@ class Server {
 		Server &	operator=(const Server &);
 		void	AddConnection_(int sd);
 		void	BindListeningSocket_();
-		void	RemoveConnection_(int sd);
 
 		ServerConfig			settings_;
 		int						listen_sd_;

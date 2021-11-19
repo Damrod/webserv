@@ -10,6 +10,8 @@ class IRequest {
 		virtual std::size_t	ParsedOffset() const = 0;
 		virtual RequestState::State	GetState() const = 0;
 		virtual void		Reset() = 0;
+		virtual bool		IsPartial() const = 0;
+		virtual bool		IsComplete() const = 0;
 };
 
 #endif  // SRCS_INCS_IREQUEST_HPP_

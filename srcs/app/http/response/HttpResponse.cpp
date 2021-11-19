@@ -2,29 +2,33 @@
 #include <sstream>
 #include <stdexcept>
 #include <HttpStatusCodes.hpp>
-#include <StringUtils.hpp>
+#include <Utils.hpp>
 
 const char HttpResponse::kCRLF_[] = "\r\n";
 
 HttpResponse::HttpResponse(
-			std::size_t status_code,
-			std::map<HeaderName, HeaderValue> headers,
-			std::string	body,
-			bool	keep_alive) :
+			const std::size_t status_code,
+			const std::map<HeaderName, HeaderValue> &headers,
+			const std::string &body,
+			const bool keep_alive,
+			const bool is_cgi) :
 			status_code_(status_code),
 			headers_(headers),
 			body_(body),
 			keep_alive_(keep_alive),
+			is_cgi_(is_cgi),
 			http_version_("HTTP/1.1"),
 			reason_phrase_(HttpStatusCodes::GetReasonPhrase(status_code)) {
 	if (!HttpStatusCodes::IsValid(status_code)) {
 		throw std::invalid_argument("[HttpResponse] Invalid Status");
 	}
-	if (body_.empty()) {
+	if (body_.empty() && !is_cgi_) {
 		AddDefaultResponseBody_();
 	}
 	AddCommonHeaders_();
-	AddContentLength_();
+	if (!is_cgi_) {
+		AddContentLength_();
+	}
 }
 
 std::string	HttpResponse::RawContent() const {
@@ -38,8 +42,10 @@ std::string	HttpResponse::RawContent() const {
 		ss << it->first << ": " << it->second << kCRLF_;
 		++it;
 	}
-	ss << kCRLF_;
-	ss << body_;
+	if (!is_cgi_) {
+		ss << kCRLF_;
+		ss << body_;
+	}
 	return ss.str();
 }
 

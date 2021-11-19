@@ -15,8 +15,10 @@ class HttpBaseResponse: public IResponse {
 		HttpBaseResponse(
 			RequestConfig *requestConfig,
 			HttpRequest *request);
-		bool KeepAlive();
-		std::string	Content();
+		std::string	Content() const;
+		bool	KeepAlive() const;
+		bool	IsCgi() const;
+		int		GetCgiOutputFd() const;
 
 	protected:
 		void	ExecuteCGI_(File file);
@@ -28,11 +30,12 @@ class HttpBaseResponse: public IResponse {
 								std::string body);
 		void	SetKeepAlive_();
 
-        int	keep_alive_;
-        int	error_code_;
+		int keep_alive_;
+		int error_code_;
 		std::string raw_response_;
 		RequestConfig *request_config_;
 		HttpRequest *request_;
+		int cgi_output_fd_;
 };
 
 #endif  // SRCS_INCS_HTTPBASERESPONSE_HPP_

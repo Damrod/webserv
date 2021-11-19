@@ -13,12 +13,13 @@ class HttpResponse {
 		typedef std::string							HeaderValue;
 
 	public:
-		explicit	HttpResponse(
-						std::size_t status_code,
-						std::map<HeaderName, HeaderValue> headers,
-						std::string	body,
-						bool	keep_alive);
-		virtual std::string	RawContent() const;
+		HttpResponse(
+					const std::size_t status_code,
+					const std::map<HeaderName, HeaderValue> &headers,
+					const std::string &body,
+					const bool keep_alive,
+					const bool is_cgi);
+		std::string	RawContent() const;
 
 		typedef	std::map<HeaderName, HeaderValue>	HeadersMap;
 
@@ -36,7 +37,8 @@ class HttpResponse {
 		std::size_t	status_code_;
 		HeadersMap	headers_;
 		std::string	body_;
-		bool	keep_alive_;
+		bool		keep_alive_;
+		bool		is_cgi_;
 		std::string	http_version_;
 		std::string	reason_phrase_;
 };

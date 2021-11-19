@@ -16,7 +16,7 @@ std::string	GetCurrentDate() {
 TEST_CASE("InvalidHttpResponseInvalidStatus", "[http]") {
 	HttpResponse::HeadersMap	headers;
 
-	REQUIRE_THROWS(HttpResponse(42, headers, "", false));
+	REQUIRE_THROWS(HttpResponse(42, headers, "", false, false));
 }
 
 TEST_CASE("ValidHttpResponseWithBody", "[http]") {
@@ -42,6 +42,6 @@ TEST_CASE("ValidHttpResponseWithBody", "[http]") {
 	}
 	str += "\r\n" + body;
 
-	HttpResponse	response(200, headers, body, false);
+	HttpResponse	response(200, headers, body, false, false);
 	REQUIRE(str == response.RawContent());
 }

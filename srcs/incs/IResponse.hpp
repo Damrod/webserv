@@ -5,8 +5,10 @@
 
 class IResponse {
 	public:
-		virtual	std::string Content() = 0;
-		virtual bool	KeepAlive() = 0;
+		virtual	std::string Content() const = 0;
+		virtual bool	KeepAlive() const = 0;
+		virtual bool	IsCgi() const = 0;
+		virtual int		GetCgiOutputFd() const = 0;
 		virtual ~IResponse() {}
 };
 
