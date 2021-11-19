@@ -43,7 +43,7 @@ TEST_CASE("Testing the tokenizer AKA lexer", "[parser]") {
 		std::list<Token> tokens = lexed.GetTokens();
 		std::list<Token>::iterator it = tokens.begin();
 		for (; it != tokens.end(); ++it) {
-			result << it->getRawData() << "\n";
+			result << it->GetRawData() << "\n";
 		}
 		REQUIRE(expected_result == result.str());
 #ifdef DBG

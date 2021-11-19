@@ -92,8 +92,9 @@ void Parser::Wrapper::SetUploadStore(const std::string &store,
 	}
 }
 
-void Parser::Wrapper::SetLimitExcept(const std::vector<std::string> &httpMethods,
-									 t_parsing_state ctx, size_t line) {
+void Parser::Wrapper::SetLimitExcept(
+							const std::vector<std::string> &httpMethods,
+							t_parsing_state ctx, size_t line) {
 	if (ctx != Parser::State::K_LOCATION) {
 		throw SyntaxError("Invalid context for `limit_except'", line);
 	}
