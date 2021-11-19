@@ -35,12 +35,12 @@ const std::map<const std::string, t_parsing_state> Parser::State::
 keyword_to_str = Parser::State::KeywordMapFactory_();
 
 t_parsing_state Parser::State::GetParsingStateTypeEnum(const Token &token) {
-	if (token.getType() == Token::Type::T_SEMICOLON
-		|| token.getType() == Token::Type::T_SCOPE_OPEN
-		|| token.getType() == Token::Type::T_SCOPE_CLOSE)
+	if (token.GetType() == Token::Type::T_SEMICOLON
+		|| token.GetType() == Token::Type::T_SCOPE_OPEN
+		|| token.GetType() == Token::Type::T_SCOPE_CLOSE)
 		return K_EXP_KW;
 	std::map<const std::string, t_parsing_state>::const_iterator found =
-		keyword_to_str.find(token.getRawData());
+		keyword_to_str.find(token.GetRawData());
 	if (found != keyword_to_str.end())
 		return found->second;
 	return Parser::State::K_NONE;

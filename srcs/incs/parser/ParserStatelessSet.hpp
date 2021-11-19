@@ -60,8 +60,8 @@ class StatelessSet : public Analyser {
 	bool ParseIpAddressPort_(const std::string &input,
 						   std::string *errorThrow,
 						   uint16_t *port, uint32_t *address);
-	bool isKwAllowedInCtx_(State::e_id kw, State::e_id ctx);
-	bool areHttpMethodsValid_(const std::vector<std::string> &input,
+	bool IsKwAllowedInCtx_(State::e_id kw, State::e_id ctx);
+	bool AreHttpMethodsValid_(const std::vector<std::string> &input,
 							  std::string *error_throw);
 	Wrapper *config_;
 	Engine *parser_;

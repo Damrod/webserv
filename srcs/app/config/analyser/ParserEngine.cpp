@@ -12,7 +12,7 @@ Parser::Engine::Engine(const std::list<Token> &token, Wrapper *config) :
 }
 
 t_evt Parser::Event::GetEventTypeEnum(const Token &token) {
-	return static_cast<t_evt>(token.getType());
+	return static_cast<t_evt>(token.GetType());
 }
 
 void Parser::Engine::PushContext(const t_parsing_state &ctx) {
@@ -56,7 +56,7 @@ t_parsing_state Parser::Engine::ParserMainLoop(void) {
 					|| (Parser::Event::EVT_NONE == transitions_[i].evt)) {
 					StatefulSet data(itc_->GetLine(),
 						Parser::State::GetParsingStateTypeEnum(*itc_),
-						itc_->getRawData(),
+									 itc_->GetRawData(),
 						ctx_.top(),
 						transitions_[i].errormess,
 						 args_.size());

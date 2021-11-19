@@ -2,7 +2,7 @@
 
 Lexer::~Lexer(void) {}
 
-void Lexer::addStringLit(std::string *filebuff, size_t *tokenend) {
+void Lexer::AddStringLit_(std::string *filebuff, size_t *tokenend) {
 	std::string token;
 	char cmp;
 
@@ -17,7 +17,7 @@ void Lexer::addStringLit(std::string *filebuff, size_t *tokenend) {
 	(*tokenend)++;
 }
 
-void Lexer::addPunct(char type, size_t *tokenend) {
+void Lexer::AddPunct_(char type, size_t *tokenend) {
 	char			tmp[2];
 	t_token_type	ttype;
 
@@ -35,7 +35,7 @@ void Lexer::addPunct(char type, size_t *tokenend) {
 	*tokenend = 1;
 }
 
-void Lexer::lex(const std::string &fileBuff) {
+void Lexer::Lex_(const std::string &fileBuff) {
 	std::string filebuff = "{" + fileBuff + "}";  // add global scope
 	size_t tokenend = 0;
 	std::string token;
@@ -48,11 +48,11 @@ void Lexer::lex(const std::string &fileBuff) {
 				line_++;
 		}
 		if (filebuff[0] == '"' || filebuff[0] == '\'') {
-			addStringLit(&filebuff, &tokenend);
+			AddStringLit_(&filebuff, &tokenend);
 			continue;
 		}
 		if (kValidtokens_.find(filebuff[0], 0) != kValidtokens_.npos) {
-			addPunct(filebuff[0], &tokenend);
+			AddPunct_(filebuff[0], &tokenend);
 			continue;
 		}
 		tokenend = filebuff.find_first_of(kValidtokens_ + kWhitespace_, 0);
@@ -72,5 +72,5 @@ Lexer::Lexer(const std::string &filebuff)
 	  kWhitespace_(" \f\n\r\t\v"),
 	  tokens_() {
 	line_ = 1;
-	lex(filebuff);
+	Lex_(filebuff);
 }

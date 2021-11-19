@@ -20,10 +20,10 @@ class Lexer : public Analyser {
 	virtual ~Lexer(void);
 	std::list<Token> GetTokens(void) const;
  private:
-	void lex(const std::string &fileBuff);
-	void addPunct(char type, size_t *tokenend);
-	void addStringLit(std::string *filebuff,
-				  size_t *tokenend);
+	void Lex_(const std::string &fileBuff);
+	void AddPunct_(char type, size_t *tokenend);
+	void AddStringLit_(std::string *filebuff,
+					   size_t *tokenend);
 	const std::string		kValidtokens_;
 	const std::string		kWhitespace_;
 	std::list<Token>		tokens_;

@@ -8,7 +8,7 @@ std::vector<ServerConfig>	&Parser::Wrapper::GetServersSettings(void) {
 	return *servers_settings_;
 }
 
-bool Parser::Wrapper::canAddServer_(uint32_t address, uint16_t port) {
+bool Parser::Wrapper::CanAddServer_(uint32_t address, uint16_t port) {
 	std::vector<ServerConfig>::const_iterator it = servers_settings_->begin();
 	for (; it != servers_settings_->end() - 1; ++it) {
 		if (it->listen_address == address && it->listen_port == port) {
@@ -18,7 +18,7 @@ bool Parser::Wrapper::canAddServer_(uint32_t address, uint16_t port) {
 	return true;
 }
 
-bool Parser::Wrapper::canAddLocation_(const std::string &path) {
+bool Parser::Wrapper::CanAddLocation_(const std::string &path) {
 	std::vector<Location>::const_iterator it = servers_settings_->
 	back().locations.begin();
 	for (; it != servers_settings_->back().locations.end(); ++it) {
@@ -35,7 +35,7 @@ t_parsing_state ctx, size_t line) {
 	if (ctx != Parser::State::K_SERVER) {
 		throw SyntaxError("Invalid context for `listen_address'", line);
 	}
-	if (canAddServer_(address, port)) {
+	if (CanAddServer_(address, port)) {
 		servers_settings_->back().listen_address = address;
 		servers_settings_->back().listen_port = port;
 	} else {
@@ -64,8 +64,8 @@ void Parser::Wrapper::SetRoot(const std::string &root, t_parsing_state ctx,
 	}
 }
 
-void Parser::Wrapper::AddIndex(const std::string &index,
-								 t_parsing_state ctx, size_t line) {
+void Parser::Wrapper::SetIndex(const std::string &index,
+							   t_parsing_state ctx, size_t line) {
 	if (ctx == Parser::State::K_SERVER) {
 		servers_settings_->back().common.index = index;
 	} else {
@@ -77,8 +77,8 @@ void Parser::Wrapper::AddIndex(const std::string &index,
 	}
 }
 
-void Parser::Wrapper::AddUploadStore(const std::string &store,
-									   t_parsing_state ctx,
+void Parser::Wrapper::SetUploadStore(const std::string &store,
+									 t_parsing_state ctx,
 									 size_t line) {
 	if (ctx == Parser::State::K_SERVER) {
 		servers_settings_->back().common.upload_store = store;
@@ -92,16 +92,16 @@ void Parser::Wrapper::AddUploadStore(const std::string &store,
 	}
 }
 
-void Parser::Wrapper::AddLimitExcept(const std::vector<std::string> &httpMeth,
-									   t_parsing_state ctx, size_t line) {
+void Parser::Wrapper::SetLimitExcept(const std::vector<std::string> &httpMethods,
+									 t_parsing_state ctx, size_t line) {
 	if (ctx != Parser::State::K_LOCATION) {
 		throw SyntaxError("Invalid context for `limit_except'", line);
 	}
-	servers_settings_->back().locations.back().limit_except = httpMeth;
+	servers_settings_->back().locations.back().limit_except = httpMethods;
 }
 
-void Parser::Wrapper::AddAutoindex(bool autoindex, t_parsing_state ctx,
-									 size_t line) {
+void Parser::Wrapper::SetAutoindex(bool autoindex, t_parsing_state ctx,
+								   size_t line) {
 	if (ctx == Parser::State::K_SERVER) {
 		servers_settings_->back().common.autoindex = autoindex;
 	} else {
@@ -159,8 +159,8 @@ void Parser::Wrapper::AddCgiAssign(const std::string &extension,
 	}
 }
 
-void Parser::Wrapper::AddReturn(uint16_t status, const std::string &url,
-								  t_parsing_state ctx, size_t line) {
+void Parser::Wrapper::SetReturn(uint16_t status, const std::string &url,
+								t_parsing_state ctx, size_t line) {
 	if (ctx == Parser::State::K_SERVER) {
 		servers_settings_->back().common.return_status = status;
 		servers_settings_->back().common.return_url = url;
@@ -190,7 +190,7 @@ void Parser::Wrapper::AddLocation(const std::string &path,
 	if (ctx != Parser::State::K_SERVER) {
 		throw SyntaxError("Invalid context for `location'", line);
 	}
-	if (canAddLocation_(path)) {
+	if (CanAddLocation_(path)) {
 		Location location(path, servers_settings_->back().common);
 		servers_settings_->back().locations.push_back(location);
 	} else {

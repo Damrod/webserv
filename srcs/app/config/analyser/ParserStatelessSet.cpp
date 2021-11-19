@@ -86,37 +86,47 @@ t_parsing_state Parser::StatelessSet::ExpKwHandlerClose
 	return Parser::State::K_EXIT;
 }
 
-bool Parser::StatelessSet::isKwAllowedInCtx_(t_parsing_state kw,
-										t_parsing_state ctx) {
+bool Parser::StatelessSet::IsKwAllowedInCtx_(t_parsing_state kw,
+											 t_parsing_state ctx) {
 	if ((ctx != Parser::State::K_LOCATION && ctx != Parser::State::K_SERVER
 		&& ctx != Parser::State::K_INIT)
-	|| (ctx != Parser::State::K_INIT && kw == Parser::State::K_SERVER)
-	|| (ctx == Parser::State::K_SERVER && kw == Parser::State::K_LIMIT_EXCEPT)
+	|| (ctx == Parser::State::K_INIT && kw != Parser::State::K_SERVER)
+	|| (ctx == Parser::State::K_SERVER && (kw == Parser::State::K_LIMIT_EXCEPT
+	|| kw == Parser::State::K_SERVER))
 	|| (ctx == Parser::State::K_LOCATION && (kw == Parser::State::K_LISTEN
-									|| kw == Parser::State::K_SERVER_NAME)))
+									|| kw == Parser::State::K_SERVER_NAME
+									|| kw == Parser::State::K_SERVER
+									|| kw == Parser::State::K_LOCATION)))
 		return false;
 	return true;
 }
 
 t_parsing_state Parser::StatelessSet::ExpKwHandlerKw(const StatefulSet &data) {
 	if (data.GetState() < Parser::State::K_SERVER
-	|| data.GetState() > Parser::State::K_LIMIT_EXCEPT)
+	|| data.GetState() > Parser::State::K_LIMIT_EXCEPT) {
 		throw SyntaxError("Expecting keyword but found `" +
-		data.GetRawData() + "'", LINE);
-	if (!isKwAllowedInCtx_(data.GetState(), data.GetCtx()))
-		throw SyntaxError("Keyword `" + data.GetRawData() + "' "
-						  "not allowed in context `" +
-						  Parser::State::GetParsingStateTypeStr(data.GetCtx())
-						  + "'", LINE);
+			data.GetRawData() + "'", LINE);
+	}
+	if (!IsKwAllowedInCtx_(data.GetState(), data.GetCtx())) {
+		std::string state = Parser::State::GetParsingStateTypeStr(data.GetCtx());
+		if (!state.empty()) {
+			throw SyntaxError("Keyword `" + data.GetRawData() + "' "
+					"not allowed in context `" + state + "'", LINE);
+		} else {
+			throw SyntaxError("Keyword `" + data.GetRawData() + "' "
+					"not allowed in global scope", LINE);
+		}
+	}
 	return data.GetState();
 }
 
 t_parsing_state Parser::StatelessSet::AutoindexHandler
 													(const StatefulSet &data) {
-	if (data.GetRawData() != "on" && data.GetRawData() != "off")
+	if (data.GetRawData() != "on" && data.GetRawData() != "off") {
 		throw SyntaxError("Expecting `on' or `off' but found `" +
-		data.GetRawData()  + "'", LINE);
-	config_->AddAutoindex(data.GetRawData() == "on", data.GetCtx(), LINE);
+			data.GetRawData() + "'", LINE);
+	}
+	config_->SetAutoindex(data.GetRawData() == "on", data.GetCtx(), LINE);
 	return Parser::State::K_EXP_SEMIC;
 }
 
@@ -136,7 +146,7 @@ t_parsing_state Parser::StatelessSet::ServerNameHandler
 	return Parser::State::K_SERVER_NAME;
 }
 
-bool Parser::StatelessSet::areHttpMethodsValid_(const std::vector<std::string>
+bool Parser::StatelessSet::AreHttpMethodsValid_(const std::vector<std::string>
 										&input, std::string *error_throw) {
 	for (unsigned int i = 0; i < input.size(); ++i) {
 		if (!Constants::IsValidMethod(input[i])) {
@@ -155,10 +165,10 @@ t_parsing_state Parser::StatelessSet::LimitExceptHandlerSemic
 	if (data.GetArgNumber() == 0)
 		throw Analyser::SyntaxError("Invalid number of arguments in "
 									"`limit_except' directive", LINE);
-	if (!areHttpMethodsValid_(parser_->GetArgs(), &error_throw)) {
+	if (!AreHttpMethodsValid_(parser_->GetArgs(), &error_throw)) {
 		throw Analyser::SyntaxError(error_throw, LINE);
 	}
-	config_->AddLimitExcept(parser_->GetArgs(), data.GetCtx(), LINE);
+	config_->SetLimitExcept(parser_->GetArgs(), data.GetCtx(), LINE);
 	parser_->ResetArgNumber();
 	return Parser::State::K_EXP_KW;
 }
@@ -217,7 +227,7 @@ t_parsing_state Parser::StatelessSet::ReturnHandler
 				&& data.GetRawData().size() < (strlen("https://") + 1))) {
 			throw Analyser::SyntaxError("Empty `return' URI", LINE);
 		}
-		config_->AddReturn(static_cast<uint16_t>(status),
+		config_->SetReturn(static_cast<uint16_t>(status),
 						   data.GetRawData(),
 						   data.GetCtx(), LINE);
 		parser_->ResetArgNumber();
@@ -262,7 +272,7 @@ t_parsing_state Parser::StatelessSet::ClientMaxBodySizeHandler(
 
 t_parsing_state Parser::StatelessSet::UploadStoreHandler(
 	const StatefulSet &data) {
-	config_->AddUploadStore(data.GetRawData(), data.GetCtx(),
+	config_->SetUploadStore(data.GetRawData(), data.GetCtx(),
 							LINE);
 	return Parser::State::K_EXP_SEMIC;
 }
@@ -274,7 +284,7 @@ t_parsing_state Parser::StatelessSet::RootHandler(const StatefulSet &data) {
 }
 
 t_parsing_state Parser::StatelessSet::IndexHandler(const StatefulSet &data) {
-	config_->AddIndex(data.GetRawData(), data.GetCtx(), LINE);
+	config_->SetIndex(data.GetRawData(), data.GetCtx(), LINE);
 	return Parser::State::K_EXP_SEMIC;
 }
 

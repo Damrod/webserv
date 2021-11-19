@@ -8,12 +8,12 @@ Preprocessor::Preprocessor(const std::string &path)
 	std::ifstream	file(path_.c_str(), std::ios::binary);
 	if (!file)
 		throw std::invalid_argument(strerror(errno));
-	filebuff_ = preprocess(file);
+	filebuff_ = Preprocess_(file);
 	file.close();
 }
 
 
-std::string Preprocessor::preprocess(std::ifstream &file) {
+std::string Preprocessor::Preprocess_(std::ifstream &file) {
 	std::string buffer;
 	std::string filebuff;
 	bool	insidedquote = false;
