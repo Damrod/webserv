@@ -40,7 +40,6 @@ class HttpRequest : public IRequest {
 		std::size_t	ParsedOffset() const;
 		bool		IsPartial() const;
 		bool		IsComplete() const;
-		bool		IsInvalid() const;
 
 	private:
 		HttpRequest(const HttpRequest &);

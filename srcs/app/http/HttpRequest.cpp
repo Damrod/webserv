@@ -444,10 +444,6 @@ bool	HttpRequest::IsComplete() const {
 	return state_ == RequestState::kComplete;
 }
 
-bool	HttpRequest::IsInvalid() const {
-	return state_ == RequestState::kInvalid;
-}
-
 std::ostream&	operator<<(std::ostream &os, const HttpRequest &request) {
 	os << "Method: " << request.GetMethod() << '\n' <<
 		"Request target: " << request.GetRequestTarget() << '\n' <<

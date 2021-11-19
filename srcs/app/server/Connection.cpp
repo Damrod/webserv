@@ -7,10 +7,7 @@ Connection::Connection(
 					socket_(socket),
 					response_factory_(response_factory),
 					request_(request),
-					response_(NULL),
-					keep_alive_(true),
-					is_cgi_(false),
-					cgi_output_fd_(-1) {}
+					response_(NULL) {}
 
 Connection::~Connection() {
 	delete response_factory_;
@@ -38,15 +35,9 @@ ReceiveRequestStatus::Type	Connection::ReceiveRequest() {
 
 SendResponseStatus::Type	Connection::SendResponse() {
 	if (raw_response_.empty()) {
+		delete response_;
 		response_ = response_factory_->Response();
 		raw_response_ = response_->Content();
-		keep_alive_ = response_->KeepAlive();
-		is_cgi_ = response_->IsCgi();
-		if (is_cgi_) {
-			cgi_output_fd_ = response_->GetCgiOutputFd();
-		}
-		delete response_;
-		response_ = NULL;
 	}
 	ssize_t nbytes = send(socket_, raw_response_.c_str(), raw_response_.size(), 0);
 	if (nbytes <= 0) {
@@ -55,10 +46,10 @@ SendResponseStatus::Type	Connection::SendResponse() {
 	raw_response_.erase(0, nbytes);
 	if (raw_response_.empty()) {
 		request_->Reset();
-		if (is_cgi_) {
+		if (response_->IsCgi()) {
 			return SendResponseStatus::kHandleCgi;
 		}
-		if (keep_alive_) {
+		if (response_->KeepAlive()) {
 			return SendResponseStatus::kCompleteKeep;
 		}
 		return SendResponseStatus::kCompleteClose;
@@ -67,5 +58,5 @@ SendResponseStatus::Type	Connection::SendResponse() {
 }
 
 int	Connection::GetCgiOutputFd() const {
-	return cgi_output_fd_;
+	return response_->GetCgiOutputFd();
 }

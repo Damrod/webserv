@@ -43,32 +43,27 @@ IResponse *HttpResponseFactory::Response() {
 }
 
 void	HttpResponseFactory::SetRequestConfig_() {
+	delete request_config_;
 	request_config_ =
 				new RequestConfig(server_config_, request_->GetDecodedPath());
 }
 
 IResponse *HttpResponseFactory::createHttpRedirectionResponse_() {
-	return Free_(new HttpRedirectionResponse(request_config_, request_));
+	return new HttpRedirectionResponse(request_config_, request_);
 }
 
 IResponse *HttpResponseFactory::createHttpGetResponse_() {
-	return Free_(new HttpGetResponse(request_config_, request_));
+	return new HttpGetResponse(request_config_, request_);
 }
 
 IResponse *HttpResponseFactory::createHttpPostResponse_() {
-	return Free_(new HttpPostResponse(request_config_, request_));
+	return new HttpPostResponse(request_config_, request_);
 }
 
 IResponse *HttpResponseFactory::createHttpDeleteResponse_() {
-	return Free_(new HttpDeleteResponse(request_config_, request_));
+	return new HttpDeleteResponse(request_config_, request_);
 }
 
 IResponse *HttpResponseFactory::createHttpErrorResponse_(int statusCode) {
-	return Free_(new HttpErrorResponse(statusCode, request_config_, request_));
-}
-
-IResponse *HttpResponseFactory::Free_(IResponse *response) {
-	delete request_config_;
-	request_config_ = NULL;
-	return response;
+	return new HttpErrorResponse(statusCode, request_config_, request_);
 }

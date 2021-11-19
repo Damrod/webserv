@@ -31,7 +31,6 @@ class HttpResponseFactory: public IResponseFactory {
 		IResponse	*createHttpRedirectionResponse_();
 		IResponse	*createHttpErrorResponse_(int statusCode);
 		void	SetRequestConfig_();
-		IResponse	*Free_(IResponse *response);
 
 		typedef  IResponse *(HttpResponseFactory::* responseCreatorMethod)();
 		std::map<std::string, responseCreatorMethod>	concrete_responses_;
