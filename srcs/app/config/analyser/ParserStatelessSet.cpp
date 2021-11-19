@@ -214,8 +214,8 @@ t_parsing_state Parser::StatelessSet::ReturnHandler
 		int64_t status = std::strtol(parser_->GetArgs()[0].c_str(),
 									 &endptr,
 									 10);
-		if ((endptr && *endptr) || errno
-			|| !Constants::IsReturnStatusRedirection(status))
+		if ((endptr && *endptr) || errno || status < INT16_MIN || status > INT16_MAX
+			|| !Constants::IsReturnStatusRedirection(static_cast<int16_t>(status)))
 			throw Analyser::SyntaxError("Bad `return' status", LINE);
 		if (data.GetRawData().find("http://") != 0
 			&& data.GetRawData().find("https://") != 0) {
