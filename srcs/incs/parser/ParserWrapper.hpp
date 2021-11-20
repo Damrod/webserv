@@ -47,12 +47,11 @@ std::map<T, U>map, const std::string &key, const std::string &value) {
 class Wrapper : public Analyser {
  private:
 	std::vector<ServerConfig>	*servers_settings_;
-	bool CanAddServer_(uint32_t address, uint16_t port);
-	bool CanAddLocation_(const std::string &path);
+	bool CanAddServer_(uint32_t address, uint16_t port) const;
+	bool CanAddLocation_(const std::string &path) const;
 
  public:
 	explicit Wrapper(std::vector<ServerConfig> *server_settings);
-	std::vector<ServerConfig> &GetServersSettings(void);
 	virtual ~Wrapper(void) {}
 	void SetListenAddress(uint32_t address, uint16_t port, State::e_id ctx,
 						  size_t line);
@@ -63,7 +62,7 @@ class Wrapper : public Analyser {
 	void SetAutoindex(bool autoindex, State::e_id ctx, size_t line);
 	void SetClientMaxSz(uint32_t size, State::e_id ctx, size_t line);
 	void AddErrorPage(uint16_t code, const std::string &uri, State::e_id ctx,
-					  size_t line);
+						size_t line);
 	void AddCgiAssign(const std::string &extension,
 					  const std::string &binaryHandlerPath, State::e_id ctx,
 					  size_t line);

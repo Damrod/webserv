@@ -4,11 +4,7 @@ Parser::Wrapper::Wrapper(std::vector<ServerConfig> *server_settings) :
 	servers_settings_(server_settings) {
 }
 
-std::vector<ServerConfig>	&Parser::Wrapper::GetServersSettings(void) {
-	return *servers_settings_;
-}
-
-bool Parser::Wrapper::CanAddServer_(uint32_t address, uint16_t port) {
+bool Parser::Wrapper::CanAddServer_(uint32_t address, uint16_t port) const {
 	std::vector<ServerConfig>::const_iterator it = servers_settings_->begin();
 	for (; it != servers_settings_->end() - 1; ++it) {
 		if (it->listen_address == address && it->listen_port == port) {
@@ -18,7 +14,7 @@ bool Parser::Wrapper::CanAddServer_(uint32_t address, uint16_t port) {
 	return true;
 }
 
-bool Parser::Wrapper::CanAddLocation_(const std::string &path) {
+bool Parser::Wrapper::CanAddLocation_(const std::string &path) const {
 	std::vector<Location>::const_iterator it = servers_settings_->
 	back().locations.begin();
 	for (; it != servers_settings_->back().locations.end(); ++it) {
