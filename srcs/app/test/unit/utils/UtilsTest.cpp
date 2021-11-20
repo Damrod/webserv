@@ -1,5 +1,5 @@
 #include <string>
-#include <StringUtils.hpp>
+#include <Utils.hpp>
 #include <catch2.hpp>
 
 TEST_CASE("TrimStringSameChars", "[utils]") {

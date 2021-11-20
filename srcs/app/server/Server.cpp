@@ -48,7 +48,7 @@ void	Server::AddConnection_(int sd) {
 	fdSets_->addToReadSet(sd);
 }
 
-void	Server::RemoveConnection_(int sd) {
+void	Server::RemoveConnection(int sd) {
 	fdSets_->removeFd(sd);
 	close(sd);
 	delete connections_[sd];
@@ -70,23 +70,28 @@ bool	Server::HasConnection(int sd) {
 	return connections_.count(sd) > 0;
 }
 
+int	Server::GetCgiOutputFd(int sd) {
+	return connections_[sd]->GetCgiOutputFd();
+}
+
 void	Server::ReceiveRequest(int sd) {
 	std::map<int, Connection *>::iterator it = connections_.find(sd);
 	ReceiveRequestStatus::Type status = it->second->ReceiveRequest();
 	if (status == ReceiveRequestStatus::kComplete) {
 		fdSets_->addToWriteSet(sd);
 	} else if (status == ReceiveRequestStatus::kFail) {
-		RemoveConnection_(sd);
+		RemoveConnection(sd);
 	}
 }
 
-void	Server::SendResponse(int sd) {
+SendResponseStatus::Type	Server::SendResponse(int sd) {
 	std::map<int, Connection *>::iterator it = connections_.find(sd);
 	SendResponseStatus::Type status = it->second->SendResponse();
 	if (status == SendResponseStatus::kCompleteKeep) {
 		fdSets_->removeFromWriteSet(sd);
 	} else if (status == SendResponseStatus::kFail ||
 				status == SendResponseStatus::kCompleteClose) {
-		RemoveConnection_(sd);
+		RemoveConnection(sd);
 	}
+	return status;
 }

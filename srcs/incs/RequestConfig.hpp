@@ -11,8 +11,6 @@ class RequestConfig {
 	public:
 		RequestConfig(const ServerConfig &server_config,
 						const std::string &request_path);
-		RequestConfig();
-		RequestConfig(const RequestConfig &);
 		std::string	GetPath() const;
 		bool Limits(std::string const &method) const;
 		std::string	GetRoot() const;
@@ -27,6 +25,10 @@ class RequestConfig {
 		CommonConfig::BinaryHandlerPath GetCGIBin(std::string extension) const;
 
 	private:
+		RequestConfig();
+		RequestConfig(const RequestConfig &);
+		RequestConfig &	operator=(const RequestConfig &);
+
 		const Location	*FindLocation_(
 			const ServerConfig &server_config,
 			const std::string &request_path)

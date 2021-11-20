@@ -21,11 +21,12 @@ HttpResponseFactory::HttpResponseFactory(
 }
 
 HttpResponseFactory::~HttpResponseFactory() {
+	delete request_config_;
 }
 
 IResponse *HttpResponseFactory::Response() {
 	SetRequestConfig_();
-	if (!request_ || request_->GetState() == RequestState::kInvalid) {
+	if (!request_ || !request_->IsComplete()) {
 		return createHttpErrorResponse_(400);
 	}
 	if (!request_config_->GetReturnUrl().empty()) {
@@ -42,6 +43,7 @@ IResponse *HttpResponseFactory::Response() {
 }
 
 void	HttpResponseFactory::SetRequestConfig_() {
+	delete request_config_;
 	request_config_ =
 				new RequestConfig(server_config_, request_->GetDecodedPath());
 }

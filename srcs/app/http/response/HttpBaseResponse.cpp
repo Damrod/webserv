@@ -1,10 +1,12 @@
 #include <HttpBaseResponse.hpp>
+#include <HttpErrorResponse.hpp>
 
 HttpBaseResponse::HttpBaseResponse(
 	RequestConfig *request_config,
 	HttpRequest *request):
 	request_config_(request_config),
-	request_(request) {
+	request_(request),
+	cgi_output_fd_(-1) {
 	SetKeepAlive_();
 	if (request_config_->Limits(request_->GetMethod())) {
 		error_code_ = 405;
@@ -18,11 +20,11 @@ HttpBaseResponse::HttpBaseResponse(
 	}
 }
 
-bool HttpBaseResponse::KeepAlive() {
+bool HttpBaseResponse::KeepAlive() const {
 	return keep_alive_;
 }
 
-std::string	 HttpBaseResponse::Content() {
+std::string	 HttpBaseResponse::Content() const {
 	return raw_response_;
 }
 
@@ -36,12 +38,20 @@ void	HttpBaseResponse::Serve_(File file) {
 }
 
 void	HttpBaseResponse::ExecuteCGI_(File file) {
-	CGI engine(*request_, *request_config_, file.GetPathExtension());
-	engine.ExecuteCGI();
-	if (engine.GetExecReturn() != EXIT_SUCCESS) {
-		throw std::runtime_error("Exec error");
+	keep_alive_ = false;
+	try {
+		CGI engine(*request_, *request_config_, file.GetPathExtension());
+		cgi_output_fd_ = engine.ExecuteCGI();
+		HttpResponse::HeadersMap headers;
+		std::string body;
+		SetRawResponse_(200, headers, body);
 	}
-	SetRawResponse_(200, engine.GetHeaders(), engine.GetBody());
+	catch (const std::exception &) {
+		raw_response_ = HttpErrorResponse(
+										500,
+										request_config_,
+										request_).Content();
+	}
 }
 
 void	HttpBaseResponse::DefaultStatusResponse_(int code) {
@@ -59,7 +69,16 @@ void	HttpBaseResponse::SetRawResponse_(
 								code,
 								headers,
 								body,
-								keep_alive_).RawContent();
+								keep_alive_,
+								IsCgi()).RawContent();
+}
+
+bool	HttpBaseResponse::IsCgi() const {
+	return cgi_output_fd_ != -1;
+}
+
+int		HttpBaseResponse::GetCgiOutputFd() const {
+	return cgi_output_fd_;
 }
 
 void	HttpBaseResponse::SetKeepAlive_() {

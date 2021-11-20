@@ -5,9 +5,9 @@
 #include <CommonDefinitions.hpp>
 #include <IRequest.hpp>
 #include <RequestState.hpp>
-#include <StringUtils.hpp>
+#include <Utils.hpp>
 
-class HttpRequest : public IRequest  {
+class HttpRequest : public IRequest {
 	private:
 		typedef std::string							HeaderName;
 		typedef std::string							HeaderValue;
@@ -33,11 +33,13 @@ class HttpRequest : public IRequest  {
 		std::size_t	GetPort() const;
 		std::string	GetBody() const;
 		RequestState::State	GetState() const;
-		bool	HasHeader(const std::string &header_name) const;
-		bool	HasQuery(const std::string &query_name) const;
-		void	Reset();
-		void	SetContent(const std::string &raw_request);
+		bool		HasHeader(const std::string &header_name) const;
+		bool		HasQuery(const std::string &query_name) const;
+		void		Reset();
+		void		SetContent(const std::string &raw_request);
 		std::size_t	ParsedOffset() const;
+		bool		IsPartial() const;
+		bool		IsComplete() const;
 
 	private:
 		HttpRequest(const HttpRequest &);
