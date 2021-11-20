@@ -66,11 +66,22 @@ Server	*WebServer::FindServer_(int sd) {
 	return server_it->second;
 }
 
-Server	*WebServer::FindServerConnection_(int sd) {
+Server	*WebServer::FindServerWithConnection_(int sd) {
 	ServersMap_::iterator	server_it = servers_.begin();
 
 	for(; server_it!= servers_.end(); ++server_it) {
 		if (server_it->second->HasConnection(sd)) {
+			return server_it->second;
+		}
+	}
+	return NULL;
+}
+
+Server	*WebServer::FindServerWithCgiHandler_(int sd) {
+	ServersMap_::iterator	server_it = servers_.begin();
+
+	for(; server_it!= servers_.end(); ++server_it) {
+		if (server_it->second->HasCgiHandler(sd)) {
 			return server_it->second;
 		}
 	}
@@ -82,83 +93,19 @@ void	WebServer::HandleReadSocket_(int sd) {
 
 	if ((server = FindServer_(sd))) {
 		server->AcceptNewConnection();
-	} else if ((server = FindServerConnection_(sd))) {
+	} else if ((server = FindServerWithConnection_(sd))) {
 		server->ReceiveRequest(sd);
-	} else if (IsCgiFd_(sd)) {
-		HandleCgiRead_(sd);
+	} else if ((server = FindServerWithCgiHandler_(sd))) {
+		server->HandleCgiRead(sd);
 	}
 }
 
 void	WebServer::HandleWriteSocket_(int sd) {
-	Server	*server = FindServerConnection_(sd);
+	Server	*server;
 
-	if (server) {
-		SendResponseStatus::Type status = server->SendResponse(sd);
-		if (status == SendResponseStatus::kHandleCgi) {
-			AddCgiHandler_(server, sd);
-		}
-	} else if (IsCgiSocket_(sd)) {
-		HandleCgiSend_(sd);
+	if ((server = FindServerWithConnection_(sd))) {
+		server->SendResponse(sd);
+	} else if ((server = FindServerWithCgiHandler_(sd))) {
+		server->HandleCgiSend(sd);
 	}
-}
-
-bool	WebServer::IsCgiFd_(int fd) const {
-	return cgi_handlers_.count(fd) > 0;
-}
-
-bool	WebServer::IsCgiSocket_(int sd) const {
-	return cgi_fds_.count(sd) > 0;
-}
-
-void	WebServer::RemoveCgiHandler_(CgiHandler *handler, int sd, int fd) {
-	delete handler;
-	cgi_fds_.erase(sd);
-	cgi_handlers_.erase(fd);
-}
-
-void	WebServer::HandleCgiRead_(int fd) {
-	CgiHandler *handler = cgi_handlers_[fd];
-	ssize_t nbytes = handler->ReadCgiOutput();
-	int handler_socket = handler->GetSocket();
-
-	fdSets.addToWriteSet(handler_socket);
-	if (nbytes == 0) {
-		// The cgi program has exit
-		fdSets.removeFd(fd);
-	} else if (nbytes < 0) {
-		// There was an error while reading
-		fdSets.removeFd(fd);
-		fdSets.removeFd(handler_socket);
-		RemoveCgiHandler_(handler, handler_socket, fd);
-	}
-}
-
-void WebServer::HandleCgiSend_(int sd) {
-	int cgi_output_fd = cgi_fds_[sd];
-	CgiHandler *handler = cgi_handlers_[cgi_output_fd];
-	ssize_t nbytes = handler->SendCgiOutput();
-
-	if (nbytes <= 0) {
-		fdSets.removeFd(sd);
-		fdSets.removeFd(cgi_output_fd);
-		RemoveCgiHandler_(handler, sd, cgi_output_fd);
-	} else if (!handler->HasDataAvailable()) {
-		fdSets.removeFd(sd);
-		if (handler->IsCgiComplete()) {
-			RemoveCgiHandler_(handler, sd, cgi_output_fd);
-		}
-	}
-}
-
-void WebServer::AddCgiHandler_(Server *server, int sd) {
-	int cgi_output_fd = server->GetCgiOutputFd(sd);
-	fdSets.addToReadSet(cgi_output_fd);
-
-	int socket_copy = SyscallWrap::dupWr(sd);
-	server->RemoveConnection(sd);
-
-	// Add a new handler for the cgi output;
-	CgiHandler *handler = new CgiHandler(socket_copy, cgi_output_fd);
-	cgi_handlers_.insert(std::make_pair(cgi_output_fd, handler));
-	cgi_fds_.insert(std::make_pair(socket_copy, cgi_output_fd));
 }

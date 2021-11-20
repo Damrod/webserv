@@ -14,6 +14,83 @@ Server::~Server() {
 	close(listen_sd_);
 }
 
+void	Server::AcceptNewConnection() {
+	int new_sd = accept(listen_sd_, NULL, NULL);
+	if (new_sd < 0) {
+		throw std::runtime_error(std::strerror(errno));
+	}
+	if (fcntl(new_sd, F_SETFL, O_NONBLOCK) < 0) {
+		throw std::runtime_error(std::strerror(errno));
+	}
+	AddConnection_(new_sd);
+}
+
+bool	Server::HasConnection(int sd) {
+	return connections_.count(sd) > 0;
+}
+
+bool	Server::HasCgiHandler(int sd) {
+	return cgi_handlers_.count(sd) > 0 ||
+		   cgi_fds_.count(sd) > 0;
+}
+
+void	Server::ReceiveRequest(int sd) {
+	std::map<int, Connection *>::iterator it = connections_.find(sd);
+	ReceiveRequestStatus::Type status = it->second->ReceiveRequest();
+	if (status == ReceiveRequestStatus::kComplete) {
+		fdSets_->addToWriteSet(sd);
+	} else if (status == ReceiveRequestStatus::kFail) {
+		RemoveConnection_(sd);
+	}
+}
+
+void	Server::HandleCgiRead(int fd) {
+	CgiHandler *handler = cgi_handlers_[fd];
+	ssize_t nbytes = handler->ReadCgiOutput();
+	int handler_socket = handler->GetSocket();
+
+	fdSets_->addToWriteSet(handler_socket);
+	if (nbytes == 0) {
+		// The cgi program has exit
+		fdSets_->removeFd(fd);
+	} else if (nbytes < 0) {
+		// There was an error while reading
+		fdSets_->removeFd(fd);
+		fdSets_->removeFd(handler_socket);
+		RemoveCgiHandler_(handler, handler_socket, fd);
+	}
+}
+
+void	Server::SendResponse(int sd) {
+	std::map<int, Connection *>::iterator it = connections_.find(sd);
+	SendResponseStatus::Type status = it->second->SendResponse();
+	if (status == SendResponseStatus::kCompleteKeep) {
+		fdSets_->removeFromWriteSet(sd);
+	} else if (status == SendResponseStatus::kFail ||
+				status == SendResponseStatus::kCompleteClose) {
+		RemoveConnection_(sd);
+	} else if (status == SendResponseStatus::kHandleCgi) {
+		AddCgiHandler_(sd, it->second->GetCgiOutputFd());
+	}
+}
+
+void Server::HandleCgiSend(int sd) {
+	int cgi_output_fd = cgi_fds_[sd];
+	CgiHandler *handler = cgi_handlers_[cgi_output_fd];
+	ssize_t nbytes = handler->SendCgiOutput();
+
+	if (nbytes <= 0) {
+		fdSets_->removeFd(sd);
+		fdSets_->removeFd(cgi_output_fd);
+		RemoveCgiHandler_(handler, sd, cgi_output_fd);
+	} else if (!handler->HasDataAvailable()) {
+		fdSets_->removeFd(sd);
+		if (handler->IsCgiComplete()) {
+			RemoveCgiHandler_(handler, sd, cgi_output_fd);
+		}
+	}
+}
+
 void	Server::BindListeningSocket_() {
 	if (fcntl(listen_sd_, F_SETFL, O_NONBLOCK) < 0) {
 		throw std::runtime_error(std::strerror(errno));
@@ -48,50 +125,26 @@ void	Server::AddConnection_(int sd) {
 	fdSets_->addToReadSet(sd);
 }
 
-void	Server::RemoveConnection(int sd) {
+void	Server::RemoveConnection_(int sd) {
 	fdSets_->removeFd(sd);
 	close(sd);
 	delete connections_[sd];
 	connections_.erase(sd);
 }
 
-void	Server::AcceptNewConnection() {
-	int new_sd = accept(listen_sd_, NULL, NULL);
-	if (new_sd < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
-	if (fcntl(new_sd, F_SETFL, O_NONBLOCK) < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
-	AddConnection_(new_sd);
+void	Server::AddCgiHandler_(int sd, int cgi_output_fd) {
+	fdSets_->addToReadSet(cgi_output_fd);
+
+	int socket_copy = SyscallWrap::dupWr(sd);
+
+	CgiHandler *handler = new CgiHandler(socket_copy, cgi_output_fd);
+	cgi_handlers_.insert(std::make_pair(cgi_output_fd, handler));
+	cgi_fds_.insert(std::make_pair(socket_copy, cgi_output_fd));
+	RemoveConnection_(sd);
 }
 
-bool	Server::HasConnection(int sd) {
-	return connections_.count(sd) > 0;
-}
-
-int	Server::GetCgiOutputFd(int sd) {
-	return connections_[sd]->GetCgiOutputFd();
-}
-
-void	Server::ReceiveRequest(int sd) {
-	std::map<int, Connection *>::iterator it = connections_.find(sd);
-	ReceiveRequestStatus::Type status = it->second->ReceiveRequest();
-	if (status == ReceiveRequestStatus::kComplete) {
-		fdSets_->addToWriteSet(sd);
-	} else if (status == ReceiveRequestStatus::kFail) {
-		RemoveConnection(sd);
-	}
-}
-
-SendResponseStatus::Type	Server::SendResponse(int sd) {
-	std::map<int, Connection *>::iterator it = connections_.find(sd);
-	SendResponseStatus::Type status = it->second->SendResponse();
-	if (status == SendResponseStatus::kCompleteKeep) {
-		fdSets_->removeFromWriteSet(sd);
-	} else if (status == SendResponseStatus::kFail ||
-				status == SendResponseStatus::kCompleteClose) {
-		RemoveConnection(sd);
-	}
-	return status;
+void	Server::RemoveCgiHandler_(CgiHandler *handler, int sd, int fd) {
+	delete handler;
+	cgi_fds_.erase(sd);
+	cgi_handlers_.erase(fd);
 }

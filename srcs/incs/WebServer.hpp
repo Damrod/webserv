@@ -34,16 +34,10 @@ class WebServer {
 		WebServer &	operator=(const WebServer &);
 		void	PopulateServers_();
 		Server	*FindServer_(int sd);
-		Server	*FindServerConnection_(int sd);
+		Server	*FindServerWithConnection_(int sd);
+		Server	*FindServerWithCgiHandler_(int sd);
 		void	HandleReadSocket_(int sd);
 		void	HandleWriteSocket_(int sd);
-
-		bool	IsCgiFd_(int fd) const;
-		bool	IsCgiSocket_(int sd) const;
-		void	RemoveCgiHandler_(CgiHandler *handler, int sd, int fd);
-		void	HandleCgiRead_(int fd);
-		void	HandleCgiSend_(int sd);
-		void	AddCgiHandler_(Server *server, int sd);
 
 		typedef	int							Socket_;
 		typedef std::map<Socket_, Server *>	ServersMap_;
