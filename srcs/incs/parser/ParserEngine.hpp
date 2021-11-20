@@ -26,7 +26,7 @@ class Engine: public Analyser {
 	void ResetArgNumber(void);
 
  private:
-	virtual std::vector < Parser::s_trans > TransitionFactory_(void);
+	static std::vector < Parser::s_trans > TransitionFactory_(void);
 	StatelessSet handlers_;
 	std::stack<State::e_id> ctx_;
 	const std::list<Token>::const_iterator ite_;

@@ -20,7 +20,7 @@ std::string Preprocessor::Preprocess_(std::ifstream &file) {
 	bool	insidesquote = false;
 
 	while(std::getline(file, buffer)) {
-		size_t commentpos = buffer.npos;
+		size_t commentpos = std::string::npos;
 		for(unsigned int i = 0 ; i < buffer.size(); ++i) {
 			if (buffer[i] == '\'' && !insidedquote)
 				insidesquote ^= true;
@@ -32,7 +32,7 @@ std::string Preprocessor::Preprocess_(std::ifstream &file) {
 					break;
 				}
 		}
-		if (commentpos == buffer.npos)
+		if (commentpos == std::string::npos)
 			filebuff += buffer;
 		else
 			filebuff += buffer.substr(0, commentpos);
@@ -42,6 +42,6 @@ std::string Preprocessor::Preprocess_(std::ifstream &file) {
 	return filebuff;
 }
 
-std::string Preprocessor::GetFileBuffer(void) {
+std::string Preprocessor::GetFileBuffer(void) const {
 	return filebuff_;
 }

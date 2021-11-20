@@ -296,7 +296,7 @@ t_parsing_state Parser::StatelessSet::LocationHandler(const StatefulSet &data) {
 }
 
 t_parsing_state Parser::StatelessSet::ListenHandler(const StatefulSet &data) {
-	std::string errorThrow = "";
+	std::string errorThrow;
 	uint16_t port;
 	uint32_t address;
 	if (ParseIpAddressPort_(data.GetRawData(), &errorThrow, &port, &address))

@@ -9,7 +9,7 @@ void Lexer::AddStringLit_(std::string *filebuff, size_t *tokenend) {
 	cmp = (*filebuff)[0];
 	*filebuff = filebuff->substr(1);
 	*tokenend = filebuff->find(cmp, 0);
-	if (*tokenend == filebuff->npos)
+	if (*tokenend == std::string::npos)
 		throw Analyser::SyntaxError("Unterminated quote", line_);
 	token = filebuff->substr(0, *tokenend);
 	tokens_.push_back(Token(token, Token::Type::T_WORD, line_));
@@ -42,7 +42,7 @@ void Lexer::Lex_(const std::string &fileBuff) {
 
 	while (filebuff[0]) {
 		filebuff = filebuff.substr(tokenend);
-		for (; filebuff[0] && kWhitespace_.find(filebuff[0], 0) != kWhitespace_.npos
+		for (; filebuff[0] && kWhitespace_.find(filebuff[0], 0) != std::string::npos
 			 ; filebuff = filebuff.substr(1)) {
 			if (filebuff[0] == '\n')
 				line_++;
@@ -51,14 +51,14 @@ void Lexer::Lex_(const std::string &fileBuff) {
 			AddStringLit_(&filebuff, &tokenend);
 			continue;
 		}
-		if (kValidtokens_.find(filebuff[0], 0) != kValidtokens_.npos) {
+		if (kValidtokens_.find(filebuff[0], 0) != std::string::npos) {
 			AddPunct_(filebuff[0], &tokenend);
 			continue;
 		}
 		tokenend = filebuff.find_first_of(kValidtokens_ + kWhitespace_, 0);
-		if (tokenend == filebuff.npos)
+		if (tokenend == std::string::npos)
 			tokenend = filebuff.size();
-		if ((token = filebuff.substr(0, tokenend)) != "")
+		if (!(token = filebuff.substr(0, tokenend)).empty())
 			tokens_.push_back(Token(token, Token::Type::T_WORD, line_));
 	}
 }
