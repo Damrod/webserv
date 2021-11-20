@@ -10,17 +10,16 @@
 class Analyser {
  public:
 	Analyser(void);
-	Analyser(Analyser const &rhs);
 	virtual ~Analyser(void);
-	Analyser	&operator=(Analyser const &rhs);
 	class SyntaxError : public std::exception {
 	public:
 		virtual ~SyntaxError(void) throw();
 		explicit SyntaxError(const std::string &error, size_t line);
 		virtual const char *what() const throw();
 	private:
-		static char		itoaline_[12];
-		static char		lineerror_[100];
+	  	static void Utoa_(size_t value, char *dest);
+		static char		utoaline_[12];
+		static char		lineerror_[500];
 		size_t		line_;
 	};
 

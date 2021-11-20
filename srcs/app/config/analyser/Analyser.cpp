@@ -1,19 +1,19 @@
 #include <parser/Analyser.hpp>
 
-Analyser::Analyser(void) {}
+Analyser::Analyser(void) : line_(1) {}
 
 Analyser::~Analyser(void) {}
 
-static void utoa(size_t value, char *dest) {
+void Analyser::SyntaxError::Utoa_(size_t value, char *dest) {
+// normally this would be done with sprintf, but we can't use printf stuff
 	if (value == 0) {
 		std::memcpy(dest, "0", 2);
 		return;
 	}
 	size_t i = 0;
-	while (value) {
+	for (; value != 0; ++i) {
 		dest[i] = '0' + (value % 10);
 		value /= 10;
-		i++;
 	}
 	dest[i] = '\0';
 	size_t len = strlen(dest);
@@ -24,15 +24,25 @@ static void utoa(size_t value, char *dest) {
 	}
 }
 
-char	Analyser::SyntaxError::itoaline_[12] = {};
-char	Analyser::SyntaxError::lineerror_[100] = {};
+char	Analyser::SyntaxError::utoaline_[12] = {};
+char	Analyser::SyntaxError::lineerror_[500] = {};
 
 Analyser::SyntaxError::SyntaxError(const std::string &error, size_t line)
 	: line_(line) {
-	utoa(line_, itoaline_);
+	// if this didn't need to not throw, we would use std strings or string
+	// streams
+	static const char inLine[] = " in line ";
+
+	if (error.size() + strlen(inLine) + sizeof(utoaline_) + 1 >
+	sizeof lineerror_) {
+		std::memcpy(lineerror_, "Too long error message", 23);
+		return;
+	}
+	Utoa_(line_, utoaline_);
 	std::memcpy(lineerror_, error.c_str(), error.size());
-	std::memcpy(&lineerror_[error.size()], " in line ", 9 + 1);
-	std::memcpy(&lineerror_[error.size() + 9], itoaline_, strlen(itoaline_) + 1);
+	std::memcpy(&lineerror_[error.size()], inLine, strlen(inLine) + 1);
+	std::memcpy(&lineerror_[error.size() + strlen(inLine)], utoaline_,
+				strlen(utoaline_) + 1);
 }
 
 Analyser::SyntaxError::~SyntaxError() throw() {}

@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <ServerConfig.hpp>
+#include <parser/ParserManager.hpp>
 
 class Config {
 	private:
