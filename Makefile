@@ -1,7 +1,7 @@
 NAME = webserv
 CXX ?= clang++
 export CXX
-CXXFLAGS = -Wall -Werror -Wextra -std=c++98 -g3
+CXXFLAGS = -Wall -Werror -Wextra -std=c++98 -O3 -g3
 LINT = cpplint
 LINTFLAGS = --recursive --exclude=srcs/incs/test/catch2.hpp \
 		--exclude=nocommit/ --exclude=*.nocommit
@@ -17,8 +17,9 @@ INC_DIR = $(SRC_DIR)/incs
 
 # if you create a new folder with source files, it should be in the srcs
 # folder, and you should put its name here:
-DIRS = app app/http app/utils app/config app/config/analyser app/server \
-	   app/CGI
+DIRS = app app/utils app/config app/config/analyser app/server \
+	   app/CGI app/http app/http/response app/http/response/get \
+	   app/http/response/post app/http/response/delete
 
 include $(SRC_DIR)/target/common.mk
 
@@ -31,14 +32,12 @@ include $(SRC_DIR)/target/generaterules.mk
 -include $(DEPS)
 
 .PHONY: unit_test
-unit_test:
-	make
-	make -C srcs/app/test/unit
+unit_test: all
+	$(MAKE) -C srcs/app/test/unit
 	$(BLD_DIR)/utest_app
 
 .PHONY: integration_test
-integration_test:
-	make
+integration_test: all
 	pytest
 
 .PHONY: test

@@ -20,6 +20,30 @@ char *DuplicateString(const std::string &str) {
 	return element;
 }
 
+std::string	DecodeUrl(const std::string &encoded_url) {
+	std::string decoded_url;
+	std::size_t length = encoded_url.size();
+
+	decoded_url.reserve(encoded_url.size());
+	for (std::size_t i = 0; i < length; ++i) {
+		if (encoded_url[i] == '+') {
+			decoded_url.append(1, ' ');
+		} else if (encoded_url[i] == '%' &&
+					i + 2 < length &&
+					std::isxdigit(encoded_url[i + 1]) &&
+					std::isxdigit(encoded_url[i + 2])) {
+			std::istringstream is(encoded_url.substr(i + 1, 2));
+			int value;
+			is >> std::hex >> value;
+			decoded_url.append(1, static_cast<char>(value));
+			i += 2;
+		} else {
+			decoded_url.append(1, encoded_url[i]);
+		}
+	}
+	return decoded_url;
+}
+
 bool	IsExecutable(const std::string &path) {
 	return access(path.c_str(), X_OK) == 0;
 }
@@ -63,18 +87,4 @@ std::string	PathExtension(const std::string &path) {
 		}
 	}
 	return "";
-}
-
-std::string	GetMimeType(const std::string &path) {
-	return MimeTypes::GetMimeType(PathExtension(path));
-}
-
-std::string	CurrentDate() {
-	char				buffer[100];
-	const std::time_t	date = std::time(NULL);
-	std::strftime(buffer,
-				sizeof(buffer),
-				"%a, %d %b %Y %H:%M:%S %Z",
-				std::gmtime(&date));
-	return buffer;
 }

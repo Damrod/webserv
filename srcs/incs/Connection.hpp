@@ -6,14 +6,16 @@
 #include <string>
 #include <ConnectionIOStatus.hpp>
 #include <HttpRequest.hpp>
-#include <HttpResponse.hpp>
 #include <IRequest.hpp>
+#include <IResponseFactory.hpp>
 #include <ServerConfig.hpp>
-#include <IRequestHandler.hpp>
 
 class Connection {
 	public:
-		Connection(int sd, IRequestHandler *request_handler, IRequest *request);
+		Connection(
+				int sd,
+				IResponseFactory *response_factory,
+				IRequest *request);
 		~Connection();
 		ReceiveRequestStatus::Type	ReceiveRequest();
 		SendResponseStatus::Type	SendResponse();
@@ -25,11 +27,9 @@ class Connection {
 		Connection &	operator=(const Connection &);
 
 		const int			socket_;
-		IRequestHandler		*request_handler_;
+		IResponseFactory	*response_factory_;
 		IRequest			*request_;
-		bool				keep_alive_;
-		bool				is_cgi_;
-		int					cgi_output_fd_;
+		IResponse			*response_;
 		std::string			raw_request_;
 		std::string			raw_response_;
 };

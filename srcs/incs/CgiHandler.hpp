@@ -9,8 +9,8 @@ class CgiHandler {
 	public:
 		CgiHandler(int socket, int cgi_output);
 		~CgiHandler();
-		int		ReadCgiOutput();
-		int		SendCgiOutput();
+		ssize_t	ReadCgiOutput();
+		ssize_t	SendCgiOutput();
 		bool	HasDataAvailable() const;
 		int		GetSocket() const;
 		int		GetCgiOutFd() const;

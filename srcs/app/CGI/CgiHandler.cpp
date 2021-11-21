@@ -8,10 +8,10 @@ CgiHandler::~CgiHandler() {
 	close(cgi_output_);
 }
 
-int	CgiHandler::ReadCgiOutput() {
+ssize_t	CgiHandler::ReadCgiOutput() {
 	char	buffer[4096];
 
-	int nbytes = read(cgi_output_, buffer, sizeof(buffer));
+	ssize_t nbytes = read(cgi_output_, buffer, sizeof(buffer));
 	if (nbytes > 0) {
 		data_.append(&buffer[0], &buffer[nbytes]);
 	}
@@ -21,8 +21,8 @@ int	CgiHandler::ReadCgiOutput() {
 	return nbytes;
 }
 
-int	CgiHandler::SendCgiOutput() {
-	int nbytes = send(socket_, data_.c_str(), data_.size(), 0);
+ssize_t	CgiHandler::SendCgiOutput() {
+	ssize_t nbytes = send(socket_, data_.c_str(), data_.size(), 0);
 	if (nbytes > 0) {
 		data_.erase(0, nbytes);
 	}
