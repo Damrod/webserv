@@ -130,3 +130,11 @@ def test_file_upload_path_traversal(tmp_webserv_dir, random_filename):
     response = requests.post(url, files=files)
     assert not os.path.exists('/tmp/webserv/' + random_filename)
     assert response.status_code == 400
+
+@pytest.mark.skip(reason="known issue")
+def test_http_redirect_location_301():
+    url = 'http://localhost:8081/google'
+    response = requests.get(url, allow_redirects=False)
+    redirect_url = "https://www.google.com"
+    assert response.status_code == 301
+    assert response.headers['Location'] == redirect_url
