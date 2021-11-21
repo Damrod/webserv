@@ -138,3 +138,10 @@ def test_http_redirect_location_301():
     redirect_url = "https://www.google.com"
     assert response.status_code == 301
     assert response.headers['Location'] == redirect_url
+
+@pytest.mark.skip(reason="known issue")
+def test_index_cgi_200():
+    url = 'http://localhost:8084/info/'
+    response = requests.get(url)
+    assert response.status_code == 200
+    assert 'http://www.php.net/' in response.text
