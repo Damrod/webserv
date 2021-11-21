@@ -13,7 +13,6 @@
 #include <stdexcept>
 #include <string>
 #include <map>
-#include <CgiHandler.hpp>
 #include <Config.hpp>
 #include <ConnectionIOStatus.hpp>
 #include <FDsets.hpp>
@@ -44,13 +43,6 @@ class WebServer {
 		Config		config_;
 		ServersMap_	servers_;
 		FDsets		fdSets;
-
-		typedef int							Fd_;
-		typedef std::map<Fd_, CgiHandler *>	CgiHandlersMap_;
-		typedef std::map<Socket_, Fd_>		CgiSocketFdsMap_;
-
-		CgiHandlersMap_ 	cgi_handlers_;
-		CgiSocketFdsMap_	cgi_fds_;
 };
 
 #endif  // SRCS_INCS_WEBSERVER_HPP_

@@ -11,6 +11,10 @@ Server::~Server() {
 		close(it->first);
 		delete it->second;
 	}
+	CgiHandlersMap_::iterator h_it = cgi_handlers_.begin();
+	for (; h_it != cgi_handlers_.end(); ++h_it) {
+		delete h_it->second;
+	}
 	close(listen_sd_);
 }
 
@@ -91,7 +95,7 @@ void Server::HandleCgiSend(int sd) {
 	}
 }
 
-void	Server::BindListeningSocket_() {
+void	Server::BindListeningSocket_() const {
 	if (fcntl(listen_sd_, F_SETFL, O_NONBLOCK) < 0) {
 		throw std::runtime_error(std::strerror(errno));
 	}

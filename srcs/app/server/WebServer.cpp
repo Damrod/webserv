@@ -10,10 +10,6 @@ WebServer::~WebServer() {
 	for (; it != servers_.end(); ++it) {
 		delete it->second;
 	}
-	CgiHandlersMap_::iterator h_it = cgi_handlers_.begin();
-	for (; h_it != cgi_handlers_.end(); ++h_it) {
-		delete h_it->second;
-	}
 }
 
 void	WebServer::Run() {
