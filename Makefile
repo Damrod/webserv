@@ -59,4 +59,4 @@ fclean: clean
 	$(RM) $(NAME)
 
 .PHONY: re
-re: fclean all
+re: fclean $(NAME)
