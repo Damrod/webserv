@@ -25,24 +25,28 @@ void Analyser::SyntaxError::Utoa_(size_t value, char *dest) {
 }
 
 char	Analyser::SyntaxError::utoaline_[12] = {};
-char	Analyser::SyntaxError::lineerror_[500] = {};
+char	Analyser::SyntaxError::lineerror_[100] = {};
 
 Analyser::SyntaxError::SyntaxError(const std::string &error, size_t line)
 	: line_(line) {
 	// if this didn't need to not throw, we would use std strings or string
-	// streams
+	// streams. If we could use printfs, we would use
+	// snprintf(lineerror_, sizeof(lineerror_), "%s in line %zu",
+	// error.c_str(), line);
 	static const char inLine[] = " in line ";
 
-	if (error.size() + strlen(inLine) + sizeof(utoaline_) + 1 >
-	sizeof lineerror_) {
-		std::memcpy(lineerror_, "Too long error message", 23);
-		return;
-	}
 	Utoa_(line_, utoaline_);
-	std::memcpy(lineerror_, error.c_str(), error.size());
-	std::memcpy(&lineerror_[error.size()], inLine, strlen(inLine) + 1);
-	std::memcpy(&lineerror_[error.size() + strlen(inLine)], utoaline_,
-				strlen(utoaline_) + 1);
+	size_t size = std::min(error.size(), sizeof(lineerror_) - 1);
+	std::memcpy(lineerror_, error.c_str(), size);
+	lineerror_[size] = '\0';
+	size_t size2 = std::min(strlen(inLine), sizeof(lineerror_) - size - 1);
+	std::memcpy(&lineerror_[size], inLine, size2);
+	lineerror_[size + size2] = '\0';
+	size_t size3 = std::min(strlen(utoaline_) + 1, sizeof(lineerror_) - size
+	- size2 - 1);
+	std::memcpy(&lineerror_[size + size2], utoaline_,
+				size3);
+	lineerror_[size + size2 + size3] = '\0';
 }
 
 Analyser::SyntaxError::~SyntaxError() throw() {}

@@ -21,14 +21,23 @@ void Lexer::AddPunct_(char type, size_t *tokenend) {
 	char			tmp[2];
 	t_token_type	ttype;
 
-	if (type == ';')
-		ttype = Token::Type::T_SEMICOLON;
-	else if (type == '{')
-		ttype = Token::Type::T_SCOPE_OPEN;
-	else if (type == '}')
-		ttype = Token::Type::T_SCOPE_CLOSE;
-	else
-		throw Analyser::SyntaxError("Unexpected token", line_);
+	switch (type) {
+		case ';': {
+			ttype = Token::Type::T_SEMICOLON;
+			break;
+		}
+		case '{': {
+			ttype = Token::Type::T_SCOPE_OPEN;
+			break;
+		}
+		case '}' : {
+			ttype = Token::Type::T_SCOPE_CLOSE;
+			break;
+		}
+		default : {
+			throw Analyser::SyntaxError("Unexpected token", line_);
+		}
+	}
 	tmp[0] = type;
 	tmp[1] = '\0';
 	tokens_.push_back(Token(tmp, ttype, line_));
