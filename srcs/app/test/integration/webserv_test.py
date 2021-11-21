@@ -145,3 +145,17 @@ def test_index_cgi_200():
     response = requests.get(url)
     assert response.status_code == 200
     assert 'http://www.php.net/' in response.text
+
+def test_percent_encoding():
+    upload_url =  'http://localhost:8084/upload/'
+    filename = 'filename containing space.txt'
+    mime_type = 'text/plain'
+    files = {'file': (filename, 'random text\n', mime_type)}
+    upload_response = requests.post(upload_url, files=files)
+    filepath = TMP_UPLOAD_DIR + filename
+    assert os.path.exists(TMP_UPLOAD_DIR + filename)
+    url = 'http://localhost:8084/test/filename+containing%20space.txt'
+    response = requests.get(url)
+    os.remove(filepath)
+    assert upload_response.status_code == 200
+    assert response.status_code == 200
