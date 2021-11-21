@@ -17,10 +17,7 @@ class Analyser {
 		explicit SyntaxError(const std::string &error, size_t line);
 		virtual const char *what() const throw();
 	private:
-	  	static void 	Utoa_(size_t value, char *dest);
-		static char		utoaline_[12];
-		static char		lineerror_[100];
-		size_t		line_;
+		static char		lineerror_[200];
 	};
 
  protected:
