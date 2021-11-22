@@ -1,3 +1,5 @@
+import aiohttp
+import asyncio
 import filecmp
 import os
 from pathlib import Path
@@ -170,3 +172,21 @@ def test_post_upload_non_existing_path(random_filename):
     assert os.path.exists(filepath)
     os.remove(filepath)
     assert response.status_code == 200
+
+async def async_get_request(session, url):
+    async with session.get(url) as resp:
+        return resp.status
+
+async def async_get_php_info_cgi(number):
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+        url = 'http://localhost:8084/cgi-bin/slow_cgi.py'
+        for _ in range(number):
+            tasks.append(asyncio.ensure_future(async_get_request(session, url)))
+
+        statuses = await asyncio.gather(*tasks)
+        for status in statuses:
+            assert status == 200
+
+def test_get_env_slow_cgi():
+    asyncio.run(async_get_php_info_cgi(20))
