@@ -19,13 +19,8 @@ Server::~Server() {
 }
 
 void	Server::AcceptNewConnection() {
-	int new_sd = accept(listen_sd_, NULL, NULL);
-	if (new_sd < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
-	if (fcntl(new_sd, F_SETFL, O_NONBLOCK) < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
+	int new_sd = SyscallWrap::acceptWr(listen_sd_, NULL, NULL);
+	SyscallWrap::fcntlWr(new_sd, F_SETFL, O_NONBLOCK);
 	AddConnection_(new_sd);
 }
 
@@ -96,9 +91,7 @@ void Server::HandleCgiSend(int sd) {
 }
 
 void	Server::BindListeningSocket_() const {
-	if (fcntl(listen_sd_, F_SETFL, O_NONBLOCK) < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
+	SyscallWrap::fcntlWr(listen_sd_, F_SETFL, O_NONBLOCK);
 
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;  // IPv4
@@ -107,17 +100,10 @@ void	Server::BindListeningSocket_() const {
 	std::memset(addr.sin_zero, 0, sizeof(addr.sin_zero));
 
 	int on = 1;
-	if (setsockopt(listen_sd_, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
-
-	if (bind(listen_sd_, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
-
-	if (listen(listen_sd_, SOMAXCONN) < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
+	SyscallWrap::setsockoptWr(listen_sd_, SOL_SOCKET, SO_REUSEADDR, &on,
+							  sizeof(on));
+	SyscallWrap::bindWr(listen_sd_, (struct sockaddr *)&addr, sizeof(addr));
+	SyscallWrap::listenWr(listen_sd_, SOMAXCONN);
 }
 
 void	Server::AddConnection_(int sd) {
@@ -131,7 +117,7 @@ void	Server::AddConnection_(int sd) {
 
 void	Server::RemoveConnection_(int sd) {
 	fdSets_->removeFd(sd);
-	close(sd);
+	SyscallWrap::closeWr(sd);
 	delete connections_[sd];
 	connections_.erase(sd);
 }

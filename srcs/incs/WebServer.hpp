@@ -16,10 +16,10 @@
 #include <Config.hpp>
 #include <ConnectionIOStatus.hpp>
 #include <FDsets.hpp>
+#include <SyscallWrap.hpp>
 #include <parser/Analyser.hpp>
 #include <Server.hpp>
 #include <ServerConfig.hpp>
-#include <SyscallWrap.hpp>
 
 class WebServer {
 	public:
