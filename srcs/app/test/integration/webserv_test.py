@@ -177,11 +177,11 @@ async def async_get_request(session, url):
     async with session.get(url) as resp:
         return resp.status
 
-async def async_get_php_info_cgi(number):
+async def async_get_php_info_cgi(requests_number, seconds):
     async with aiohttp.ClientSession() as session:
         tasks = []
-        url = 'http://localhost:8084/cgi-bin/slow_cgi.py'
-        for _ in range(number):
+        url = 'http://localhost:8084/cgi-bin/slow_cgi.py?seconds=' + str(seconds)
+        for _ in range(requests_number):
             tasks.append(asyncio.ensure_future(async_get_request(session, url)))
 
         statuses = await asyncio.gather(*tasks)
@@ -189,4 +189,9 @@ async def async_get_php_info_cgi(number):
             assert status == 200
 
 def test_get_env_slow_cgi():
-    asyncio.run(async_get_php_info_cgi(20))
+    requests_number = 20
+    seconds = 2
+    start_time = time.time()
+    asyncio.run(async_get_php_info_cgi(requests_number, seconds))
+    end_time = time.time()
+    assert end_time - start_time < requests_number * seconds

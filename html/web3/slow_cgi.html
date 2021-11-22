@@ -5,6 +5,9 @@
 <h1>Slowly print some CGI output indexes</h1>
 
 <form action="cgi-bin/slow_cgi.py" method="post">
+  <label for="seconds">Number of seconds to sleep:</label>
+  <input type="number" required="required" step="1" min="1"
+	       id="seconds" name="seconds"><br><br>
   <input type="submit" value="Print">
 </form>
 
