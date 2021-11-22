@@ -2,6 +2,7 @@
 #define SRCS_INCS_SYSCALLWRAP_HPP_
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <cstdarg>
 
 class SyscallWrap {
 	public:
@@ -15,9 +16,7 @@ class SyscallWrap {
 		static int selectWr(int nfds, fd_set *readfds, fd_set *writefds,
 							  fd_set *exceptfds, struct timeval *timeout);
 		static int socketWr(int domain, int type, int protocol);
-		static int fcntlWr(int fd, int cmd);
-		static int fcntlWr(int fd, int cmd, int64_t arg);
-		static int fcntlWr(int fd, int cmd, struct flock *lock);
+		static int fcntlWr(int fd, int cmd, ...);
 		static int acceptWr(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 		static int setsockoptWr(int sockfd, int level, int optname,
 							  const void *optval, socklen_t optlen);
