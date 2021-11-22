@@ -6,12 +6,6 @@
 #include <parser/Token.hpp>
 #include <parser/Preprocessor.hpp>
 #include <parser/ParserManager.hpp>
-#include <Config.hpp>
-
-static std::vector<ServerConfig> getServerSettings(void) {
-	ParserManager tst("srcs/config/AGVTest.conf");
-	return tst.GetServersSettings();
-}
 
 TEST_CASE("Testing the parser", "[parser]") {
 	std::string expected = "server 0:\n"
@@ -167,7 +161,9 @@ TEST_CASE("Testing the parser", "[parser]") {
 							"binary handler path:/usr/bin/python2\n";
 	std::ostringstream result;
 	try {
-		std::vector<ServerConfig> cnf = getServerSettings();
+		ParserManager tst("srcs/app/test/unit/config_analyser/nginx_docker/vol/"
+						  "http.d/AGVTest.conf");
+		std::vector<ServerConfig> cnf = tst.GetServersSettings();
 		result << cnf;
 		// std::cout << cnf;
 		// std::cout << "=================  VS =================\n";
@@ -176,5 +172,93 @@ TEST_CASE("Testing the parser", "[parser]") {
 		// std::cout << config;
 	} catch(const std::exception &e) {
 		FAIL(e.what());
+	}
+}
+
+TEST_CASE("Test bad context : location", "[parser]") {
+	try {
+		ParserManager tst("srcs/app/test/unit/config_analyser/nginx_docker/"
+						  "vol/http.d/failing/bad_ctx_location.conf");
+		std::ostringstream result;
+		std::vector<ServerConfig> cnf = tst.GetServersSettings();
+		result << cnf;
+	} catch(const std::exception &e) {
+		// std::cout << e.what();
+		REQUIRE(std::strcmp(e.what(),
+		"Keyword `location' not allowed in global scope in line 35") == 0);
+	}
+}
+
+TEST_CASE("Test bad context : location2", "[parser]") {
+	try {
+		ParserManager tst("srcs/app/test/unit/config_analyser/nginx_docker/"
+				  "vol/http.d/failing/bad_ctx_location2.conf");
+		std::ostringstream result;
+		std::vector<ServerConfig> cnf = tst.GetServersSettings();
+		result << cnf;
+	} catch(const std::exception &e) {
+		// std::cout << e.what();
+		REQUIRE(std::strcmp(e.what(),
+					"Keyword `location' not allowed in context `location'"
+					" in line 40") == 0);
+}
+}
+
+TEST_CASE("Test bad context : server", "[parser]") {
+	try {
+		ParserManager tst("srcs/app/test/unit/config_analyser/nginx_docker/"
+						  "vol/http.d/failing/bad_ctx_server.conf");
+		std::ostringstream result;
+		std::vector<ServerConfig> cnf = tst.GetServersSettings();
+		result << cnf;
+	} catch(const std::exception &e) {
+		// std::cout << e.what();
+		REQUIRE(std::strcmp(e.what(),
+		"Keyword `server' not allowed in context `server' in line 6") == 0);
+	}
+}
+
+TEST_CASE("Test bad context : limit_except", "[parser]") {
+	try {
+		ParserManager tst("srcs/app/test/unit/config_analyser/"
+			"nginx_docker/vol/http.d/failing/bad_ctx_limit_exc.conf");
+		std::ostringstream result;
+		std::vector<ServerConfig> cnf = tst.GetServersSettings();
+		result << cnf;
+	} catch(const std::exception &e) {
+		// std::cout << e.what();
+		REQUIRE(std::strcmp(e.what(),
+		"Keyword `limit_except' not allowed "
+		"in context `server' in line 33") == 0);
+	}
+}
+
+TEST_CASE("Test bad context : server_name", "[parser]") {
+	try {
+		ParserManager tst("srcs/app/test/unit/config_analyser/nginx_docker/"
+						  "vol/http.d/failing/bad_ctx_server_name.conf");
+		std::ostringstream result;
+		std::vector<ServerConfig> cnf = tst.GetServersSettings();
+		result << cnf;
+	} catch(const std::exception &e) {
+		// std::cout << e.what();
+		REQUIRE(std::strcmp(e.what(),
+			"Keyword `server_name' not allowed in context `location' "
+			"in line 14") == 0);
+	}
+}
+
+TEST_CASE("Test bad context : listen", "[parser]") {
+	try {
+		ParserManager tst("srcs/app/test/unit/config_analyser/nginx_docker/"
+						  "vol/http.d/failing/bad_ctx_listen.conf");
+		std::ostringstream result;
+		std::vector<ServerConfig> cnf = tst.GetServersSettings();
+		result << cnf;
+	} catch(const std::exception &e) {
+		// std::cout << e.what();
+		REQUIRE(std::strcmp(e.what(),
+			"Keyword `listen' not allowed in context "
+			"`location' in line 42") == 0);
 	}
 }
