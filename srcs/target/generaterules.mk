@@ -4,7 +4,7 @@ OBJS := $(foreach src, $(SRCS), $(subst $(SRC_DIR),$(BLD_DIR),$(basename $(src))
 
 # I tweaked this rule that George made to build the .d files also inside the
 # bld folder, from the .o files
-DEPS := $(patsubst %.o, %.d, $(OBJ))
+DEPS := $(foreach obj, $(OBJS), $(patsubst %.o, %.d, $(obj)))
 
 # Generate rules to compile .o files
 

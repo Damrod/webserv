@@ -59,4 +59,5 @@ fclean: clean
 	$(RM) $(NAME)
 
 .PHONY: re
-re: fclean $(NAME)
+re: fclean
+	$(MAKE)
