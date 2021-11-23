@@ -14,7 +14,6 @@ class FormFile {
 		std::string	file_content_;
 		std::string	boundary_;
 
-		static const char kCRLF[];
 		static const char kWhitespace[];
 
 		void		ParseRequestContentType_(const HttpRequest &request);

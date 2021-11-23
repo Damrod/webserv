@@ -5,7 +5,6 @@
 #include <cerrno>
 #include <cstdlib>
 
-const char			HttpRequest::kCRLF_[] = "\r\n";
 const char			HttpRequest::kWhitespace_[] = " \t";
 const std::size_t	HttpRequest::kPortMax_ = 65535;
 
@@ -111,7 +110,7 @@ void	HttpRequest::ParseRequestLine_(const std::string &raw_request) {
 	if (parse_state_ != kParseRequestLine || state_ != RequestState::kPartial) {
 		return;
 	}
-	const std::size_t request_line_end = raw_request.find(kCRLF_);
+	const std::size_t request_line_end = raw_request.find(Constants::kCRLF_);
 	if (request_line_end == std::string::npos) {
 		return;
 	}
@@ -230,7 +229,7 @@ void	HttpRequest::ParseHttpVersion_(const std::string &raw_request) {
 	}
 	const std::size_t http_version_start = offset_;
 	const std::size_t http_version_end =
-								raw_request.find(kCRLF_, http_version_start);
+								raw_request.find(Constants::kCRLF_, http_version_start);
 	if (http_version_end == std::string::npos) {
 		return;
 	}
@@ -252,7 +251,8 @@ void	HttpRequest::ParseHeaders_(const std::string &raw_request) {
 		return;
 	}
 	const std::size_t headers_start = offset_ + 2;
-	const std::string delimiter = std::string(kCRLF_) + kCRLF_;
+	const std::string delimiter = std::string(Constants::kCRLF_)
+		+ Constants::kCRLF_;
 	const std::size_t headers_end = raw_request.find(delimiter, offset_);
 	if (headers_end == std::string::npos) {
 		return;
@@ -260,7 +260,7 @@ void	HttpRequest::ParseHeaders_(const std::string &raw_request) {
 	offset_ = headers_start;
 	while (offset_ < headers_end) {
 		const std::size_t header_start = offset_;
-		const std::size_t header_end = raw_request.find(kCRLF_, offset_);
+		const std::size_t header_end = raw_request.find(Constants::kCRLF_, offset_);
 		if (header_end == std::string::npos) {
 			state_ = RequestState::kInvalid;
 			return;

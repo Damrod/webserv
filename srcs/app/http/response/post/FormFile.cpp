@@ -2,7 +2,6 @@
 #include <stdexcept>
 #include <Utils.hpp>
 
-const char FormFile::kCRLF[] = "\r\n";
 const char FormFile::kWhitespace[] = " \t";
 
 FormFile::FormFile(const HttpRequest &request) {
@@ -42,11 +41,13 @@ void	FormFile::ParseRequestBody_(const HttpRequest &request) {
 	const std::string body = request.GetBody();
 
 	// Skip first boundary
-	const std::string boundary_start = dash_boundary + boundary_ + kCRLF;
+	const std::string boundary_start = dash_boundary + boundary_
+		+ Constants::kCRLF_;
 	std::size_t headers_start = SkipWord_(body, 0, boundary_start);
 
 	// Parse the headers to extract the filename
-	const std::string body_delimiter = std::string(kCRLF) + kCRLF;
+	const std::string body_delimiter = std::string(Constants::kCRLF_)
+		+ Constants::kCRLF_;
 	std::size_t headers_end = body.find(body_delimiter, headers_start);
 	if (headers_end == std::string::npos) {
 		throw std::invalid_argument("[FormFile] Invalid body headers");
@@ -59,7 +60,8 @@ void	FormFile::ParseRequestBody_(const HttpRequest &request) {
 	// Parse the file content
 	std::size_t file_start = headers_end;
 	std::string form_part_end =
-					kCRLF + dash_boundary + boundary_ + dash_boundary + kCRLF;
+		Constants::kCRLF_ + dash_boundary + boundary_ + dash_boundary
+		+ Constants::kCRLF_;
 	std::size_t file_end = body.find(form_part_end, file_start);
 	if (file_end == std::string::npos) {
 		throw std::invalid_argument("[FormFile] Invalid file content");
@@ -76,7 +78,7 @@ Content-Type: text/plain\r\n
 void	FormFile::ParseFormHeaders_(const std::string &headers) {
 	// Parse the content disposition
 	std::size_t start = 0;
-	std::size_t end = headers.find(kCRLF);
+	std::size_t end = headers.find(Constants::kCRLF_);
 	if (end == std::string::npos) {
 		throw std::invalid_argument("[FormFile] Invalid Content-Disposition");
 	}
@@ -84,8 +86,8 @@ void	FormFile::ParseFormHeaders_(const std::string &headers) {
 	ParseFormContentDisposition_(TrimString(content_disposition, kWhitespace));
 
 	// Parse the Content-Type of the form data
-	start = end + sizeof(kCRLF) - 1;
-	end = headers.find(std::string(kCRLF) + kCRLF, start);
+	start = end + sizeof(Constants::kCRLF_) - 1;
+	end = headers.find(std::string(Constants::kCRLF_) + Constants::kCRLF_, start);
 	if (end == std::string::npos) {
 		throw std::invalid_argument("[FormFile] Invalid form Content-Type");
 	}
@@ -93,7 +95,7 @@ void	FormFile::ParseFormHeaders_(const std::string &headers) {
 	ParseHeaderName_(content_type, 0, "content-type");
 
 	// Verify that there are no more headers
-	end += (sizeof(kCRLF) - 1) * 2;
+	end += (sizeof(Constants::kCRLF_) - 1) * 2;
 	if (end != headers.size()) {
 		throw std::invalid_argument("[FormFile] Invalid form headers");
 	}
