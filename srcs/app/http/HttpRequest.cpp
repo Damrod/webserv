@@ -5,7 +5,6 @@
 #include <cerrno>
 #include <cstdlib>
 
-const char			HttpRequest::kWhitespace_[] = " \t";
 const std::size_t	HttpRequest::kPortMax_ = 65535;
 
 HttpRequest::HttpRequest()
@@ -310,7 +309,7 @@ std::string HttpRequest::ParseHeaderName_(const std::string &header) {
 std::string HttpRequest::ParseHeaderValue_(const std::string &header) {
 	const std::size_t value_start = header.find(':') + 1;
 	std::string value = header.substr(value_start);
-	value = TrimString(value, kWhitespace_);
+	value = TrimString(value, Constants::kWhitespace_);
 	if (!IsValidHeaderValue_(value)) {
 		return "";
 	}

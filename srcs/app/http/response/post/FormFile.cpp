@@ -2,8 +2,6 @@
 #include <stdexcept>
 #include <Utils.hpp>
 
-const char FormFile::kWhitespace[] = " \t";
-
 FormFile::FormFile(const HttpRequest &request) {
 	ParseRequestContentType_(request);
 	ParseRequestBody_(request);
@@ -83,7 +81,8 @@ void	FormFile::ParseFormHeaders_(const std::string &headers) {
 		throw std::invalid_argument("[FormFile] Invalid Content-Disposition");
 	}
 	const std::string content_disposition = headers.substr(start, end);
-	ParseFormContentDisposition_(TrimString(content_disposition, kWhitespace));
+	ParseFormContentDisposition_(TrimString(content_disposition,
+											Constants::kWhitespace_));
 
 	// Parse the Content-Type of the form data
 	start = end + sizeof(Constants::kCRLF_) - 1;
@@ -159,7 +158,8 @@ FormFile::ParseHeaderName_(const std::string &str, std::size_t start,
 	}
 	const std::string header_name = str.substr(start, end - start);
 	const std::string lwc_header_name =
-							ToLowerString(TrimString(header_name, kWhitespace));
+							ToLowerString(TrimString(header_name,
+													 Constants::kWhitespace_));
 	const std::string lwc_name = ToLowerString(name);
 	if (lwc_header_name != lwc_name) {
 		throw std::invalid_argument("[FormFile] Invalid header: " + name);
@@ -176,7 +176,7 @@ FormFile::ParseMediaType_(const std::string &str, std::size_t start,
 		throw std::invalid_argument("[FormFile] Invalid media-type");
 	}
 	const std::string media_type = str.substr(start, end - start);
-	if (TrimString(media_type, kWhitespace) != name) {
+	if (TrimString(media_type, Constants::kWhitespace_) != name) {
 		throw std::invalid_argument("[FormFile] Invalid media-type");
 	}
 	return SkipWhitespace_(str, end + 1);
@@ -202,7 +202,7 @@ std::size_t	FormFile::SkipWord_(const std::string &str, std::size_t index,
 
 std::size_t
 FormFile::SkipWhitespace_(const std::string &str, std::size_t index) const {
-	index = str.find_first_not_of(kWhitespace, index);
+	index = str.find_first_not_of(Constants::kWhitespace_, index);
 	if (index == std::string::npos) {
 		throw std::invalid_argument("[FormFile] Invalid form");
 	}
