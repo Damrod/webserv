@@ -2,6 +2,13 @@
 #define SRCS_INCS_SYSCALLWRAP_HPP_
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <cerrno>
+#include <cstdlib>
+#include <cstring>
+#include <stdexcept>
+#include <sstream>
 #include <string>
 
 class SyscallWrap {
