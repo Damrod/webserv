@@ -95,6 +95,12 @@ class SyscallWrap {
 							const std::string &file,
 							const std::string &func,
 							std::size_t line);
+
+ private:
+		static void AddDebuggingInfo_(const std::string &file,
+									  const std::string &syscall,
+									  const std::string &func,
+									  std::size_t line);
 //  static ssize_t recvWr(int sockfd, void *buf, size_t len, int flags);
 //  static ssize_t sendWr(int sockfd, const void *buf, size_t len, int flags);
 };

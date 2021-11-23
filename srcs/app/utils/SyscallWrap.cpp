@@ -6,10 +6,7 @@ int SyscallWrap::pipeWr(int pipefd[2],
 						std::size_t line) {
 	int ret;
 	if ((ret = pipe(pipefd)) == -1) {
-		std::ostringstream ss;
-		ss << func << ": " << __FUNCTION__ << ": " << std::strerror(errno)
-		<< ", in " << file << ":"<< line;
-		throw std::runtime_error(ss.str());;
+		AddDebuggingInfo_(file, "pipe", func, line);
 	}
 	return ret;
 }
@@ -20,10 +17,7 @@ int SyscallWrap::dupWr(int oldfd,
 					   std::size_t line) {
 	int ret;
 	if ((ret = dup(oldfd)) == -1) {
-		std::ostringstream ss;
-		ss << func << ": " << __FUNCTION__ << ": " << std::strerror(errno)
-		<< ", in " << file << ":"<< line;
-		throw std::runtime_error(ss.str());;
+		AddDebuggingInfo_(file, "dup", func, line);
 	}
 	return ret;
 }
@@ -34,10 +28,8 @@ int SyscallWrap::dup2Wr(int oldfd,
 						const std::string &func,
 						std::size_t line) {
 	int ret;
-	if ((ret = dup2(oldfd, newfd)) == -1) {		std::ostringstream ss;
-		ss << func << ": " << __FUNCTION__ << ": " << std::strerror(errno)
-		<< ", in " << file << ":"<< line;
-		throw std::runtime_error(ss.str());;
+	if ((ret = dup2(oldfd, newfd)) == -1) {
+		AddDebuggingInfo_(file, "dup2", func, line);
 	}
 	return ret;
 }
@@ -50,10 +42,7 @@ int SyscallWrap::execveWr(const char *pathname,
 						  std::size_t line) {
 	int ret;
 	if ((ret = execve(pathname, argv, envp)) == -1) {
-		std::ostringstream ss;
-		ss << func << ": " << __FUNCTION__ << ": " << std::strerror(errno)
-		<< ", in " << file << ":"<< line;
-		throw std::runtime_error(ss.str());;
+		AddDebuggingInfo_(file, "execve", func, line);
 	}
 	return ret;
 }
@@ -64,10 +53,7 @@ int SyscallWrap::closeWr(int fd,
 						 std::size_t line) {
 	int ret;
 	if ((ret = close(fd)) == -1) {
-		std::ostringstream ss;
-		ss << func << ": " << __FUNCTION__ << ": " << std::strerror(errno)
-		<< ", in " << file << ":"<< line;
-		throw std::runtime_error(ss.str());;
+		AddDebuggingInfo_(file, "close", func, line);
 	}
 	return ret;
 }
@@ -77,10 +63,7 @@ pid_t SyscallWrap::forkWr(const std::string &file,
 						  std::size_t line) {
 	int ret;
 	if ((ret = fork()) == -1) {
-		std::ostringstream ss;
-		ss << func << ": " << __FUNCTION__ << ": " << std::strerror(errno)
-		<< ", in " << file << ":"<< line;
-		throw std::runtime_error(ss.str());;
+		AddDebuggingInfo_(file, "fork", func, line);
 	}
 	return ret;
 }
@@ -95,10 +78,7 @@ int SyscallWrap::selectWr(int nfds,
 						  std::size_t line) {
 	int ret;
 	if ((ret = select(nfds, readfds, writefds, exceptfds, timeout)) == -1) {
-		std::ostringstream ss;
-		ss << func << ": " << __FUNCTION__ << ": " << std::strerror(errno)
-		<< ", in " << file << ":"<< line;
-		throw std::runtime_error(ss.str());;
+		AddDebuggingInfo_(file, "select", func, line);
 	}
 	return ret;
 }
@@ -111,10 +91,7 @@ int SyscallWrap::socketWr(int domain,
 						  std::size_t line) {
 	int ret;
 	if ((ret = socket(domain, type, protocol)) == -1) {
-		std::ostringstream ss;
-		ss << func << ": " << __FUNCTION__ << ": " << std::strerror(errno)
-		<< ", in " << file << ":"<< line;
-		throw std::runtime_error(ss.str());;
+		AddDebuggingInfo_(file, "socket", func, line);
 	}
 	return ret;
 }
@@ -126,10 +103,7 @@ int SyscallWrap::fcntlWr(int fd,
 						 std::size_t line) {
 	int ret;
 	if ((ret = fcntl(fd, cmd)) == -1) {
-		std::ostringstream ss;
-		ss << func << ": " << __FUNCTION__ << ": " << std::strerror(errno)
-		<< ", in " << file << ":"<< line;
-		throw std::runtime_error(ss.str());;
+		AddDebuggingInfo_(file, "fcntl", func, line);
 	}
 	return ret;
 }
@@ -142,10 +116,7 @@ int SyscallWrap::fcntlWr(int fd,
 						 std::size_t line) {
 	int ret;
 	if ((ret = fcntl(fd, cmd, arg)) == -1) {
-		std::ostringstream ss;
-		ss << func << ": " << __FUNCTION__ << ": " << std::strerror(errno)
-		<< ", in " << file << ":"<< line;
-		throw std::runtime_error(ss.str());;
+		AddDebuggingInfo_(file, "fcntl", func, line);
 	}
 	return ret;
 }
@@ -158,10 +129,7 @@ int SyscallWrap::fcntlWr(int fd,
 						 std::size_t line) {
 	int ret;
 	if ((ret = fcntl(fd, cmd, lock)) == -1) {
-		std::ostringstream ss;
-		ss << func << ": " << __FUNCTION__ << ": " << std::strerror(errno)
-		<< ", in " << file << ":"<< line;
-		throw std::runtime_error(ss.str());;
+		AddDebuggingInfo_(file, "fcntl", func, line);
 	}
 	return ret;
 }
@@ -174,10 +142,7 @@ int SyscallWrap::acceptWr(int sockfd,
 						  std::size_t line) {
 	int ret;
 	if ((ret = accept(sockfd, addr, addrlen)) == -1) {
-		std::ostringstream ss;
-		ss << func << ": " << __FUNCTION__ << ": " << std::strerror(errno)
-		<< ", in " << file << ":"<< line;
-		throw std::runtime_error(ss.str());;
+		AddDebuggingInfo_(file, "accept", func, line);
 	}
 	return ret;
 }
@@ -192,10 +157,7 @@ int SyscallWrap::setsockoptWr(int sockfd,
 							  std::size_t line) {
 	int ret;
 	if ((ret = setsockopt(sockfd, level, optname, optval, optlen)) == -1) {
-		std::ostringstream ss;
-		ss << func << ": " << __FUNCTION__ << ": " << std::strerror(errno)
-		<< ", in " << file << ":"<< line;
-		throw std::runtime_error(ss.str());;
+		AddDebuggingInfo_(file, "setsockopt", func, line);
 	}
 	return ret;
 }
@@ -208,10 +170,7 @@ int SyscallWrap::bindWr(int sockfd,
 						std::size_t line) {
 	int ret;
 	if ((ret = bind(sockfd, addr, addrlen)) == -1) {
-		std::ostringstream ss;
-		ss << func << ": " << __FUNCTION__ << ": " << std::strerror(errno)
-		<< ", in " << file << ":"<< line;
-		throw std::runtime_error(ss.str());;
+		AddDebuggingInfo_(file, "bind", func, line);
 	}
 	return ret;
 }
@@ -223,16 +182,18 @@ int SyscallWrap::listenWr(int sockfd,
 						  std::size_t line) {
 	int ret;
 	if ((ret = listen(sockfd, backlog)) == -1) {
-		std::ostringstream ss;
-		ss << func << ": " << __FUNCTION__ << ": " << std::strerror(errno)
-		<< ", in " << file << ":"<< line;
-		throw std::runtime_error(ss.str());;
+		AddDebuggingInfo_(file, "listen", func, line);
 	}
 	return ret;
 }
 
-//  ssize_t SyscallWrap::recvWr(int sockfd, void *buf, size_t len,
-//  int flags);
-//  ssize_t SyscallWrap::sendWr(int sockfd, const void *buf, size_t len,
-//  int flags);
+void SyscallWrap::AddDebuggingInfo_(const std::string &file,
+							  const std::string &syscall,
+							  const std::string &func,
+							  std::size_t line) {
+	std::ostringstream ss;
+	ss << func << ": " << syscall << ": " << std::strerror(errno)
+	   << ", in " << file << ":"<< line;
+	throw std::runtime_error(ss.str());
+}
 
