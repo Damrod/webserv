@@ -71,15 +71,27 @@ int SyscallWrap::socketWr(int domain, int type, int protocol) {
 	return ret;
 }
 
-int SyscallWrap::fcntlWr(int fd, int cmd, ...) {
-	va_list ap;
+int SyscallWrap::fcntlWr(int fd, int cmd) {
 	int ret;
-	va_start(ap, cmd);
-
-	if ((ret = fcntl(fd, cmd, ap)) == -1) {
+	if ((ret = fcntl(fd, cmd)) == -1) {
 		throw std::runtime_error(std::strerror(errno));
 	}
-	va_end(ap);
+	return ret;
+}
+
+int SyscallWrap::fcntlWr(int fd, int cmd, int64_t arg) {
+	int ret;
+	if ((ret = fcntl(fd, cmd, arg)) == -1) {
+		throw std::runtime_error(std::strerror(errno));
+	}
+	return ret;
+}
+
+int SyscallWrap::fcntlWr(int fd, int cmd, struct flock *lock) {
+	int ret;
+	if ((ret = fcntl(fd, cmd, lock)) == -1) {
+		throw std::runtime_error(std::strerror(errno));
+	}
 	return ret;
 }
 
