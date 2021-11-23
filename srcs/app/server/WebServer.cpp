@@ -18,7 +18,7 @@ void	WebServer::Run() {
 			SyscallWrap::selectWr(
 				fdSets.getMaxSocket() + 1,
 				fdSets.getReadSet(),
-				fdSets.getWriteSet(), NULL, NULL);
+				fdSets.getWriteSet(), NULL, NULL, __FILE__, __FUNCTION__, __LINE__);
 		for (int sd = 0; sd <= fdSets.getMaxSocket() && ready_sockets > 0; ++sd) {
 			if (fdSets.isReadSet(sd)) {
 				--ready_sockets;
@@ -38,7 +38,8 @@ void	WebServer::PopulateServers_() {
 	std::vector<ServerConfig>::iterator	settings_it = servers_settings.begin();
 
 	while (settings_it != servers_settings.end()) {
-		int listen_sd = SyscallWrap::socketWr(AF_INET, SOCK_STREAM, 0);
+		int listen_sd = SyscallWrap::socketWr(AF_INET, SOCK_STREAM, 0,
+											  __FILE__, __FUNCTION__, __LINE__);
 
 		fdSets.addToReadSet(listen_sd);
 		Server	*server = new Server(*settings_it, listen_sd, &fdSets);
