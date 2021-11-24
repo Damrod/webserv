@@ -1,5 +1,4 @@
 #include <HttpBaseResponse.hpp>
-#include <HttpErrorResponse.hpp>
 
 HttpBaseResponse::HttpBaseResponse(
 	RequestConfig *request_config,

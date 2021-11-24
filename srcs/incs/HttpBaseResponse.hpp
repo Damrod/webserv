@@ -9,6 +9,7 @@
 #include <HttpRequest.hpp>
 #include <RequestConfig.hpp>
 #include <File.hpp>
+#include <HttpErrorResponse.hpp>
 
 class HttpBaseResponse: public IResponse {
 	public:

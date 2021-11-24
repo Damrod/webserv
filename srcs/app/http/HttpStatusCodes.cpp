@@ -1,5 +1,4 @@
 #include <HttpStatusCodes.hpp>
-#include <utility>
 
 const HttpStatusCodes::StatusCodesMap_
 HttpStatusCodes::kStatusCodesMap_ = CreateStatusCodesMap_();

@@ -1,6 +1,16 @@
 #ifndef SRCS_INCS_SYSCALLWRAP_HPP_
 #define SRCS_INCS_SYSCALLWRAP_HPP_
 #include <sys/types.h>
+#include <fcntl.h>
+#include <sys/wait.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <cerrno>
+#include <cstdlib>
+#include <cstring>
+#include <stdexcept>
+#include <string>
 
 class SyscallWrap {
 	public:

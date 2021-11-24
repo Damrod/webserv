@@ -1,4 +1,4 @@
-#include "HttpGetResponse.hpp"
+#include <HttpGetResponse.hpp>
 
 HttpGetResponse::HttpGetResponse(
 	RequestConfig *request_config,

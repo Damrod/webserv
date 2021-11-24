@@ -1,4 +1,4 @@
-#include "HttpRedirectionResponse.hpp"
+#include <HttpRedirectionResponse.hpp>
 
 HttpRedirectionResponse::HttpRedirectionResponse(
 	RequestConfig *requestConfig,
