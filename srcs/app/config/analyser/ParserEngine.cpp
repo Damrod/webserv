@@ -11,6 +11,16 @@ Parser::Engine::Engine(const std::list<Token> &token, Wrapper *config) :
 	ParserMainLoop();
 }
 
+Parser::Engine::~Engine(void) {
+	itc_++;
+	if (itc_ != ite_) {
+		throw
+			SyntaxError("There are unbalanced "
+						"closing curly braces at the end of the file",
+						(--itc_)->GetLine());
+	}
+}
+
 t_evt Parser::Event::GetEventTypeEnum(const Token &token) {
 	return static_cast<t_evt>(token.GetType());
 }

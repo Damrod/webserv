@@ -17,6 +17,7 @@ namespace Parser {
 class Engine: public Analyser {
  public:
 	Engine(const std::list<Token> &token, Wrapper *config);
+	virtual ~Engine(void);
 	State::e_id ParserMainLoop(void);
 	void PushContext(const State::e_id &ctx);
 	void PopContext(void);
