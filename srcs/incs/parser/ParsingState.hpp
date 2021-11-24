@@ -35,8 +35,11 @@ class State {
 	static enum e_id GetParsingStateTypeEnum(const Token &token);
 
  private:
-	static std::map<const std::string, enum e_id> KeywordMapFactory_(void);
-	static const std::map<const std::string, enum e_id> keyword_to_str;
+  struct str_to_state {
+	char				name[21];
+	Parser::State::e_id	id;
+  };
+	static struct str_to_state str_to_state_map_[13];
 };
 
 }  // namespace Parser
