@@ -18,7 +18,6 @@ struct Parser::State::str_to_state Parser::State::str_to_state_map_[13] = {
 };
 
 std::string Parser::State::GetParsingStateTypeStr(t_parsing_state type) {
-
 	for (std::size_t i = 0; i < (sizeof (str_to_state_map_)
 	/ sizeof (str_to_state_map_[0])); ++i) {
 		if(type == str_to_state_map_[i].id) {
