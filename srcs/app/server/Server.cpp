@@ -8,14 +8,14 @@ Server::Server(const ServerConfig &settings, int listen_sd, FDsets *fdSets)
 Server::~Server() {
 	std::map<int, Connection *>::iterator it = connections_.begin();
 	for (; it != connections_.end(); it++) {
-		close(it->first);
+		SyscallWrap::closeWr(it->first, __FILE__, __FUNCTION__ , __LINE__);
 		delete it->second;
 	}
 	CgiHandlersMap_::iterator h_it = cgi_handlers_.begin();
 	for (; h_it != cgi_handlers_.end(); ++h_it) {
 		delete h_it->second;
 	}
-	close(listen_sd_);
+	SyscallWrap::closeWr(listen_sd_, __FILE__, __FUNCTION__ , __LINE__);
 }
 
 void	Server::AcceptNewConnection() {
