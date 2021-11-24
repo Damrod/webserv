@@ -188,11 +188,11 @@ int SyscallWrap::listenWr(int sockfd,
 }
 
 void SyscallWrap::AddDebuggingInfo_(const std::string &file,
-							  const std::string &syscall,
+							  const std::string &sys_call_name,
 							  const std::string &func,
 							  std::size_t line) {
 	std::ostringstream ss;
-	ss << func << ": " << syscall << ": " << std::strerror(errno)
+	ss << func << ": " << sys_call_name << ": " << std::strerror(errno)
 	   << ", in " << file << ":"<< line;
 	throw std::runtime_error(ss.str());
 }
