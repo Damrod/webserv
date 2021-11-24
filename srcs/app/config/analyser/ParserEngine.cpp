@@ -4,7 +4,6 @@ Parser::Engine::Engine(const std::list<Token> &token, Wrapper *config) :
 	handlers_(this, config),
 	ite_(token.end()),
 	itc_(token.begin()),
-	transitions_(TransitionFactory_()),
 	args_() {
 	line_ = 1;
 	ctx_.push(Parser::State::K_INIT);
@@ -58,7 +57,7 @@ t_parsing_state Parser::Engine::ParserMainLoop(void) {
 	for (; itc_ != ite_ ; itc_++) {
 		t_evt event = Event::GetEventTypeEnum(*itc_);
 		for (size_t i = 0;
-			 i < transitions_.size();
+			 i < (sizeof(transitions_) / sizeof(transitions_[0]));
 			 ++i) {
 			if ((state == transitions_[i].state)
 				|| (Parser::State::K_NONE == transitions_[i].state)) {
@@ -81,153 +80,148 @@ t_parsing_state Parser::Engine::ParserMainLoop(void) {
 	throw SyntaxError("Unclosed scope", (--itc_)->GetLine());
 }
 
-
-std::vector < Parser::s_trans > Parser::Engine::TransitionFactory_(void) {
-	std::vector < Parser::s_trans > ret;
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_INIT,
-			.evt = Parser::Event::EVT_SCOPE_OPEN,
-			.apply = &Parser::StatelessSet::InitHandler,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_INIT,
-			.evt = Parser::Event::EVT_NONE,
-			.apply = &Parser::StatelessSet::SyntaxFailer,
-			.errormess = "Expecting `{'"});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_EXP_KW,
-			.evt = Parser::Event::EVT_SCOPE_CLOSE,
-			.apply = &Parser::StatelessSet::ExpKwHandlerClose,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_EXP_KW,
-			.evt = Parser::Event::EVT_WORD,
-			.apply = &Parser::StatelessSet::ExpKwHandlerKw,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_EXP_KW,
-			.evt = Parser::Event::EVT_NONE,
-			.apply = &Parser::StatelessSet::SyntaxFailer,
-			.errormess = "Expecting keyword"});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_EXP_SEMIC,
-			.evt = Parser::Event::EVT_SEMICOLON,
-			.apply = &Parser::StatelessSet::SemicHandler,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_EXP_SEMIC,
-			.evt = Parser::Event::EVT_NONE,
-			.apply = &Parser::StatelessSet::SyntaxFailer,
-			.errormess = "Expecting `;'"});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_AUTOINDEX,
-			.evt = Parser::Event::EVT_WORD,
-			.apply = &Parser::StatelessSet::AutoindexHandler,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_AUTOINDEX,
-			.evt = Parser::Event::EVT_NONE,
-			.apply = &Parser::StatelessSet::SyntaxFailer,
-			.errormess = "Expecting `on' or `off' after `autoindex'"
-			" directive"});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_SERVER_NAME,
-			.evt = Parser::Event::EVT_WORD,
-			.apply = &Parser::StatelessSet::ServerNameHandler,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_SERVER_NAME,
-			.evt = Parser::Event::EVT_SEMICOLON,
-			.apply = &Parser::StatelessSet::ServerNameHandlerSemic,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_SERVER_NAME,
-			.evt = Parser::Event::EVT_NONE,
-			.apply = &Parser::StatelessSet::SyntaxFailer,
-			.errormess = "Unexpected token after `server_name' "
-			"directive"});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_LOCATION,
-			.evt = Parser::Event::EVT_WORD,
-			.apply = &Parser::StatelessSet::LocationHandler,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_LOCATION,
-			.evt = Parser::Event::EVT_NONE,
-			.apply = &Parser::StatelessSet::SyntaxFailer,
-			.errormess = "Expecting path after `location' directive"});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_SERVER,
-			.evt = Parser::Event::EVT_SCOPE_OPEN,
-			.apply = &Parser::StatelessSet::ServerHandler,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_SERVER,
-			.evt = Parser::Event::EVT_NONE,
-			.apply = &Parser::StatelessSet::SyntaxFailer,
-			.errormess = "Expecting `{' after `server' directive"});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_LISTEN,
-			.evt = Parser::Event::EVT_WORD,
-			.apply = &Parser::StatelessSet::ListenHandler,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_LISTEN,
-			.evt = Parser::Event::EVT_NONE,
-			.apply = &Parser::StatelessSet::SyntaxFailer,
-			.errormess = "Unexpected token after `listen' directive"});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_ERROR_PAGE,
-			.evt = Parser::Event::EVT_WORD,
-			.apply = &Parser::StatelessSet::ErrorPageHandler,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_ERROR_PAGE,
-			.evt = Parser::Event::EVT_NONE,
-			.apply = &Parser::StatelessSet::SyntaxFailer,
-			.errormess = "Unexpected token after `error_page' directive"});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_CGI_ASSIGN,
-			.evt = Parser::Event::EVT_WORD,
-			.apply = &Parser::StatelessSet::CgiAssignHandler,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_CGI_ASSIGN,
-			.evt = Parser::Event::EVT_NONE,
-			.apply = &Parser::StatelessSet::SyntaxFailer,
-			.errormess = "Unexpected token after `cgi_assign' directive"});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_ROOT,
-			.evt = Parser::Event::EVT_WORD,
-			.apply = &Parser::StatelessSet::RootHandler,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_ROOT,
-			.evt = Parser::Event::EVT_NONE,
-			.apply = &Parser::StatelessSet::SyntaxFailer,
-			.errormess = "Unexpected token after `root' directive"});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_INDEX,
-			.evt = Parser::Event::EVT_WORD,
-			.apply = &Parser::StatelessSet::IndexHandler,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_INDEX,
-			.evt = Parser::Event::EVT_NONE,
-			.apply = &Parser::StatelessSet::SyntaxFailer,
-			.errormess = "Unexpected token after `index' directive"});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_LIMIT_EXCEPT,
-			.evt = Parser::Event::EVT_WORD,
-			.apply = &Parser::StatelessSet::LimitExceptHandler,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_LIMIT_EXCEPT,
-			.evt = Parser::Event::EVT_SEMICOLON,
-			.apply = &Parser::StatelessSet::LimitExceptHandlerSemic,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_LIMIT_EXCEPT,
-			.evt = Parser::Event::EVT_NONE,
-			.apply = &Parser::StatelessSet::SyntaxFailer,
-			.errormess = "Unexpected token after `limit_except' directive"});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_RETURN,
-			.evt = Parser::Event::EVT_WORD,
-			.apply = &Parser::StatelessSet::ReturnHandler,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_RETURN,
-			.evt = Parser::Event::EVT_NONE,
-			.apply = &Parser::StatelessSet::SyntaxFailer,
-			.errormess = "Unexpected token after `return' directive"});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_UPLOAD_STORE,
-			.evt = Parser::Event::EVT_WORD,
-			.apply = &Parser::StatelessSet::UploadStoreHandler,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state = Parser::State::K_UPLOAD_STORE,
-			.evt = Parser::Event::EVT_NONE,
-			.apply = &Parser::StatelessSet::SyntaxFailer,
-			.errormess = "Unexpected token after `upload_store' directive"});
-	ret.push_back((Parser::s_trans){.state =
-			Parser::State::K_CLIENT_MAX_BODY_SIZE,
-			.evt = Parser::Event::EVT_WORD,
-			.apply = &Parser::StatelessSet::ClientMaxBodySizeHandler,
-			.errormess = ""});
-	ret.push_back((Parser::s_trans){.state =
-			Parser::State::K_CLIENT_MAX_BODY_SIZE,
-			.evt = Parser::Event::EVT_NONE,
-			.apply = &Parser::StatelessSet::SyntaxFailer,
-			.errormess = "Unexpected token after `client_max_body_size'"
-			" directive"});
-	return ret;
-}
+const Parser::s_trans Parser::Engine::transitions_[35] = {
+	{Parser::State::K_INIT,
+		Parser::Event::EVT_SCOPE_OPEN,
+		&Parser::StatelessSet::InitHandler,
+		""},
+	{Parser::State::K_INIT,
+		Parser::Event::EVT_NONE,
+		&Parser::StatelessSet::SyntaxFailer,
+		"Expecting `{'"},
+	{Parser::State::K_EXP_KW,
+		Parser::Event::EVT_SCOPE_CLOSE,
+		&Parser::StatelessSet::ExpKwHandlerClose,
+		""},
+	{Parser::State::K_EXP_KW,
+		Parser::Event::EVT_WORD,
+		&Parser::StatelessSet::ExpKwHandlerKw,
+		""},
+	{Parser::State::K_EXP_KW,
+		Parser::Event::EVT_NONE,
+		&Parser::StatelessSet::SyntaxFailer,
+		"Expecting keyword"},
+	{Parser::State::K_EXP_SEMIC,
+		Parser::Event::EVT_SEMICOLON,
+		&Parser::StatelessSet::SemicHandler,
+		""},
+	{Parser::State::K_EXP_SEMIC,
+		Parser::Event::EVT_NONE,
+		&Parser::StatelessSet::SyntaxFailer,
+		"Expecting `;'"},
+	{Parser::State::K_AUTOINDEX,
+		Parser::Event::EVT_WORD,
+		&Parser::StatelessSet::AutoindexHandler,
+		""},
+	{Parser::State::K_AUTOINDEX,
+		Parser::Event::EVT_NONE,
+		&Parser::StatelessSet::SyntaxFailer,
+		"Expecting `on' or `off' after `autoindex'"
+					 " directive"},
+	{Parser::State::K_SERVER_NAME,
+		Parser::Event::EVT_WORD,
+		&Parser::StatelessSet::ServerNameHandler,
+		""},
+	{Parser::State::K_SERVER_NAME,
+		Parser::Event::EVT_SEMICOLON,
+		&Parser::StatelessSet::ServerNameHandlerSemic,
+		""},
+	{Parser::State::K_SERVER_NAME,
+		Parser::Event::EVT_NONE,
+		&Parser::StatelessSet::SyntaxFailer,
+		"Unexpected token after `server_name' "
+					 "directive"},
+	{Parser::State::K_LOCATION,
+		Parser::Event::EVT_WORD,
+		&Parser::StatelessSet::LocationHandler,
+		""},
+	{Parser::State::K_LOCATION,
+		Parser::Event::EVT_NONE,
+		&Parser::StatelessSet::SyntaxFailer,
+		"Expecting path after `location' directive"},
+	{Parser::State::K_SERVER,
+		Parser::Event::EVT_SCOPE_OPEN,
+		&Parser::StatelessSet::ServerHandler,
+		""},
+	{Parser::State::K_SERVER,
+		Parser::Event::EVT_NONE,
+		&Parser::StatelessSet::SyntaxFailer,
+		"Expecting `{' after `server' directive"},
+	{Parser::State::K_LISTEN,
+		Parser::Event::EVT_WORD,
+		&Parser::StatelessSet::ListenHandler,
+		""},
+	{Parser::State::K_LISTEN,
+		Parser::Event::EVT_NONE,
+		&Parser::StatelessSet::SyntaxFailer,
+		"Unexpected token after `listen' directive"},
+	{Parser::State::K_ERROR_PAGE,
+		Parser::Event::EVT_WORD,
+		&Parser::StatelessSet::ErrorPageHandler,
+		""},
+	{Parser::State::K_ERROR_PAGE,
+		Parser::Event::EVT_NONE,
+		&Parser::StatelessSet::SyntaxFailer,
+		"Unexpected token after `error_page' directive"},
+	{Parser::State::K_CGI_ASSIGN,
+		Parser::Event::EVT_WORD,
+		&Parser::StatelessSet::CgiAssignHandler,
+		""},
+	{Parser::State::K_CGI_ASSIGN,
+		Parser::Event::EVT_NONE,
+		&Parser::StatelessSet::SyntaxFailer,
+		"Unexpected token after `cgi_assign' directive"},
+	{Parser::State::K_ROOT,
+		Parser::Event::EVT_WORD,
+		&Parser::StatelessSet::RootHandler,
+		""},
+	{Parser::State::K_ROOT,
+		Parser::Event::EVT_NONE,
+		&Parser::StatelessSet::SyntaxFailer,
+		"Unexpected token after `root' directive"},
+	{Parser::State::K_INDEX,
+		Parser::Event::EVT_WORD,
+		&Parser::StatelessSet::IndexHandler,
+		""},
+	{Parser::State::K_INDEX,
+		Parser::Event::EVT_NONE,
+		&Parser::StatelessSet::SyntaxFailer,
+		"Unexpected token after `index' directive"},
+	{Parser::State::K_LIMIT_EXCEPT,
+		Parser::Event::EVT_WORD,
+		&Parser::StatelessSet::LimitExceptHandler,
+		""},
+	{Parser::State::K_LIMIT_EXCEPT,
+		Parser::Event::EVT_SEMICOLON,
+		&Parser::StatelessSet::LimitExceptHandlerSemic,
+		""},
+	{Parser::State::K_LIMIT_EXCEPT,
+		Parser::Event::EVT_NONE,
+		&Parser::StatelessSet::SyntaxFailer,
+		"Unexpected token after `limit_except' directive"},
+	{Parser::State::K_RETURN,
+		Parser::Event::EVT_WORD,
+		&Parser::StatelessSet::ReturnHandler,
+		""},
+	{Parser::State::K_RETURN,
+		Parser::Event::EVT_NONE,
+		&Parser::StatelessSet::SyntaxFailer,
+		"Unexpected token after `return' directive"},
+	{Parser::State::K_UPLOAD_STORE,
+		Parser::Event::EVT_WORD,
+		&Parser::StatelessSet::UploadStoreHandler,
+		""},
+	{Parser::State::K_UPLOAD_STORE,
+		Parser::Event::EVT_NONE,
+		&Parser::StatelessSet::SyntaxFailer,
+		"Unexpected token after `upload_store' directive"},
+	{Parser::State::K_CLIENT_MAX_BODY_SIZE,
+		Parser::Event::EVT_WORD,
+		&Parser::StatelessSet::ClientMaxBodySizeHandler,
+		""},
+	{Parser::State::K_CLIENT_MAX_BODY_SIZE,
+		Parser::Event::EVT_NONE,
+		&Parser::StatelessSet::SyntaxFailer,
+		"Unexpected token after `client_max_body_size'"
+					 " directive"}
+};

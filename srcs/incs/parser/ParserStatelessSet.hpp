@@ -74,7 +74,7 @@ struct s_trans {
 	State::e_id state;
 	Event::e_id evt;
 	StateHandler apply;
-	std::string errormess;
+	char errormess[60];
 };
 
 }  // namespace Parser
