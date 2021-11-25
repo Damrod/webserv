@@ -18,6 +18,7 @@
 #include <RequestConfig.hpp>
 #include <HttpBaseResponse.hpp>
 #include <HttpErrorResponse.hpp>
+#include <Utils.hpp>
 
 
 class HttpPostResponse: public HttpBaseResponse {
@@ -33,6 +34,7 @@ class HttpPostResponse: public HttpBaseResponse {
 		void	Upload_(File file);
 		void	HandleCGI_(File file);
 		void	HandleUpload_(File file);
+		std::string	ConstructFullPath_();
 };
 
 #endif  // SRCS_INCS_HTTPPOSTRESPONSE_HPP_

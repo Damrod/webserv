@@ -7,21 +7,36 @@ HttpPostResponse::HttpPostResponse(
 	if (error_code_) {
 			SetErrorRawResponse_(error_code_);
 	} else {
-		const std::string full_path =
-						request_config_->GetRoot() + request_->GetDecodedPath();
-		// Mirar este try-catch en POST?
-		try {
-			File file(full_path);
+		const std::string full_path = ConstructFullPath_();
+		if (!full_path.empty()) {
+			// Mirar este try-catch en POST?
+			try {
+				File file(full_path);
 
-			if (file.IsRegularFile()) {
-				HandleCGI_(file);
-			} else {
-				HandleUpload_(file);
+				if (file.IsRegularFile()) {
+					HandleCGI_(file);
+				} else {
+					Upload_(file);
+				}
+			} catch(File::Error & e) {
+				SetErrorRawResponse_(e.what());
 			}
-		} catch(File::Error & e) {
-			SetErrorRawResponse_(e.what());
 		}
 	}
+}
+
+std::string	HttpPostResponse::ConstructFullPath_() {
+	std::string full_path;
+	if (request_config_->HasCGI(PathExtension(request_->GetDecodedPath()))) {
+		full_path = request_config_->GetRoot() + request_->GetDecodedPath();
+	} else if (IsUploadEnabled_() &&
+							IsValidUploadPath_(request_->GetDecodedPath())) {
+		full_path = request_config_->GetUploadStore();
+	} else {
+		SetErrorRawResponse_(404);
+		return "";
+	}
+	return full_path;
 }
 
 void	HttpPostResponse::HandleCGI_(File file) {
@@ -55,12 +70,9 @@ bool	HttpPostResponse::IsValidUploadPath_(const std::string &path) const {
 void	HttpPostResponse::Upload_(File file) {
 	try {
 		FormFile form_file(*request_);
-		const std::string upload_path =
-								request_config_->GetUploadStore() +
-								form_file.GetFilename();
 		const std::string file_content = form_file.GetFileContent();
 
-		file.Upload(upload_path, file_content);
+		file.Upload(form_file.GetFilename(), file_content);
 		DefaultStatusResponse_(200);
 	} catch (const std::exception &e) {
 		SetErrorRawResponse_(400);

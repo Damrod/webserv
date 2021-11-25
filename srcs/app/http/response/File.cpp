@@ -46,7 +46,8 @@ bool	File::HasEndSlash() const {
 	return file_path_[file_path_.size() - 1] == '/';
 }
 
-void	File::Upload(std::string upload_path, std::string content) {
+void	File::Upload(std::string filename, std::string content) {
+	const std::string upload_path = file_path_ + filename;
 	std::ofstream out(upload_path.c_str());
 
 	if (!out) {
