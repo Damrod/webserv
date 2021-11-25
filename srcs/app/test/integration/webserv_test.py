@@ -160,7 +160,6 @@ def test_percent_encoding():
     assert upload_response.status_code == 200
     assert response.status_code == 200
 
-@pytest.mark.skip(reason="known issue")
 def test_post_upload_non_existing_path(random_filename):
     url =  'http://localhost:8084/send'
     mime_type = 'text/plain'
