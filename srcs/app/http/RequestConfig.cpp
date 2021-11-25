@@ -19,7 +19,7 @@ RequestConfig::RequestConfig(const ServerConfig &server_config,
 }
 
 void RequestConfig::SetRedirectionConfig_(const ServerConfig &server_config) {
-	if (server_config.common.return_url.empty()) {
+	if (!server_config.common.return_url.empty()) {
 		return_url_ = server_config.common.return_url;
 		return_status_ = server_config.common.return_status;
 	} else {

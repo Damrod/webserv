@@ -12,6 +12,10 @@ std::string File::GetPathExtension() const {
 	return path_extension_;
 }
 
+std::string File::GetPath() const {
+	return file_path_;
+}
+
 std::string	File::GetMimeType() const {
 	return MimeTypes::GetMimeType(path_extension_);
 }
