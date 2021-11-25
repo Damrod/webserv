@@ -38,7 +38,7 @@ unit_test: all
 
 .PHONY: integration_test
 integration_test: all
-	pytest
+	pytest --tb=short
 
 .PHONY: test
 test: unit_test integration_test
