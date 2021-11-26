@@ -1,6 +1,7 @@
 #include <CGI.hpp>
 
-std::string CGI::GetExecutable_(const std::string &extension) {
+std::string CGI::GetExecutable_() {
+	const std::string extension = file_.GetPathExtension();
 	if (requestConfig_->HasCGI(extension)) {
 		return requestConfig_->GetCGIBin(extension);
 	}
@@ -9,13 +10,13 @@ std::string CGI::GetExecutable_(const std::string &extension) {
 }
 
 CGI::CGI(const HttpRequest &request, const RequestConfig &location,
-		 const std::string &extension  // we need the GetExtension
-									   // function somewhere common
+		const File &file
 	) :
 	request_(request),
 	requestConfig_(&location),
-	arg_path_(requestConfig_->GetRoot() + request.GetDecodedPath()),
-	exec_path_(GetExecutable_(extension)),
+	file_(file),
+	arg_path_(file_.GetPath()),
+	exec_path_(GetExecutable_()),
 	CGIenvMap_(MakeEnv_()),
 	CGIenv_(MakeCEnv_()) {
 	fds_[0] = -1;
