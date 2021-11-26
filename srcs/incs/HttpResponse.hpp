@@ -5,6 +5,9 @@
 #include <map>
 #include <utility>
 #include <string>
+#include <sstream>
+#include <stdexcept>
+#include <Utils.hpp>
 #include <HttpStatusCodes.hpp>
 
 class HttpResponse {

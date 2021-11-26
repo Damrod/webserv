@@ -20,7 +20,7 @@ Token::Token(const std::string &data, t_token_type type, size_t line)
 	  line_(line) {
 }
 
-t_token_type Token::getType(void) const {
+t_token_type Token::GetType(void) const {
 	return type_;
 }
 
@@ -32,6 +32,6 @@ std::string Token::GetTokenTypeStr(void) const {
 	return Token::Type::GetTokenTypeStr(type_);
 }
 
-const std::string &Token::getRawData(void) const {
+const std::string &Token::GetRawData(void) const {
 	return data_;
 }

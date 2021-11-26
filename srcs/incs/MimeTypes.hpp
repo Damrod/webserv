@@ -2,6 +2,7 @@
 #define SRCS_INCS_MIMETYPES_HPP_
 #include <map>
 #include <string>
+#include <utility>
 
 class MimeTypes {
 	public:

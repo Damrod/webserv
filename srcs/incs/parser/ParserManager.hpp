@@ -16,16 +16,16 @@
 class ParserManager {
  public:
 	explicit ParserManager(const std::string &path);
-	std::vector<ServerConfig> GetServersSettings(void);
+	std::vector<ServerConfig> GetServersSettings(void) const;
  private:
 	std::vector<ServerConfig> servers_settings_;
-	std::string path_;
-	Preprocessor preprocessor_;
-	std::string filebuff_;
-	Lexer lexer_;
-	std::list<Token> tokens_;
+	const std::string path_;
+	const Preprocessor preprocessor_;
+	const std::string filebuff_;
+	const Lexer lexer_;
+	const std::list<Token> tokens_;
 	Parser::Wrapper api_;
-	Parser::Engine parser_;
+	const Parser::Engine parser_;
 };
 
 std::ostream &operator<<(std::ostream &o,

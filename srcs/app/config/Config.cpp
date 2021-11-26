@@ -1,5 +1,4 @@
 #include <Config.hpp>
-#include <parser/ParserManager.hpp>
 
 bool	Config::LoadFile(const std::string &pathname) {
 	// Read and parse the configuration file and save to servers_settings_

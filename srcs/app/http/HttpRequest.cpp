@@ -1,9 +1,4 @@
 #include <HttpRequest.hpp>
-#include <algorithm>
-#include <ostream>
-#include <stdexcept>
-#include <cerrno>
-#include <cstdlib>
 
 const char			HttpRequest::kCRLF_[] = "\r\n";
 const char			HttpRequest::kWhitespace_[] = " \t";

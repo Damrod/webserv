@@ -22,9 +22,9 @@ class Token {
 		static const char *str_map[4];
 	};
 	explicit Token(const std::string &data, Type::e_id type, size_t line);
-	Type::e_id getType(void) const;
+	Type::e_id GetType(void) const;
 	std::string GetTokenTypeStr(void) const;
-	const std::string &getRawData(void) const;
+	const std::string &GetRawData(void) const;
 	size_t GetLine(void) const;
 
  protected:

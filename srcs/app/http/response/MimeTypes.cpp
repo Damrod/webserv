@@ -1,5 +1,4 @@
 #include <MimeTypes.hpp>
-#include <utility>
 
 const MimeTypes::MimeTypesMap_
 MimeTypes::kMimeTypes_ = CreateMimeTypesMap_();
