@@ -9,7 +9,6 @@
 #include <HttpRequest.hpp>
 #include <RequestConfig.hpp>
 #include <File.hpp>
-#include <HttpErrorResponse.hpp>
 
 class HttpBaseResponse: public IResponse {
 	public:
@@ -38,5 +37,7 @@ class HttpBaseResponse: public IResponse {
 		HttpRequest *request_;
 		int cgi_output_fd_;
 };
+
+#include <HttpErrorResponse.hpp>
 
 #endif  // SRCS_INCS_HTTPBASERESPONSE_HPP_
