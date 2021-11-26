@@ -12,31 +12,22 @@
 #include <sstream>
 #include <string>
 
+#ifdef DBG
+# define dbgargs() , const std::string &file, const std::string &func, \
+std::size_t line
+# else
+# define dbgargs()
+#endif
+
 class SyscallWrap {
 	public:
-		static int pipeWr(int pipefd[2],
-						  const std::string &file,
-						  const std::string &func,
-						  std::size_t line);
-		static int dupWr(int oldfd,
-						 const std::string &file,
-						 const std::string &func,
-						 std::size_t line);
-		static int dup2Wr(int oldfd,
-						  int newfd,
-						  const std::string &file,
-						  const std::string &func,
-						  std::size_t line);
+		static int pipeWr(int pipefd[2] dbgargs());
+		static int dupWr(int oldfd dbgargs());
+		static int dup2Wr(int oldfd, int newfd dbgargs());
 		static int execveWr(const char *pathname,
 							char *const argv[],
-							char *const envp[],
-							const std::string &file,
-							const std::string &func,
-							std::size_t line);
-		static int closeWr(int fd,
-						   const std::string &file,
-						   const std::string &func,
-						   std::size_t line);
+							char *const envp[] dbgargs());
+		static int closeWr(int fd dbgargs());
 		static pid_t forkWr(const std::string &file,
 							const std::string &func,
 							std::size_t line);
@@ -44,64 +35,39 @@ class SyscallWrap {
 							fd_set *readfds,
 							fd_set *writefds,
 							fd_set *exceptfds,
-							struct timeval *timeout,
-							const std::string &file,
-							const std::string &func,
-							std::size_t line);
+							struct timeval *timeout dbgargs());
 		static int socketWr(int domain,
 							int type,
-							int protocol,
-							const std::string &file,
-							const std::string &func,
-							std::size_t line);
+							int protocol dbgargs());
+		static int fcntlWr(int fd,
+						   int cmd dbgargs());
 		static int fcntlWr(int fd,
 						   int cmd,
-						   const std::string &file,
-						   const std::string &func,
-						   std::size_t line);
+						   int64_t arg dbgargs());
 		static int fcntlWr(int fd,
 						   int cmd,
-						   int64_t arg,
-						   const std::string &file,
-						   const std::string &func,
-						   std::size_t line);
-		static int fcntlWr(int fd,
-						   int cmd,
-						   struct flock *lock,
-						   const std::string &file,
-						   const std::string &func,
-						   std::size_t line);
+						   struct flock *lock dbgargs());
 		static int acceptWr(int sockfd,
 							struct sockaddr *addr,
-							socklen_t *addrlen,
-							const std::string &file,
-							const std::string &func,
-							std::size_t line);
+							socklen_t *addrlen dbgargs());
 		static int setsockoptWr(int sockfd,
 								int level,
 								int optname,
 								const void *optval,
-								socklen_t optlen,
-								const std::string &file,
-								const std::string &func,
-								std::size_t line);
+								socklen_t optlen dbgargs());
 		static int bindWr(int sockfd,
 						  const struct sockaddr *addr,
-						  socklen_t addrlen,
-						  const std::string &file,
-						  const std::string &func,
-						  std::size_t line);
+						  socklen_t addrlen dbgargs());
 		static int listenWr(int sockfd,
-							int backlog,
-							const std::string &file,
-							const std::string &func,
-							std::size_t line);
+							int backlog dbgargs());
+#ifdef DBG
 
  private:
 		static void AddDebuggingInfo_(const std::string &file,
 									  const std::string &sys_call_name,
 									  const std::string &func,
 									  std::size_t line);
+#endif
 };
 
 #endif  // SRCS_INCS_SYSCALLWRAP_HPP_
