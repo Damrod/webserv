@@ -18,6 +18,7 @@
 #include <RequestConfig.hpp>
 #include <HttpBaseResponse.hpp>
 #include <HttpErrorResponse.hpp>
+#include <Utils.hpp>
 
 
 class HttpPostResponse: public HttpBaseResponse {
@@ -29,10 +30,11 @@ class HttpPostResponse: public HttpBaseResponse {
 	private:
 		bool	IsUploadEnabled_() const;
 		bool	IsValidUploadPath_(const std::string &path) const;
-		void	SetErrorRawResponse_(int error_code);
-		void	Upload_(File file);
-		void	HandleCGI_(File file);
-		void	HandleUpload_(File file);
+		void	SetErrorRawResponse_(const int error_code);
+		void	Upload_(const File &file);
+		void	HandleCGI_(const File &file);
+		void	HandleUpload_(const File &file);
+		std::string	ConstructFullPath_();
 };
 
 #endif  // SRCS_INCS_HTTPPOSTRESPONSE_HPP_

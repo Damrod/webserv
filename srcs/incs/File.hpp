@@ -11,32 +11,34 @@
 #include <MimeTypes.hpp>
 
 class File {
- public:
-    	explicit File(const std::string &file_path);
+	public:
+		explicit File(const std::string &file_path);
 		std::string	GetPathExtension() const;
+		std::string	GetPath() const;
 		std::string	GetMimeType() const;
 		std::string	GetContent();
 		std::string	GetDirectoryContent();
-		void	SetSubpath(std::string subpath);
+		void	SetSubpath(const std::string &subpath);
 		bool	IsRegularFile() const;
 		bool	IsDirectory() const;
 		bool	HasEndSlash() const;
-		void	Upload(std::string upload_path, std::string content);
+		void	Upload(const std::string &upload_path,
+											const std::string &content) const;
 
-        class Error {
-         public:
-            	explicit	Error(int errCode): errCode_(errCode) {}
-                int what() const throw() {
-	             	return errCode_;
-                }
+		class Error {
+			public:
+				explicit	Error(const int errCode): errCode_(errCode) {}
+				int what() const throw() {
+					return errCode_;
+				}
 
-         private:
-                int errCode_;
-        };
+			private:
+				int errCode_;
+		};
 
- private:
+	private:
 		void	SetPathExtension_();
-		void	ThrowPathError_();
+		void	ThrowPathError_() const;
 
 		std::string file_path_;
 		std::string path_extension_;
