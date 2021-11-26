@@ -83,7 +83,7 @@ void	HttpGetResponse::HandleSlashEndedFile_(File file) {
 	} else {
 		file.SetSubpath(request_config_->GetIndex());
 		if (file.IsRegularFile()) {
-			Serve_(file);
+			HandleRegularFile_(file);
 		} else {
 			SetErrorRawResponse_(403);
 		}
