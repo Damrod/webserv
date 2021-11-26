@@ -2,7 +2,6 @@
 
 File::File(const std::string &file_path): file_path_(file_path) {
 	SetPathExtension_();
-	// Ver cómo gestionar esto en POST
 	if (lstat(file_path_.c_str(), &statbuf_) != 0) {
 		ThrowPathError_();
 	}
@@ -30,7 +29,7 @@ std::string	File::GetContent() {
 					std::istreambuf_iterator<char>());
 }
 
-void	File::SetSubpath(std::string subpath) {
+void	File::SetSubpath(const std::string &subpath) {
 	file_path_ += subpath;
 	SetPathExtension_();
 	if (lstat(file_path_.c_str(), &statbuf_) != 0) {
@@ -50,7 +49,8 @@ bool	File::HasEndSlash() const {
 	return file_path_[file_path_.size() - 1] == '/';
 }
 
-void	File::Upload(std::string filename, std::string content) {
+void	File::Upload(const std::string &filename,
+											const std::string &content) const {
 	const std::string upload_path = file_path_ + filename;
 	std::ofstream out(upload_path.c_str());
 
@@ -84,7 +84,7 @@ void	File::SetPathExtension_() {
 	path_extension_ = "";
 }
 
-void	File::ThrowPathError_() {
+void	File::ThrowPathError_() const {
 	if (errno == ENOENT || errno == ENOTDIR) {
 		throw File::Error(404);
 	} else if (errno == EACCES) {
