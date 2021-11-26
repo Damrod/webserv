@@ -139,12 +139,12 @@ def test_http_redirect_location_301():
     assert response.headers['Location'] == redirect_url
 
 def test_index_cgi_200():
-    url = 'http://localhost:8084/info/'
+    url = 'http://localhost:8084/hello/'
     response = requests.get(url)
     assert response.status_code == 200
 
 def test_index_cgi_query_string_200():
-    url = 'http://localhost:8084/info_form/?fname=hello&lname=world'
+    url = 'http://localhost:8084/hello_form/?fname=hello&lname=world'
     response = requests.get(url)
     assert response.status_code == 200
     assert "hello" in response.text
