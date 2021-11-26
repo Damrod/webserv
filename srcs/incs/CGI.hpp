@@ -16,11 +16,12 @@
 #include <RequestConfig.hpp>
 #include <SyscallWrap.hpp>
 #include <Utils.hpp>
+#include <File.hpp>
 
 class CGI {
  public:
 	CGI(const HttpRequest &request, const RequestConfig &location,
-		const std::string &extension);
+		const File &file);
 	virtual ~CGI(void);
 	int ExecuteCGI(void);
 
@@ -29,12 +30,13 @@ class CGI {
 	CGI(const CGI &);
 	CGI & operator=(const CGI &);
 
-	std::string GetExecutable_(const std::string &extension);
+	std::string GetExecutable_();
 	std::map<std::string, std::string> MakeEnv_(void);
 	char **MakeCEnv_(void);
 	void CloseAssign_(int *fd);
 	const HttpRequest &request_;
 	const RequestConfig *requestConfig_;
+	const File &file_;
 	const std::string arg_path_;
 	const std::string exec_path_;
 	const std::map<std::string, std::string> CGIenvMap_;

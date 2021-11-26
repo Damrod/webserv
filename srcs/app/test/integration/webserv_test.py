@@ -131,7 +131,6 @@ def test_file_upload_path_traversal(tmp_webserv_dir, random_filename):
     assert not os.path.exists('/tmp/webserv/' + random_filename)
     assert response.status_code == 400
 
-@pytest.mark.skip(reason="known issue")
 def test_http_redirect_location_301():
     url = 'http://localhost:8081/google'
     response = requests.get(url, allow_redirects=False)
@@ -139,12 +138,17 @@ def test_http_redirect_location_301():
     assert response.status_code == 301
     assert response.headers['Location'] == redirect_url
 
-@pytest.mark.skip(reason="known issue")
 def test_index_cgi_200():
-    url = 'http://localhost:8084/info/'
+    url = 'http://localhost:8084/hello/'
     response = requests.get(url)
     assert response.status_code == 200
-    assert 'http://www.php.net/' in response.text
+
+def test_index_cgi_query_string_200():
+    url = 'http://localhost:8084/hello_form/?fname=hello&lname=world'
+    response = requests.get(url)
+    assert response.status_code == 200
+    assert "hello" in response.text
+    assert "world" in response.text
 
 def test_percent_encoding():
     upload_url =  'http://localhost:8084/upload/'

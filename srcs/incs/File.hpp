@@ -14,6 +14,7 @@ class File {
 	public:
 		explicit File(const std::string &file_path);
 		std::string	GetPathExtension() const;
+		std::string	GetPath() const;
 		std::string	GetMimeType() const;
 		std::string	GetContent();
 		std::string	GetDirectoryContent();
