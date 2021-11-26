@@ -78,8 +78,6 @@ class HttpRequest : public IRequest {
 			kParseBody
 		};
 
-		static const char			        kCRLF_[];
-		static const char			        kWhitespace_[];
 		static const std::size_t	        kPortMax_;
 		std::string                         method_;
 		std::string                         request_target_;
