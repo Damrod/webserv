@@ -1,6 +1,3 @@
-#include <iostream>
-#include <csignal>
-#include <cstdlib>
 #include <WebServer.hpp>
 
 int main(int argc, char *argv[]) {

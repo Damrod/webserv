@@ -1,5 +1,7 @@
 #ifndef SRCS_INCS_REQUESTCONFIG_HPP_
 #define SRCS_INCS_REQUESTCONFIG_HPP_
+#include <sys/types.h>
+#include <iostream>
 #include <string>
 #include <vector>
 #include <algorithm>

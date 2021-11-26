@@ -2,6 +2,11 @@
 #define SRCS_INCS_HTTPREQUEST_HPP_
 #include <map>
 #include <string>
+#include <algorithm>
+#include <ostream>
+#include <stdexcept>
+#include <cerrno>
+#include <cstdlib>
 #include <CommonDefinitions.hpp>
 #include <IRequest.hpp>
 #include <RequestState.hpp>

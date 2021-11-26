@@ -1,6 +1,4 @@
 #include <RequestConfig.hpp>
-#include <sys/types.h>
-#include <iostream>
 
 RequestConfig::RequestConfig(const ServerConfig &server_config,
 		const std::string &request_path) :

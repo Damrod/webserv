@@ -1,6 +1,8 @@
 #ifndef SRCS_INCS_FORMFILE_HPP_
 #define SRCS_INCS_FORMFILE_HPP_
 #include <string>
+#include <stdexcept>
+#include <Utils.hpp>
 #include <HttpRequest.hpp>
 
 class FormFile {

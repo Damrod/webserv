@@ -1,4 +1,4 @@
-#include "HttpDeleteResponse.hpp"
+#include <HttpDeleteResponse.hpp>
 
 HttpDeleteResponse::HttpDeleteResponse(
 	RequestConfig *requestConfig,

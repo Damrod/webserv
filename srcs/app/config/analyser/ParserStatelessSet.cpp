@@ -315,7 +315,6 @@ t_parsing_state Parser::StatelessSet::ListenHandler(
 
 t_parsing_state Parser::StatelessSet::ServerHandler(
 	const StatefulSet &data) const {
-	(void)data;
 	config_->AddServer(data.GetCtx(), LINE);
 	parser_->PushContext(Parser::State::K_SERVER);
 	return parser_->ParserMainLoop();
