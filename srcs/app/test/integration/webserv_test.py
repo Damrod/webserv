@@ -125,8 +125,51 @@ def test_url_path_traversal():
 def test_file_upload_path_traversal(tmp_webserv_dir, random_filename):
     url =  'http://localhost:8084/upload/'
     filename = '../../../../../../../../../../../../../../tmp/webserv/' + random_filename
-    mime_type = 'application/octet-stream'
-    files = {'file': (random_filename, 'random text\n')}
+    mime_type = 'text/plain'
+    files = {'file': (filename, 'random text\n', mime_type)}
     response = requests.post(url, files=files)
     assert not os.path.exists('/tmp/webserv/' + random_filename)
     assert response.status_code == 400
+
+def test_http_redirect_location_301():
+    url = 'http://localhost:8081/google'
+    response = requests.get(url, allow_redirects=False)
+    redirect_url = "https://www.google.com"
+    assert response.status_code == 301
+    assert response.headers['Location'] == redirect_url
+
+def test_index_cgi_200():
+    url = 'http://localhost:8084/hello/'
+    response = requests.get(url)
+    assert response.status_code == 200
+
+def test_index_cgi_query_string_200():
+    url = 'http://localhost:8084/hello_form/?fname=hello&lname=world'
+    response = requests.get(url)
+    assert response.status_code == 200
+    assert "hello" in response.text
+    assert "world" in response.text
+
+def test_percent_encoding():
+    upload_url =  'http://localhost:8084/upload/'
+    filename = 'filename containing space.txt'
+    mime_type = 'text/plain'
+    files = {'file': (filename, 'random text\n', mime_type)}
+    upload_response = requests.post(upload_url, files=files)
+    filepath = TMP_UPLOAD_DIR + filename
+    assert os.path.exists(TMP_UPLOAD_DIR + filename)
+    url = 'http://localhost:8084/test/filename+containing%20space.txt'
+    response = requests.get(url)
+    os.remove(filepath)
+    assert upload_response.status_code == 200
+    assert response.status_code == 200
+
+def test_post_upload_non_existing_path(random_filename):
+    url =  'http://localhost:8084/send'
+    mime_type = 'text/plain'
+    files = {'file': (random_filename, 'random text\n', mime_type)}
+    response = requests.post(url, files=files)
+    filepath = TMP_UPLOAD_DIR + random_filename
+    assert os.path.exists(filepath)
+    os.remove(filepath)
+    assert response.status_code == 200

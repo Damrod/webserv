@@ -39,7 +39,7 @@ void	HttpBaseResponse::Serve_(File file) {
 void	HttpBaseResponse::ExecuteCGI_(File file) {
 	keep_alive_ = false;
 	try {
-		CGI engine(*request_, *request_config_, file.GetPathExtension());
+		CGI engine(*request_, *request_config_, file);
 		cgi_output_fd_ = engine.ExecuteCGI();
 		HttpResponse::HeadersMap headers;
 		std::string body;
