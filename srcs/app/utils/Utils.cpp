@@ -48,29 +48,6 @@ bool	IsExecutable(const std::string &path) {
 	return access(path.c_str(), X_OK) == 0;
 }
 
-bool	IsValidPath(const std::string &path) {
-	struct stat statbuf;
-	return stat(path.c_str(), &statbuf) == 0;
-}
-
-bool	IsDirectory(const std::string &path) {
-	struct stat statbuf;
-	if (lstat(path.c_str(), &statbuf) == 0 &&
-			(statbuf.st_mode & S_IFMT) == S_IFDIR) {
-		return true;
-	}
-	return false;
-}
-
-bool	IsRegularFile(const std::string &path) {
-	struct stat statbuf;
-	if (lstat(path.c_str(), &statbuf) == 0 &&
-			(statbuf.st_mode & S_IFMT) == S_IFREG) {
-		return true;
-	}
-	return false;
-}
-
 std::string	PathExtension(const std::string &path) {
 	const std::size_t extension_position = path.rfind(".");
 	if (extension_position == std::string::npos || extension_position < 2) {
