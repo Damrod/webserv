@@ -1,5 +1,4 @@
 #include <FDsets.hpp>
-#include <cstring>
 
 FDsets::FDsets() : max_fd_(-1) {
 	FD_ZERO(&read_set_);

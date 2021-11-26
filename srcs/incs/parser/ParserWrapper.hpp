@@ -47,34 +47,32 @@ std::map<T, U>map, const std::string &key, const std::string &value) {
 class Wrapper : public Analyser {
  private:
 	std::vector<ServerConfig>	*servers_settings_;
-	bool canAddServer_(uint32_t address, uint16_t port);
-	bool canAddLocation_(const std::string &path);
+	bool CanAddServer_(uint32_t address, uint16_t port) const;
+	bool CanAddLocation_(const std::string &path) const;
 
  public:
 	explicit Wrapper(std::vector<ServerConfig> *server_settings);
-	std::vector<ServerConfig> &GetServersSettings(void);
-	void SetServersSettings(std::vector<ServerConfig> *server_settings);
 	virtual ~Wrapper(void) {}
 	void SetListenAddress(uint32_t address, uint16_t port, State::e_id ctx,
 						  size_t line);
 	void AddServerName(const std::vector<std::string> &args, State::e_id ctx,
 					   size_t line);
 	void SetRoot(const std::string &root, State::e_id ctx, size_t line);
-	void AddIndex(const std::string &index, State::e_id ctx,  size_t line);
-	void AddAutoindex(bool autoindex, State::e_id ctx, size_t line);
+	void SetIndex(const std::string &index, State::e_id ctx, size_t line);
+	void SetAutoindex(bool autoindex, State::e_id ctx, size_t line);
 	void SetClientMaxSz(uint32_t size, State::e_id ctx, size_t line);
 	void AddErrorPage(uint16_t code, const std::string &uri, State::e_id ctx,
-					  size_t line);
+						size_t line);
 	void AddCgiAssign(const std::string &extension,
 					  const std::string &binaryHandlerPath, State::e_id ctx,
 					  size_t line);
 	void AddServer(State::e_id ctx, size_t line);
 	void AddLocation(const std::string &path, State::e_id ctx,
 					 size_t line);
-	void AddReturn(uint16_t status, const std::string &url,
+	void SetReturn(uint16_t status, const std::string &url,
 				   State::e_id ctx, size_t line);
-	void AddUploadStore(const std::string &store, State::e_id ctx, size_t line);
-	void AddLimitExcept(const std::vector<std::string> &httpMethods,
+	void SetUploadStore(const std::string &store, State::e_id ctx, size_t line);
+	void SetLimitExcept(const std::vector<std::string> &httpMethods,
 						State::e_id ctx, size_t line);
 };
 

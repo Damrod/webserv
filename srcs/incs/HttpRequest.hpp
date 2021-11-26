@@ -2,6 +2,11 @@
 #define SRCS_INCS_HTTPREQUEST_HPP_
 #include <map>
 #include <string>
+#include <algorithm>
+#include <ostream>
+#include <stdexcept>
+#include <cerrno>
+#include <cstdlib>
 #include <CommonDefinitions.hpp>
 #include <IRequest.hpp>
 #include <RequestState.hpp>
@@ -73,8 +78,6 @@ class HttpRequest : public IRequest {
 			kParseBody
 		};
 
-		static const char			        kCRLF_[];
-		static const char			        kWhitespace_[];
 		static const std::size_t	        kPortMax_;
 		std::string                         method_;
 		std::string                         request_target_;

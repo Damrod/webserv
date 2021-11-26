@@ -1,5 +1,6 @@
 #ifndef SRCS_INCS_SERVERCONFIG_HPP_
 #define SRCS_INCS_SERVERCONFIG_HPP_
+#include <netinet/in.h>
 #include <stdint.h>
 #include <string>
 #include <vector>

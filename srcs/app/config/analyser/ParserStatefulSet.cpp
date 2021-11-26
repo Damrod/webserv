@@ -4,7 +4,7 @@ Parser::StatefulSet::StatefulSet(size_t line,
 				   t_parsing_state st,
 				   const std::string &rawData,
 				   t_parsing_state ctx,
-				   const std::string &error,
+				   const char *error,
 				   size_t argNumber) :
 	error_msg_(error),
 	state_(st),
@@ -26,7 +26,7 @@ const std::string &Parser::StatefulSet::GetRawData(void) const {
 	return rawData_;
 }
 
-const std::string &Parser::StatefulSet::GetErrorMessage(void) const {
+const char * Parser::StatefulSet::GetErrorMessage(void) const {
 	return error_msg_;
 }
 

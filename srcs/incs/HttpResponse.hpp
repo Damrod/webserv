@@ -5,7 +5,11 @@
 #include <map>
 #include <utility>
 #include <string>
+#include <sstream>
+#include <stdexcept>
+#include <Utils.hpp>
 #include <HttpStatusCodes.hpp>
+#include <CommonDefinitions.hpp>
 
 class HttpResponse {
 	private:
@@ -33,7 +37,6 @@ class HttpResponse {
 		void	AddContentLength_();
 		std::string	CurrentDate_() const;
 
-		static const char	kCRLF_[];
 		std::size_t	status_code_;
 		HeadersMap	headers_;
 		std::string	body_;

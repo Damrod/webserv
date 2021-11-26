@@ -18,9 +18,9 @@ class Preprocessor : public Analyser {
  public:
 	explicit Preprocessor(const std::string &path);
 	virtual ~Preprocessor(void);
-	std::string GetFileBuffer(void);
+	std::string GetFileBuffer(void) const;
  private:
-	std::string preprocess(std::ifstream &file);
+	std::string Preprocess_(std::ifstream &file);
 	std::string	path_;
 	std::string	filebuff_;
 };

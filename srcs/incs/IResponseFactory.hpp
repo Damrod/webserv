@@ -1,6 +1,6 @@
 #ifndef SRCS_INCS_IRESPONSEFACTORY_HPP_
 #define SRCS_INCS_IRESPONSEFACTORY_HPP_
-#include "IResponse.hpp"
+#include <IResponse.hpp>
 
 class IResponseFactory {
 	public:

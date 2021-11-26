@@ -6,6 +6,9 @@ const char Constants::kValidHttpMethods[8][8] = {"GET", "HEAD", "POST",
 const uint16_t Constants::kRedirectionReturnStatus[5] = {301,
 	302, 303, 307, 308};
 
+const char Constants::kCRLF_[3] = "\r\n";
+const char Constants::kWhitespace_[3] = " \t";
+
 bool Constants::IsValidMethod(const std::string &method) {
 	const std::size_t	len =
 		sizeof(kValidHttpMethods) /

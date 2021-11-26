@@ -38,4 +38,6 @@ class HttpBaseResponse: public IResponse {
 		int cgi_output_fd_;
 };
 
+#include <HttpErrorResponse.hpp>
+
 #endif  // SRCS_INCS_HTTPBASERESPONSE_HPP_

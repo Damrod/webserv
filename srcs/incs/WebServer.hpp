@@ -13,6 +13,8 @@
 #include <stdexcept>
 #include <string>
 #include <map>
+#include <csignal>
+#include <cstdlib>
 #include <Config.hpp>
 #include <ConnectionIOStatus.hpp>
 #include <FDsets.hpp>

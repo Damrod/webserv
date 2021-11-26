@@ -1,10 +1,4 @@
 #include <HttpResponse.hpp>
-#include <sstream>
-#include <stdexcept>
-#include <HttpStatusCodes.hpp>
-#include <Utils.hpp>
-
-const char HttpResponse::kCRLF_[] = "\r\n";
 
 HttpResponse::HttpResponse(
 			const std::size_t status_code,
@@ -35,15 +29,15 @@ std::string	HttpResponse::RawContent() const {
 	std::stringstream	ss;
 
 	ss << http_version_ << ' ' << status_code_ << ' ' << reason_phrase_ <<
-		kCRLF_;
+	Constants::kCRLF_;
 	HeadersMap::const_iterator	it = headers_.begin();
 	HeadersMap::const_iterator	ite = headers_.end();
 	while (it != ite) {
-		ss << it->first << ": " << it->second << kCRLF_;
+		ss << it->first << ": " << it->second << Constants::kCRLF_;
 		++it;
 	}
 	if (!is_cgi_) {
-		ss << kCRLF_;
+		ss << Constants::kCRLF_;
 		ss << body_;
 	}
 	return ss.str();

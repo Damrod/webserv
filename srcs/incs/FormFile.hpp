@@ -1,6 +1,8 @@
 #ifndef SRCS_INCS_FORMFILE_HPP_
 #define SRCS_INCS_FORMFILE_HPP_
 #include <string>
+#include <stdexcept>
+#include <Utils.hpp>
 #include <HttpRequest.hpp>
 
 class FormFile {
@@ -13,9 +15,6 @@ class FormFile {
 		std::string	filename_;
 		std::string	file_content_;
 		std::string	boundary_;
-
-		static const char kCRLF[];
-		static const char kWhitespace[];
 
 		void		ParseRequestContentType_(const HttpRequest &request);
 		void		ParseRequestBody_(const HttpRequest &request);

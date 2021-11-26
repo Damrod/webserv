@@ -1,8 +1,9 @@
 #ifndef SRCS_INCS_SYSCALLWRAP_HPP_
 #define SRCS_INCS_SYSCALLWRAP_HPP_
 #include <sys/types.h>
-#include <sys/socket.h>
 #include <fcntl.h>
+#include <sys/socket.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <cerrno>
 #include <cstdlib>
@@ -101,8 +102,6 @@ class SyscallWrap {
 									  const std::string &sys_call_name,
 									  const std::string &func,
 									  std::size_t line);
-//  static ssize_t recvWr(int sockfd, void *buf, size_t len, int flags);
-//  static ssize_t sendWr(int sockfd, const void *buf, size_t len, int flags);
 };
 
 #endif  // SRCS_INCS_SYSCALLWRAP_HPP_
