@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+    <h1>Generate and delete a file</h1>
+    <div style="margin-bottom: 10px;">
+        <button id="gen">GENERATE FILE</button>
+        <button id="del">DELETE FILE</button>
+    </div>
+    <div id="res"></div>
+</body>
+<script>
+    function createFile() {
+        let data = new FormData();
+        const fileMessage = 'I am going to be deleted :(';
+        data.append('content', new Blob([fileMessage], { type: 'text/plain' }), 'to_be_deleted.txt');
+
+        fetch('http://localhost:8084/upload/', {
+            method: 'POST',
+            body: data
+        })
+        .then(() => {
+            switchButtons();
+            resMessage.innerText = ''
+        })
+    }
+
+    function deleteFile() {
+        fetch('http://localhost:8084/upload/to_be_deleted.txt', {
+            method: 'DELETE',
+        })
+        .then(response => {
+            switchButtons();
+            resMessage.innerHTML = `<b>Response:</b> ${response.status} ${response.statusText}`
+        })
+    }
+
+    function switchButtons() {
+        delButton.disabled ^= true;
+        genButton.disabled ^= true;
+    }
+
+    const genButton = document.getElementById('gen');
+    genButton.onclick = createFile;
+
+    const delButton = document.getElementById('del');
+    delButton.onclick = deleteFile;
+    delButton.disabled = true;
+
+    const resMessage = document.getElementById('res');
+
+</script>
+
+</html>

@@ -3,7 +3,7 @@
 HttpDeleteResponse::HttpDeleteResponse(
 	RequestConfig *requestConfig,
 	HttpRequest *request) : HttpBaseResponse(requestConfig, request) {
-	// TODO(any) Implement DELETE
+
 	if (error_code_) {
 		raw_response_ = HttpErrorResponse(
 										error_code_,
