@@ -12,6 +12,7 @@
 #include <HttpResponseFactory.hpp>
 #include <ServerConfig.hpp>
 #include <FDsets.hpp>
+#include <SyscallWrap.hpp>
 #include <CgiHandler.hpp>
 
 class Server {

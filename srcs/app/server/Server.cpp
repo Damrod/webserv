@@ -8,24 +8,21 @@ Server::Server(const ServerConfig &settings, int listen_sd, FDsets *fdSets)
 Server::~Server() {
 	std::map<int, Connection *>::iterator it = connections_.begin();
 	for (; it != connections_.end(); it++) {
-		close(it->first);
+		SyscallWrap::closeWr(it->first, __FILE__, __FUNCTION__ , __LINE__);
 		delete it->second;
 	}
 	CgiHandlersMap_::iterator h_it = cgi_handlers_.begin();
 	for (; h_it != cgi_handlers_.end(); ++h_it) {
 		delete h_it->second;
 	}
-	close(listen_sd_);
+	SyscallWrap::closeWr(listen_sd_, __FILE__, __FUNCTION__ , __LINE__);
 }
 
 void	Server::AcceptNewConnection() {
-	int new_sd = accept(listen_sd_, NULL, NULL);
-	if (new_sd < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
-	if (fcntl(new_sd, F_SETFL, O_NONBLOCK) < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
+	int new_sd = SyscallWrap::acceptWr(listen_sd_, NULL, NULL,
+									   __FILE__, __FUNCTION__, __LINE__);
+	SyscallWrap::fcntlWr(new_sd, F_SETFL, O_NONBLOCK,
+						 __FILE__, __FUNCTION__, __LINE__);
 	AddConnection_(new_sd);
 }
 
@@ -96,9 +93,8 @@ void Server::HandleCgiSend(int sd) {
 }
 
 void	Server::BindListeningSocket_() const {
-	if (fcntl(listen_sd_, F_SETFL, O_NONBLOCK) < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
+	SyscallWrap::fcntlWr(listen_sd_, F_SETFL, O_NONBLOCK,
+						 __FILE__, __FUNCTION__, __LINE__);
 
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;  // IPv4
@@ -107,17 +103,11 @@ void	Server::BindListeningSocket_() const {
 	std::memset(addr.sin_zero, 0, sizeof(addr.sin_zero));
 
 	int on = 1;
-	if (setsockopt(listen_sd_, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
-
-	if (bind(listen_sd_, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
-
-	if (listen(listen_sd_, SOMAXCONN) < 0) {
-		throw std::runtime_error(std::strerror(errno));
-	}
+	SyscallWrap::setsockoptWr(listen_sd_, SOL_SOCKET, SO_REUSEADDR, &on,
+							  sizeof(on), __FILE__, __FUNCTION__, __LINE__);
+	SyscallWrap::bindWr(listen_sd_, (struct sockaddr *) &addr, sizeof(addr),
+		__FILE__, __FUNCTION__, __LINE__);
+	SyscallWrap::listenWr(listen_sd_, SOMAXCONN, __FILE__, __FUNCTION__, __LINE__);
 }
 
 void	Server::AddConnection_(int sd) {
@@ -131,7 +121,7 @@ void	Server::AddConnection_(int sd) {
 
 void	Server::RemoveConnection_(int sd) {
 	fdSets_->removeFd(sd);
-	close(sd);
+	SyscallWrap::closeWr(sd, __FILE__, __FUNCTION__, __LINE__);
 	delete connections_[sd];
 	connections_.erase(sd);
 }
@@ -139,7 +129,7 @@ void	Server::RemoveConnection_(int sd) {
 void	Server::AddCgiHandler_(int sd, int cgi_output_fd) {
 	fdSets_->addToReadSet(cgi_output_fd);
 
-	int socket_copy = SyscallWrap::dupWr(sd);
+	int socket_copy = SyscallWrap::dupWr(sd, __FILE__, __FUNCTION__, __LINE__);
 
 	CgiHandler *handler = new CgiHandler(socket_copy, cgi_output_fd);
 	cgi_handlers_.insert(std::make_pair(cgi_output_fd, handler));

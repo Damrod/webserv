@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <string>
+#include <SyscallWrap.hpp>
 
 class CgiHandler {
 	public:
