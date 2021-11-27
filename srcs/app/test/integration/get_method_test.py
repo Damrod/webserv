@@ -22,7 +22,6 @@ def start_webserv():
 def random_filename():
     return str(uuid.uuid4())
 
-# GET
 def test_get_autoindex_200():
     url = 'http://localhost:8080'
     response = requests.get(url)
@@ -109,3 +108,13 @@ def test_get_env_slow_cgi():
     asyncio.run(async_get_slow_cgi(requests_number, seconds))
     end_time = time.time()
     assert end_time - start_time < requests_number * seconds
+
+def test_url_path_traversal():
+    headers = {'Host': 'localhost:8080'}
+    url = 'http://localhost:8080/../config/default.conf'
+    session = requests.Session()
+    request = requests.Request(method='GET', url=url, headers=headers)
+    prep = request.prepare()
+    prep.url = url
+    response = session.send(prep)
+    assert response.status_code == 400

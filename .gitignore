@@ -151,4 +151,6 @@ nocommit/*
 # Byte-compiled / optimized / DLL files
 srcs/app/test/integration/__pycache__/
 .pytest_cache
-to_be_deleted.txt
+
+## Generated test files ##
+html/web3/upload/*

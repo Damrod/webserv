@@ -81,3 +81,12 @@ def test_percent_encoding():
     os.remove(filepath)
     assert upload_response.status_code == 200
     assert response.status_code == 200
+
+def test_file_upload_path_traversal(tmp_webserv_dir, random_filename):
+    url =  'http://localhost:8084/upload/'
+    filename = '../../../../../../../../../../../../../../tmp/webserv/' + random_filename
+    mime_type = 'text/plain'
+    files = {'file': (filename, 'random text\n', mime_type)}
+    response = requests.post(url, files=files)
+    assert not os.path.exists('/tmp/webserv/' + random_filename)
+    assert response.status_code == 400

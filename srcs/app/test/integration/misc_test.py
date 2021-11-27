@@ -34,22 +34,3 @@ def test_method_not_implemented_501():
     url = 'http://localhost:8080/'
     response = requests.options(url)
     assert response.status_code == 501
-
-def test_url_path_traversal():
-    headers = {'Host': 'localhost:8080'}
-    url = 'http://localhost:8080/../config/default.conf'
-    session = requests.Session()
-    request = requests.Request(method='GET', url=url, headers=headers)
-    prep = request.prepare()
-    prep.url = url
-    response = session.send(prep)
-    assert response.status_code == 400
-
-def test_file_upload_path_traversal(tmp_webserv_dir, random_filename):
-    url =  'http://localhost:8084/upload/'
-    filename = '../../../../../../../../../../../../../../tmp/webserv/' + random_filename
-    mime_type = 'text/plain'
-    files = {'file': (filename, 'random text\n', mime_type)}
-    response = requests.post(url, files=files)
-    assert not os.path.exists('/tmp/webserv/' + random_filename)
-    assert response.status_code == 400

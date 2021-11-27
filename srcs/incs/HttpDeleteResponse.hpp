@@ -21,6 +21,9 @@ class HttpDeleteResponse: public HttpBaseResponse {
 		HttpDeleteResponse(
 			RequestConfig *requestConfig,
 			HttpRequest *request);
+
+	private:
+		void	SetErrorRawResponse_(int error_code);
 };
 
 #endif  // SRCS_INCS_HTTPDELETERESPONSE_HPP_
