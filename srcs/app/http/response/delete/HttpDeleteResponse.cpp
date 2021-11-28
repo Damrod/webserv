@@ -5,19 +5,20 @@ HttpDeleteResponse::HttpDeleteResponse(
 	HttpRequest *request) : HttpBaseResponse(requestConfig, request) {
 	if (error_code_) {
 		SetErrorRawResponse_(error_code_);
-	}
-	const std::string full_path =
-			request_config_->GetRoot() + request_->GetDecodedPath();
-	try {
-		File file(full_path);
+	} else {
+		const std::string full_path =
+				request_config_->GetRoot() + request_->GetDecodedPath();
+		try {
+			File file(full_path);
 
-		if (file.IsRegularFile() || file.HasEndSlash()) {
-			Delete_(file);
-		} else {
-			SetErrorRawResponse_(409);
+			if (file.IsRegularFile() || file.HasEndSlash()) {
+				Delete_(file);
+			} else {
+				SetErrorRawResponse_(409);
+			}
+		} catch(File::Error & e) {
+			SetErrorRawResponse_(e.what());
 		}
-	} catch(File::Error & e) {
-		SetErrorRawResponse_(e.what());
 	}
 }
 
