@@ -12,24 +12,48 @@ HttpDeleteResponse::HttpDeleteResponse(
 	try {
 		File file(full_path);
 
-		if (file.IsRegularFile()) {
-			//HandleRegularFile_(file);
-		} else if (file.HasEndSlash()) {
-			//HandleSlashEndedFile_(file);
+		if (file.IsRegularFile() || file.HasEndSlash()) {
+			Delete_(file);
 		} else {
-			//MovedPermanently_(*request_);
+			SetErrorRawResponse_(409);
 		}
 	} catch(File::Error & e) {
 		SetErrorRawResponse_(e.what());
 	}
-	// else {
-	// 	HttpResponse::HeadersMap headers;
-	// 	std::string	body = "Responding to a DELETE request\n";
+}
 
-	// 	headers.insert(std::make_pair("Content-Type", "text/plain"));
-	// 	headers.insert(std::make_pair("Location", request_config_->GetReturnUrl()));
-	// 	SetRawResponse_(200, headers, body);
-	// }
+void	HttpDeleteResponse::Delete_(File &file) {
+	int remove_ret;
+
+	if (file.IsDirectory()) {
+		remove_ret = nftw(
+						file.GetPath().c_str(),
+						RemoveSingleFile_,
+						64,
+						FTW_DEPTH | FTW_PHYS);
+	} else {
+		remove_ret = RemoveSingleFile_(file.GetPath().c_str(), NULL, 0, NULL);
+	}
+
+	if (remove_ret) {
+		SetErrorRawResponse_(500);
+	} else {
+		DefaultStatusResponse_(200);
+	}
+}
+
+int	HttpDeleteResponse::RemoveSingleFile_(
+								const char *fpath,
+								const struct stat *sb,
+								int typeflag,
+								struct FTW *ftwbuf) {
+
+	// cast to void when function not used as callback
+	if (!sb) (void)sb;
+	if (!typeflag) (void)typeflag;
+	if (!ftwbuf) (void)ftwbuf;
+
+    return remove(fpath);
 }
 
 void	HttpDeleteResponse::SetErrorRawResponse_(int error_code) {
