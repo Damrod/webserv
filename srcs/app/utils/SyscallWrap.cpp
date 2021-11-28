@@ -1,6 +1,6 @@
 #include <SyscallWrap.hpp>
 
-int SyscallWrap::pipeWr(int pipefd[2] dbgargs()) {
+int SyscallWrap::pipeWr(int pipefd[2] DEBUG_ARGS) {
 	int ret;
 	if ((ret = pipe(pipefd)) == -1) {
 #ifdef DBG
@@ -12,7 +12,7 @@ int SyscallWrap::pipeWr(int pipefd[2] dbgargs()) {
 	return ret;
 }
 
-int SyscallWrap::dupWr(int oldfd dbgargs()) {
+int SyscallWrap::dupWr(int oldfd DEBUG_ARGS) {
 	int ret;
 	if ((ret = dup(oldfd)) == -1) {
 #ifdef DBG
@@ -25,7 +25,7 @@ int SyscallWrap::dupWr(int oldfd dbgargs()) {
 }
 
 int SyscallWrap::dup2Wr(int oldfd,
-						int newfd dbgargs()) {
+						int newfd DEBUG_ARGS) {
 	int ret;
 	if ((ret = dup2(oldfd, newfd)) == -1) {
 #ifdef DBG
@@ -39,7 +39,7 @@ int SyscallWrap::dup2Wr(int oldfd,
 
 int SyscallWrap::execveWr(const char *pathname,
 						  char *const argv[],
-						  char *const envp[] dbgargs()) {
+						  char *const envp[] DEBUG_ARGS) {
 	int ret;
 	if ((ret = execve(pathname, argv, envp)) == -1) {
 #ifdef DBG
@@ -51,7 +51,7 @@ int SyscallWrap::execveWr(const char *pathname,
 	return ret;
 }
 
-int SyscallWrap::closeWr(int fd dbgargs()) {
+int SyscallWrap::closeWr(int fd DEBUG_ARGS) {
 	int ret;
 	if ((ret = close(fd)) == -1) {
 #ifdef DBG
@@ -84,7 +84,7 @@ int SyscallWrap::selectWr(int nfds,
 						  fd_set *readfds,
 						  fd_set *writefds,
 						  fd_set *exceptfds,
-						  struct timeval *timeout dbgargs()) {
+						  struct timeval *timeout DEBUG_ARGS) {
 	int ret;
 	if ((ret = select(nfds, readfds, writefds, exceptfds, timeout)) == -1) {
 #ifdef DBG
@@ -98,7 +98,7 @@ int SyscallWrap::selectWr(int nfds,
 
 int SyscallWrap::socketWr(int domain,
 						  int type,
-						  int protocol dbgargs()) {
+						  int protocol DEBUG_ARGS) {
 	int ret;
 	if ((ret = socket(domain, type, protocol)) == -1) {
 #ifdef DBG
@@ -110,7 +110,7 @@ int SyscallWrap::socketWr(int domain,
 	return ret;
 }
 
-int SyscallWrap::fcntlWr(int fd, int cmd dbgargs()) {
+int SyscallWrap::fcntlWr(int fd, int cmd DEBUG_ARGS) {
 	int ret;
 	if ((ret = fcntl(fd, cmd)) == -1) {
 #ifdef DBG
@@ -124,7 +124,7 @@ int SyscallWrap::fcntlWr(int fd, int cmd dbgargs()) {
 
 int SyscallWrap::fcntlWr(int fd,
 						 int cmd,
-						 int64_t arg dbgargs()) {
+						 int64_t arg DEBUG_ARGS) {
 	int ret;
 	if ((ret = fcntl(fd, cmd, arg)) == -1) {
 #ifdef DBG
@@ -138,7 +138,7 @@ int SyscallWrap::fcntlWr(int fd,
 
 int SyscallWrap::fcntlWr(int fd,
 						 int cmd,
-						 struct flock *lock dbgargs()) {
+						 struct flock *lock DEBUG_ARGS) {
 	int ret;
 	if ((ret = fcntl(fd, cmd, lock)) == -1) {
 #ifdef DBG
@@ -152,7 +152,7 @@ int SyscallWrap::fcntlWr(int fd,
 
 int SyscallWrap::acceptWr(int sockfd,
 						  struct sockaddr *addr,
-						  socklen_t *addrlen dbgargs()) {
+						  socklen_t *addrlen DEBUG_ARGS) {
 	int ret;
 	if ((ret = accept(sockfd, addr, addrlen)) == -1) {
 #ifdef DBG
@@ -168,7 +168,7 @@ int SyscallWrap::setsockoptWr(int sockfd,
 							  int level,
 							  int optname,
 							  const void *optval,
-							  socklen_t optlen dbgargs()) {
+							  socklen_t optlen DEBUG_ARGS) {
 	int ret;
 	if ((ret = setsockopt(sockfd, level, optname, optval, optlen)) == -1) {
 #ifdef DBG
@@ -182,7 +182,7 @@ int SyscallWrap::setsockoptWr(int sockfd,
 
 int SyscallWrap::bindWr(int sockfd,
 						const struct sockaddr *addr,
-						socklen_t addrlen dbgargs()) {
+						socklen_t addrlen DEBUG_ARGS) {
 	int ret;
 	if ((ret = bind(sockfd, addr, addrlen)) == -1) {
 #ifdef DBG
@@ -195,7 +195,7 @@ int SyscallWrap::bindWr(int sockfd,
 }
 
 int SyscallWrap::listenWr(int sockfd,
-						  int backlog dbgargs()) {
+						  int backlog DEBUG_ARGS) {
 	int ret;
 	if ((ret = listen(sockfd, backlog)) == -1) {
 #ifdef DBG

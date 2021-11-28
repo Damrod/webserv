@@ -14,7 +14,6 @@
 #include <FDsets.hpp>
 #include <SyscallWrap.hpp>
 #include <CgiHandler.hpp>
-#include <CommonDefinitions.hpp>
 
 class Server {
 	public:

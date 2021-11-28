@@ -13,21 +13,23 @@
 #include <string>
 
 #ifdef DBG
-# define dbgargs() , const std::string &file, const std::string &func, \
+# define DEBUG_INFO , __FILE__, __FUNCTION__, __LINE__
+# define DEBUG_ARGS , const std::string &file, const std::string &func, \
 std::size_t line
 # else
-# define dbgargs()
+# define DEBUG_INFO
+# define DEBUG_ARGS
 #endif
 
 class SyscallWrap {
 	public:
-		static int pipeWr(int pipefd[2] dbgargs());
-		static int dupWr(int oldfd dbgargs());
-		static int dup2Wr(int oldfd, int newfd dbgargs());
+		static int pipeWr(int pipefd[2] DEBUG_ARGS);
+		static int dupWr(int oldfd DEBUG_ARGS);
+		static int dup2Wr(int oldfd, int newfd DEBUG_ARGS);
 		static int execveWr(const char *pathname,
 							char *const argv[],
-							char *const envp[] dbgargs());
-		static int closeWr(int fd dbgargs());
+							char *const envp[] DEBUG_ARGS);
+		static int closeWr(int fd DEBUG_ARGS);
 		static pid_t forkWr(const std::string &file,
 							const std::string &func,
 							std::size_t line);
@@ -35,31 +37,31 @@ class SyscallWrap {
 							fd_set *readfds,
 							fd_set *writefds,
 							fd_set *exceptfds,
-							struct timeval *timeout dbgargs());
+							struct timeval *timeout DEBUG_ARGS);
 		static int socketWr(int domain,
 							int type,
-							int protocol dbgargs());
+							int protocol DEBUG_ARGS);
 		static int fcntlWr(int fd,
-						   int cmd dbgargs());
-		static int fcntlWr(int fd,
-						   int cmd,
-						   int64_t arg dbgargs());
+						   int cmd DEBUG_ARGS);
 		static int fcntlWr(int fd,
 						   int cmd,
-						   struct flock *lock dbgargs());
+						   int64_t arg DEBUG_ARGS);
+		static int fcntlWr(int fd,
+						   int cmd,
+						   struct flock *lock DEBUG_ARGS);
 		static int acceptWr(int sockfd,
 							struct sockaddr *addr,
-							socklen_t *addrlen dbgargs());
+							socklen_t *addrlen DEBUG_ARGS);
 		static int setsockoptWr(int sockfd,
 								int level,
 								int optname,
 								const void *optval,
-								socklen_t optlen dbgargs());
+								socklen_t optlen DEBUG_ARGS);
 		static int bindWr(int sockfd,
 						  const struct sockaddr *addr,
-						  socklen_t addrlen dbgargs());
+						  socklen_t addrlen DEBUG_ARGS);
 		static int listenWr(int sockfd,
-							int backlog dbgargs());
+							int backlog DEBUG_ARGS);
 #ifdef DBG
 
  private:

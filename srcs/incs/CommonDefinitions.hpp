@@ -4,12 +4,6 @@
 #include <stdint.h>
 #include <string>
 
-#ifdef DBG
-# define dbg() , __FILE__, __FUNCTION__, __LINE__
-# else
-# define dbg()
-#endif
-
 class Constants {
  public:
 	static bool IsValidMethod(const std::string &method);

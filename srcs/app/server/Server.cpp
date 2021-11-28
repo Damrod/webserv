@@ -8,19 +8,19 @@ Server::Server(const ServerConfig &settings, int listen_sd, FDsets *fdSets)
 Server::~Server() {
 	std::map<int, Connection *>::iterator it = connections_.begin();
 	for (; it != connections_.end(); it++) {
-		SyscallWrap::closeWr(it->first dbg());
+		SyscallWrap::closeWr(it->first DEBUG_INFO);
 		delete it->second;
 	}
 	CgiHandlersMap_::iterator h_it = cgi_handlers_.begin();
 	for (; h_it != cgi_handlers_.end(); ++h_it) {
 		delete h_it->second;
 	}
-	SyscallWrap::closeWr(listen_sd_ dbg());
+	SyscallWrap::closeWr(listen_sd_ DEBUG_INFO);
 }
 
 void	Server::AcceptNewConnection() {
-	int new_sd = SyscallWrap::acceptWr(listen_sd_, NULL, NULL dbg());
-	SyscallWrap::fcntlWr(new_sd, F_SETFL, O_NONBLOCK dbg());
+	int new_sd = SyscallWrap::acceptWr(listen_sd_, NULL, NULL DEBUG_INFO);
+	SyscallWrap::fcntlWr(new_sd, F_SETFL, O_NONBLOCK DEBUG_INFO);
 	AddConnection_(new_sd);
 }
 
@@ -91,7 +91,7 @@ void Server::HandleCgiSend(int sd) {
 }
 
 void	Server::BindListeningSocket_() const {
-	SyscallWrap::fcntlWr(listen_sd_, F_SETFL, O_NONBLOCK dbg());
+	SyscallWrap::fcntlWr(listen_sd_, F_SETFL, O_NONBLOCK DEBUG_INFO);
 
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;  // IPv4
@@ -101,9 +101,10 @@ void	Server::BindListeningSocket_() const {
 
 	int on = 1;
 	SyscallWrap::setsockoptWr(listen_sd_, SOL_SOCKET, SO_REUSEADDR, &on,
-							  sizeof(on) dbg());
-	SyscallWrap::bindWr(listen_sd_, (struct sockaddr *) &addr, sizeof(addr) dbg());
-	SyscallWrap::listenWr(listen_sd_, SOMAXCONN dbg());
+							  sizeof(on) DEBUG_INFO);
+	SyscallWrap::bindWr(listen_sd_, (struct sockaddr *) &addr, sizeof(addr)
+		DEBUG_INFO);
+	SyscallWrap::listenWr(listen_sd_, SOMAXCONN DEBUG_INFO);
 }
 
 void	Server::AddConnection_(int sd) {
@@ -117,7 +118,7 @@ void	Server::AddConnection_(int sd) {
 
 void	Server::RemoveConnection_(int sd) {
 	fdSets_->removeFd(sd);
-	SyscallWrap::closeWr(sd dbg());
+	SyscallWrap::closeWr(sd DEBUG_INFO);
 	delete connections_[sd];
 	connections_.erase(sd);
 }
@@ -125,7 +126,7 @@ void	Server::RemoveConnection_(int sd) {
 void	Server::AddCgiHandler_(int sd, int cgi_output_fd) {
 	fdSets_->addToReadSet(cgi_output_fd);
 
-	int socket_copy = SyscallWrap::dupWr(sd dbg());
+	int socket_copy = SyscallWrap::dupWr(sd DEBUG_INFO);
 
 	CgiHandler *handler = new CgiHandler(socket_copy, cgi_output_fd);
 	cgi_handlers_.insert(std::make_pair(cgi_output_fd, handler));
