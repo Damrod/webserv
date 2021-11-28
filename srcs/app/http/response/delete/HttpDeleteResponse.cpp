@@ -22,7 +22,7 @@ HttpDeleteResponse::HttpDeleteResponse(
 	}
 }
 
-void	HttpDeleteResponse::Delete_(File &file) {
+void	HttpDeleteResponse::Delete_(File const &file) {
 	if (file.IsDirectory()) {
 		BuildResponse_(
 			nftw(file.GetPath().c_str(),
@@ -37,15 +37,9 @@ void	HttpDeleteResponse::Delete_(File &file) {
 
 int	HttpDeleteResponse::RemoveSingleFile_(
 								const char *fpath,
-								const struct stat *sb,
-								int typeflag,
-								struct FTW *ftwbuf) {
-
-	// cast to void when function not used as callback
-	if (!sb) (void)sb;
-	if (!typeflag) (void)typeflag;
-	if (!ftwbuf) (void)ftwbuf;
-
+								__attribute__((unused)) const struct stat *sb,
+								__attribute__((unused)) int typeflag,
+								__attribute__((unused)) struct FTW *ftwbuf) {
     return remove(fpath);
 }
 
