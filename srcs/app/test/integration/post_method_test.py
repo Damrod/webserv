@@ -1,5 +1,6 @@
 import filecmp
 import os
+import uuid
 from pathlib import Path
 import pytest
 import requests
@@ -31,6 +32,10 @@ def tmp_file():
     with tempfile.NamedTemporaryFile() as fp:
         fp.write(os.urandom(90000000))
         yield fp
+
+@pytest.fixture(scope='function')
+def random_filename():
+    return str(uuid.uuid4())
 
 # POST
 def test_post_cgi_200():

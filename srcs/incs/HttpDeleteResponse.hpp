@@ -25,7 +25,7 @@ class HttpDeleteResponse: public HttpBaseResponse {
 			HttpRequest *request);
 
 	private:
-		void	Delete_(File &file);
+		void	Delete_(File const &file);
 		void	BuildResponse_(int return_status);
 		void	SetErrorRawResponse_(int error_code);
 

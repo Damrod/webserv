@@ -154,3 +154,4 @@ srcs/app/test/integration/__pycache__/
 
 ## Generated test files ##
 html/web3/upload/*
+!html/web3/upload/test-file.txt
