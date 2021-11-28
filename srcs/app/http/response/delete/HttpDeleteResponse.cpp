@@ -3,7 +3,6 @@
 HttpDeleteResponse::HttpDeleteResponse(
 	RequestConfig *requestConfig,
 	HttpRequest *request) : HttpBaseResponse(requestConfig, request) {
-
 	if (error_code_) {
 		SetErrorRawResponse_(error_code_);
 	}
@@ -23,22 +22,15 @@ HttpDeleteResponse::HttpDeleteResponse(
 }
 
 void	HttpDeleteResponse::Delete_(File &file) {
-	int remove_ret;
-
 	if (file.IsDirectory()) {
-		remove_ret = nftw(
-						file.GetPath().c_str(),
-						RemoveSingleFile_,
-						64,
-						FTW_DEPTH | FTW_PHYS);
+		BuildResponse_(
+			nftw(file.GetPath().c_str(),
+					RemoveSingleFile_,
+					64,
+					FTW_DEPTH | FTW_PHYS));
 	} else {
-		remove_ret = RemoveSingleFile_(file.GetPath().c_str(), NULL, 0, NULL);
-	}
-
-	if (remove_ret) {
-		SetErrorRawResponse_(500);
-	} else {
-		DefaultStatusResponse_(200);
+		BuildResponse_(
+			RemoveSingleFile_(file.GetPath().c_str(), NULL, 0, NULL));
 	}
 }
 
@@ -54,6 +46,16 @@ int	HttpDeleteResponse::RemoveSingleFile_(
 	if (!ftwbuf) (void)ftwbuf;
 
     return remove(fpath);
+}
+
+void	HttpDeleteResponse::BuildResponse_(int return_status) {
+	if (return_status) {
+		errno == EACCES
+			? SetErrorRawResponse_(403)
+			: SetErrorRawResponse_(500);
+	} else {
+		DefaultStatusResponse_(200);
+	}
 }
 
 void	HttpDeleteResponse::SetErrorRawResponse_(int error_code) {

@@ -25,8 +25,9 @@ class HttpDeleteResponse: public HttpBaseResponse {
 			HttpRequest *request);
 
 	private:
-		void	SetErrorRawResponse_(int error_code);
 		void	Delete_(File &file);
+		void	BuildResponse_(int return_status);
+		void	SetErrorRawResponse_(int error_code);
 
 		// needs to be static since nftw expects a
 		// non-member __nftw_func_ type fuction
