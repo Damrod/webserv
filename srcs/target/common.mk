@@ -3,7 +3,7 @@ INC_PARAMS = $(foreach d, $(INC_DIR), -I$d)
 define generateRules
 $(1): $$(basename $$(subst $(BLD_DIR),$(SRC_DIR),$(1))).cpp
 	@echo Building $$@
-	$(CXX) -c $(CXXFLAGS) $(INC_PARAMS) -o $$@ $$< -MMD
+	$(CXX) -c $(DBG) $(CXXFLAGS) $(INC_PARAMS) -o $$@ $$< -MMD
 endef
 
 define generateDirs

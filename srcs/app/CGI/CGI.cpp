@@ -70,7 +70,7 @@ int CGI::ExecuteCGI(void) {
 	const std::string body = request_.GetBody();
 	std::fwrite(body.c_str(), 1, body.size(), fp);
 	std::rewind(fp);
-	SyscallWrap::pipeWr(fds_, __FILE__, __FUNCTION__, __LINE__);
+	SyscallWrap::pipeWr(fds_ DEBUG_INFO);
 	if (!IsExecutable(exec_path_)) {
 		throw std::runtime_error(std::strerror(errno));;
 	}
@@ -81,17 +81,14 @@ int CGI::ExecuteCGI(void) {
 		try {
 			CloseAssign_(&fds_[0]);
 			int cgi_input = fileno(fp);
-			SyscallWrap::dup2Wr(cgi_input, STDIN_FILENO, __FILE__,
-								__FUNCTION__, __LINE__);
-			SyscallWrap::dup2Wr(fds_[1], STDOUT_FILENO, __FILE__,
-								__FUNCTION__, __LINE__);
+			SyscallWrap::dup2Wr(cgi_input, STDIN_FILENO DEBUG_INFO);
+			SyscallWrap::dup2Wr(fds_[1], STDOUT_FILENO DEBUG_INFO);
 			CloseAssign_(&fds_[1]);
 
 			char * const argv[] = {DuplicateString(exec_path_),
 									DuplicateString(arg_path_),
 									NULL};
-			SyscallWrap::execveWr(exec_path_.c_str(), argv, CGIenv_,
-								  __FILE__, __FUNCTION__, __LINE__);
+			SyscallWrap::execveWr(exec_path_.c_str(), argv, CGIenv_ DEBUG_INFO);
 		}
 		catch (const std::exception &) {
 			std::exit(EXIT_FAILURE);
@@ -101,14 +98,13 @@ int CGI::ExecuteCGI(void) {
 		throw std::runtime_error(std::strerror(errno));;
 	}
 	CloseAssign_(&fds_[1]);
-	int cgi_output_fd = SyscallWrap::dupWr(fds_[0],
-					__FILE__, __FUNCTION__, __LINE__);
+	int cgi_output_fd = SyscallWrap::dupWr(fds_[0] DEBUG_INFO);
 	return cgi_output_fd;
 }
 
 void	CGI::CloseAssign_(int *fd) {
 	if (*fd != -1) {
-		SyscallWrap::closeWr(*fd, __FILE__, __FUNCTION__, __LINE__);
+		SyscallWrap::closeWr(*fd DEBUG_INFO);
 		*fd = -1;
 	}
 }

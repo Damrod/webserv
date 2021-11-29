@@ -4,8 +4,8 @@ CgiHandler::CgiHandler(int socket, int cgi_output)
 	: socket_(socket), cgi_output_(cgi_output), cgi_complete_(false) {}
 
 CgiHandler::~CgiHandler() {
-	SyscallWrap::closeWr(socket_, __FILE__, __FUNCTION__ , __LINE__);
-	SyscallWrap::closeWr(cgi_output_, __FILE__, __FUNCTION__ , __LINE__);
+	SyscallWrap::closeWr(socket_ DEBUG_INFO);
+	SyscallWrap::closeWr(cgi_output_ DEBUG_INFO);
 }
 
 ssize_t	CgiHandler::ReadCgiOutput() {
