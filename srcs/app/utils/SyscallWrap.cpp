@@ -3,11 +3,7 @@
 int SyscallWrap::pipeWr(int pipefd[2] DEBUG_ARGS) {
 	int ret;
 	if ((ret = pipe(pipefd)) == -1) {
-#ifdef DBG
-		AddDebuggingInfo_(file, "pipe", func, line);
-#else
-		throw std::runtime_error(std::strerror(errno));
-#endif
+		ThrowException_("pipe" DEBUG_ARGS_NAMES);
 	}
 	return ret;
 }
@@ -15,11 +11,7 @@ int SyscallWrap::pipeWr(int pipefd[2] DEBUG_ARGS) {
 int SyscallWrap::dupWr(int oldfd DEBUG_ARGS) {
 	int ret;
 	if ((ret = dup(oldfd)) == -1) {
-#ifdef DBG
-		AddDebuggingInfo_(file, "dup", func, line);
-#else
-		throw std::runtime_error(std::strerror(errno));
-#endif
+		ThrowException_("dup" DEBUG_ARGS_NAMES);
 	}
 	return ret;
 }
@@ -28,11 +20,7 @@ int SyscallWrap::dup2Wr(int oldfd,
 						int newfd DEBUG_ARGS) {
 	int ret;
 	if ((ret = dup2(oldfd, newfd)) == -1) {
-#ifdef DBG
-		AddDebuggingInfo_(file, "dup2", func, line);
-#else
-		throw std::runtime_error(std::strerror(errno));
-#endif
+		ThrowException_("dup2" DEBUG_ARGS_NAMES);
 	}
 	return ret;
 }
@@ -42,11 +30,7 @@ int SyscallWrap::execveWr(const char *pathname,
 						  char *const envp[] DEBUG_ARGS) {
 	int ret;
 	if ((ret = execve(pathname, argv, envp)) == -1) {
-#ifdef DBG
-		AddDebuggingInfo_(file, "execve", func, line);
-#else
-		throw std::runtime_error(std::strerror(errno));
-#endif
+		ThrowException_("execve" DEBUG_ARGS_NAMES);
 	}
 	return ret;
 }
@@ -54,11 +38,7 @@ int SyscallWrap::execveWr(const char *pathname,
 int SyscallWrap::closeWr(int fd DEBUG_ARGS) {
 	int ret;
 	if ((ret = close(fd)) == -1) {
-#ifdef DBG
-		AddDebuggingInfo_(file, "close", func, line);
-#else
-		throw std::runtime_error(std::strerror(errno));
-#endif
+		ThrowException_("close" DEBUG_ARGS_NAMES);
 	}
 	return ret;
 }
@@ -68,14 +48,10 @@ pid_t SyscallWrap::forkWr(const std::string &file,
 						  std::size_t line) {
 	int ret;
 	if ((ret = fork()) == -1) {
-#ifdef DBG
-		AddDebuggingInfo_(file, "fork", func, line);
-#else
 		(void) file;
 		(void) func;
 		(void) line;
-		throw std::runtime_error(std::strerror(errno));
-#endif
+		ThrowException_("fork" DEBUG_ARGS_NAMES);
 	}
 	return ret;
 }
@@ -87,11 +63,7 @@ int SyscallWrap::selectWr(int nfds,
 						  struct timeval *timeout DEBUG_ARGS) {
 	int ret;
 	if ((ret = select(nfds, readfds, writefds, exceptfds, timeout)) == -1) {
-#ifdef DBG
-		AddDebuggingInfo_(file, "select", func, line);
-#else
-		throw std::runtime_error(std::strerror(errno));
-#endif
+		ThrowException_("select" DEBUG_ARGS_NAMES);
 	}
 	return ret;
 }
@@ -101,11 +73,7 @@ int SyscallWrap::socketWr(int domain,
 						  int protocol DEBUG_ARGS) {
 	int ret;
 	if ((ret = socket(domain, type, protocol)) == -1) {
-#ifdef DBG
-		AddDebuggingInfo_(file, "socket", func, line);
-#else
-		throw std::runtime_error(std::strerror(errno));
-#endif
+		ThrowException_("socket" DEBUG_ARGS_NAMES);
 	}
 	return ret;
 }
@@ -113,11 +81,7 @@ int SyscallWrap::socketWr(int domain,
 int SyscallWrap::fcntlWr(int fd, int cmd DEBUG_ARGS) {
 	int ret;
 	if ((ret = fcntl(fd, cmd)) == -1) {
-#ifdef DBG
-		AddDebuggingInfo_(file, "fcntl", func, line);
-#else
-		throw std::runtime_error(std::strerror(errno));
-#endif
+		ThrowException_("fcntl" DEBUG_ARGS_NAMES);
 	}
 	return ret;
 }
@@ -127,11 +91,7 @@ int SyscallWrap::fcntlWr(int fd,
 						 int64_t arg DEBUG_ARGS) {
 	int ret;
 	if ((ret = fcntl(fd, cmd, arg)) == -1) {
-#ifdef DBG
-		AddDebuggingInfo_(file, "fcntl", func, line);
-#else
-		throw std::runtime_error(std::strerror(errno));
-#endif
+		ThrowException_("fcntl" DEBUG_ARGS_NAMES);
 	}
 	return ret;
 }
@@ -141,11 +101,7 @@ int SyscallWrap::fcntlWr(int fd,
 						 struct flock *lock DEBUG_ARGS) {
 	int ret;
 	if ((ret = fcntl(fd, cmd, lock)) == -1) {
-#ifdef DBG
-		AddDebuggingInfo_(file, "fcntl", func, line);
-#else
-		throw std::runtime_error(std::strerror(errno));
-#endif
+		ThrowException_("fcntl" DEBUG_ARGS_NAMES);
 	}
 	return ret;
 }
@@ -155,11 +111,7 @@ int SyscallWrap::acceptWr(int sockfd,
 						  socklen_t *addrlen DEBUG_ARGS) {
 	int ret;
 	if ((ret = accept(sockfd, addr, addrlen)) == -1) {
-#ifdef DBG
-		AddDebuggingInfo_(file, "accept", func, line);
-#else
-		throw std::runtime_error(std::strerror(errno));
-#endif
+		ThrowException_("accept" DEBUG_ARGS_NAMES);
 	}
 	return ret;
 }
@@ -171,11 +123,7 @@ int SyscallWrap::setsockoptWr(int sockfd,
 							  socklen_t optlen DEBUG_ARGS) {
 	int ret;
 	if ((ret = setsockopt(sockfd, level, optname, optval, optlen)) == -1) {
-#ifdef DBG
-		AddDebuggingInfo_(file, "setsockopt", func, line);
-#else
-		throw std::runtime_error(std::strerror(errno));
-#endif
+		ThrowException_("setsockopt" DEBUG_ARGS_NAMES);
 	}
 	return ret;
 }
@@ -185,11 +133,7 @@ int SyscallWrap::bindWr(int sockfd,
 						socklen_t addrlen DEBUG_ARGS) {
 	int ret;
 	if ((ret = bind(sockfd, addr, addrlen)) == -1) {
-#ifdef DBG
-		AddDebuggingInfo_(file, "bind", func, line);
-#else
-		throw std::runtime_error(std::strerror(errno));
-#endif
+		ThrowException_("bind" DEBUG_ARGS_NAMES);
 	}
 	return ret;
 }
@@ -198,24 +142,17 @@ int SyscallWrap::listenWr(int sockfd,
 						  int backlog DEBUG_ARGS) {
 	int ret;
 	if ((ret = listen(sockfd, backlog)) == -1) {
-#ifdef DBG
-		AddDebuggingInfo_(file, "listen", func, line);
-#else
-		throw std::runtime_error(std::strerror(errno));
-#endif
+		ThrowException_("listen" DEBUG_ARGS_NAMES);
 	}
 	return ret;
 }
 
-#ifdef DBG
-void SyscallWrap::AddDebuggingInfo_(const std::string &file,
-							  const std::string &sys_call_name,
-							  const std::string &func,
-							  std::size_t line) {
+void SyscallWrap::ThrowException_(const std::string &sys_call_name DEBUG_ARGS) {
 	std::ostringstream ss;
-	ss << func << ": " << sys_call_name << ": " << std::strerror(errno)
-	   << ", in " << file << ":"<< line;
+	ss << sys_call_name << ": " << std::strerror(errno);
+#ifdef DBG
+	ss << ", in " << func << "(): " << file << ":" << line;
+#endif
 	throw std::runtime_error(ss.str());
 }
-#endif
 

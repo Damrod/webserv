@@ -16,9 +16,11 @@
 # define DEBUG_INFO , __FILE__, __FUNCTION__, __LINE__
 # define DEBUG_ARGS , const std::string &file, const std::string &func, \
 std::size_t line
+# define DEBUG_ARGS_NAMES , file, func, line
 # else
 # define DEBUG_INFO
 # define DEBUG_ARGS
+# define DEBUG_ARGS_NAMES
 #endif
 
 class SyscallWrap {
@@ -62,14 +64,10 @@ class SyscallWrap {
 						  socklen_t addrlen DEBUG_ARGS);
 		static int listenWr(int sockfd,
 							int backlog DEBUG_ARGS);
-#ifdef DBG
 
  private:
-		static void AddDebuggingInfo_(const std::string &file,
-									  const std::string &sys_call_name,
-									  const std::string &func,
-									  std::size_t line);
-#endif
+		static void ThrowException_(const std::string &sys_call_name
+		DEBUG_ARGS);
 };
 
 #endif  // SRCS_INCS_SYSCALLWRAP_HPP_
