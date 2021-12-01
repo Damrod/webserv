@@ -31,10 +31,7 @@ jobs:
       - name: Setup test folder ownership
         working-directory: ./html/web3
         run: |
-          if [ "$RUNNER_OS" == "Linux" ]; then \
-          sudo su -c "useradd test_user -s /bin/bash -m"
-          sudo chown -R test_user:test_user no_privileges_folder
-          fi
+          sudo chown -R nobody:nogroup no_privileges_folder
 
       - name: Run integration tests
         timeout-minutes: 4

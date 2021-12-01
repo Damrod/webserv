@@ -86,11 +86,10 @@ def test_delete_non_slash_ended_dir_409(tmp_dir_no_delete):
 # since it needs no_priviliges_folder and its content
 # needs to be owned by a different user an a group than current.
 # If encountering problems, just disable it
-if platform.system() == 'Linux':
-    def test_delete_forbidden_resource_403():
-        url =  'http://localhost:8084/no_privileges_folder/'
-        response = requests.delete(url)
-        assert response.status_code == 403
+def test_delete_forbidden_resource_403():
+    url =  'http://localhost:8084/no_privileges_folder/'
+    response = requests.delete(url)
+    assert response.status_code == 403
 
 def test_delete_not_allowed_path_405():
     url =  'http://localhost:8084/test/'
