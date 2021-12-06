@@ -40,7 +40,7 @@ SendResponseStatus::Type	Connection::SendResponse() {
 		raw_response_ = response_->Content();
 	}
 	ssize_t nbytes = send(socket_, raw_response_.c_str(), raw_response_.size(), 0);
-	if (nbytes <= 0) {
+	if (nbytes <= 0 && !response_->IsCgi()) {
 		return SendResponseStatus::kFail;
 	}
 	raw_response_.erase(0, nbytes);
