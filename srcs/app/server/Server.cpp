@@ -50,7 +50,7 @@ void	Server::HandleCgiRead(int fd) {
 
 	fdSets_->addToWriteSet(handler_socket);
 	if (nbytes == 0) {
-		// The cgi program has exit
+		// The cgi program has exited
 		fdSets_->removeFd(fd);
 	} else if (nbytes < 0) {
 		// There was an error while reading
@@ -108,6 +108,8 @@ void	Server::BindListeningSocket_() const {
 }
 
 void	Server::AddConnection_(int sd) {
+
+	//wildcard al chequear severNames petición
 	HttpRequest *request = new HttpRequest();
 	HttpResponseFactory *response_factory =
 							new HttpResponseFactory(request, settings_);
