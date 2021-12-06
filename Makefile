@@ -3,7 +3,7 @@ CXX ?= clang++
 DBG ?=
 export CXX
 export DBG
-CXXFLAGS = -Wall -Werror -Wextra -std=c++98 -O3 -g3
+CXXFLAGS = -Wall -Werror -Wextra -std=c++98 -g3
 LINT = cpplint
 LINTFLAGS = --recursive --exclude=srcs/incs/test/catch2.hpp \
 		--exclude=nocommit/ --exclude=*.nocommit
