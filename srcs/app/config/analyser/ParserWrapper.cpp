@@ -4,37 +4,6 @@ Parser::Wrapper::Wrapper(std::vector<ServerConfig> *server_settings) :
 	servers_settings_(server_settings) {
 }
 
-bool Parser::Wrapper::CanAddServer_(uint32_t address, uint16_t port) const {
-	std::vector<ServerConfig>::const_iterator it = servers_settings_->begin();
-	std::vector<std::string> block_server_names = servers_settings_->back().server_name;
-
-	if (block_server_names.size()) {
-		for (; it != servers_settings_->end() - 1; ++it) {
-			std::cout << "HALLO" << std::endl;
-			if (it->listen_port == port && it->listen_address == address) {
-				std::vector<std::string> cmp_server_names = it->server_name;
-				std::vector<std::string> intersection(
-											block_server_names.size()
-											+ cmp_server_names.size());
-
-				std::sort(block_server_names.begin(), block_server_names.end());
-				std::sort(cmp_server_names.begin(), cmp_server_names.end());
-				std::set_intersection(block_server_names.begin(),
-									block_server_names.end(),
-									cmp_server_names.begin(),
-									cmp_server_names.end(),
-									intersection.begin());
-				std::cout << "SIZE" << intersection.size() << std::endl;
-				if (intersection.size()) {
-					return false;
-				}
-			}
-		}
-	}
-	return true;
-}
-
-
 bool Parser::Wrapper::CanAddLocation_(const std::string &path) const {
 	std::vector<Location>::const_iterator it = servers_settings_->
 	back().locations.begin();
@@ -52,12 +21,8 @@ t_parsing_state ctx, size_t line) {
 	if (ctx != Parser::State::K_SERVER) {
 		throw SyntaxError("Invalid context for `listen_address'", line);
 	}
-	if (CanAddServer_(address, port)) {
-		servers_settings_->back().listen_address = address;
-		servers_settings_->back().listen_port = port;
-	} else {
-		throw SyntaxError("Duplicate default `listen_address'", line);
-	}
+	servers_settings_->back().listen_address = address;
+	servers_settings_->back().listen_port = port;
 }
 
 void Parser::Wrapper::AddServerName(const std::vector<std::string> &args,

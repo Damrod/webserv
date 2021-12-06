@@ -84,10 +84,8 @@ t_parsing_state Parser::StatelessSet::SyntaxFailer(
 
 t_parsing_state Parser::StatelessSet::ExpKwHandlerClose (
 	__attribute__((unused)) const StatefulSet &data) const {
-	if (parser_->PopContext() == Parser::State::K_SERVER
-		&& !ServerHasValidServerNames_() {
-		throw SyntaxError("Err");
-	}
+
+	parser_->PopContext();
 	return Parser::State::K_EXIT;
 }
 
