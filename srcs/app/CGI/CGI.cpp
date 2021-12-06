@@ -71,9 +71,6 @@ int CGI::ExecuteCGI(void) {
 	std::fwrite(body.c_str(), 1, body.size(), fp);
 	std::rewind(fp);
 	SyscallWrap::pipeWr(fds_ DEBUG_INFO);
-	if (!IsExecutable(exec_path_)) {
-		throw std::runtime_error(std::strerror(errno));;
-	}
 	pid_t pid = SyscallWrap::forkWr(__FILE__, __FUNCTION__, __LINE__);
 	if (pid == 0) {
 		std::signal(SIGCHLD, SIG_IGN);
