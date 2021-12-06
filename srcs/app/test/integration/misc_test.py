@@ -34,3 +34,8 @@ def test_method_not_implemented_501():
     url = 'http://localhost:8080/'
     response = requests.options(url)
     assert response.status_code == 501
+
+def test_invalid_cgi_binary_500():
+    url = 'http://localhost:8085/info.php'
+    response = requests.get(url)
+    assert response.status_code == 500
