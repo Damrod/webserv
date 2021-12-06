@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+    <h1>Generate and delete a file</h1>
+    <div style="margin-bottom: 10px;">
+        <button id="gen">CREATE FILE NAMED:</button>
+        <input id="genFile" value="testfile.txt"></input>
+        <button id="del">DELETE:</button>
+        <input id="delFile" value="upload/"></input>
+    </div>
+    <div id="res"></div>
+</body>
+<script>
+    const PORT = 8084;
+    const genButton = document.getElementById('gen');
+    const delButton = document.getElementById('del');
+    const genFile = document.getElementById('genFile');
+    const delFile = document.getElementById('delFile');
+    const resMessage = document.getElementById('res');
+
+    genButton.onclick = createFile;
+    delButton.onclick = deleteFile;
+    delButton.disabled = true;
+    delFile.disabled = true;
+
+
+    function createFile() {
+        let data = new FormData();
+        const fileMessage = 'I am going to be deleted :(';
+        data.append('content', new Blob([fileMessage], { type: 'text/plain' }), genFile.value);
+
+        fetch(`http://localhost:${PORT}/upload_for_deletion/`, {
+            method: 'POST',
+            body: data
+        })
+        .then(response => {
+            switchStates();
+            if (response.status == 200) {
+                resMessage.innerText = `${genFile.value} successfully created!`
+            } else {
+                resMessage.innerHTML = `<b>Response:</b> ${response.status} ${response.statusText}`
+            }
+        })
+    }
+
+    function deleteFile() {
+        fetch(`http://localhost:${PORT}/${delFile.value}`, {
+            method: 'DELETE',
+        })
+        .then(response => {
+            switchStates();
+            resMessage.innerHTML = `<b>Response:</b> ${response.status} ${response.statusText}`
+        })
+    }
+
+    function switchStates() {
+        delButton.disabled ^= true;
+        genButton.disabled ^= true;
+        delFile.disabled ^= true;
+        genFile.disabled ^= true;
+    }
+
+</script>
+
+</html>
