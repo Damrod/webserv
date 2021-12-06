@@ -50,7 +50,7 @@ void	CgiHandler::SetErrorResponse_() {
 	//      we need to pass the Request and the RequestConfig to this class
 	headers_.clear();
 	headers_.insert(std::make_pair("Content-Type", "text/html"));
-	const std::string data_ = HttpResponse(
+	data_ = HttpResponse(
 											500,
 											headers_,
 											"",
