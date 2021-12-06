@@ -39,11 +39,14 @@ SendResponseStatus::Type	Connection::SendResponse() {
 		response_ = response_factory_->Response();
 		raw_response_ = response_->Content();
 	}
-	ssize_t nbytes = send(socket_, raw_response_.c_str(), raw_response_.size(), 0);
-	if (nbytes <= 0 && !response_->IsCgi()) {
-		return SendResponseStatus::kFail;
+	if (!response_->IsCgi()) {
+		ssize_t nbytes =
+				send(socket_, raw_response_.c_str(), raw_response_.size(), 0);
+		if (nbytes <= 0) {
+			return SendResponseStatus::kFail;
+		}
+		raw_response_.erase(0, nbytes);
 	}
-	raw_response_.erase(0, nbytes);
 	if (raw_response_.empty()) {
 		request_->Reset();
 		if (response_->IsCgi()) {
