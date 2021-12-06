@@ -20,7 +20,7 @@ class Engine: public Analyser {
 	virtual ~Engine(void);
 	State::e_id ParserMainLoop(void);
 	void PushContext(const State::e_id &ctx);
-	void PopContext(void);
+	Parser::State::e_id PopContext(void);
 	Event::e_id SkipEvent(void);
 	const std::vector<std::string> &GetArgs(void) const;
 	void IncrementArgNumber(const std::string &arg);

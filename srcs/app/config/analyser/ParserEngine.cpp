@@ -28,8 +28,11 @@ void Parser::Engine::PushContext(const t_parsing_state &ctx) {
 	ctx_.push(ctx);
 }
 
-void Parser::Engine::PopContext(void) {
+Parser::State::e_id Parser::Engine::PopContext(void) {
+	Parser::State::e_id popped_context = ctx_.top();
+
 	ctx_.pop();
+	return popped_context;
 }
 
 t_evt Parser::Engine::SkipEvent(void) {
