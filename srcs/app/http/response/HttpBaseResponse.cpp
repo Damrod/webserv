@@ -41,9 +41,6 @@ void	HttpBaseResponse::ExecuteCGI_(File file) {
 	try {
 		CGI engine(*request_, *request_config_, file);
 		cgi_output_fd_ = engine.ExecuteCGI();
-		HttpResponse::HeadersMap headers;
-		std::string body;
-		SetRawResponse_(200, headers, body);
 	}
 	catch (const std::exception &) {
 		raw_response_ = HttpErrorResponse(
