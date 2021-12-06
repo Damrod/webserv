@@ -21,8 +21,6 @@
 
     genButton.onclick = createFile;
     delButton.onclick = deleteFile;
-    delButton.disabled = true;
-    delFile.disabled = true;
 
 
     function createFile() {
@@ -35,7 +33,6 @@
             body: data
         })
         .then(response => {
-            switchStates();
             if (response.status == 200) {
                 resMessage.innerText = `${genFile.value} successfully created!`
             } else {
@@ -49,16 +46,8 @@
             method: 'DELETE',
         })
         .then(response => {
-            switchStates();
             resMessage.innerHTML = `<b>Response:</b> ${response.status} ${response.statusText}`
         })
-    }
-
-    function switchStates() {
-        delButton.disabled ^= true;
-        genButton.disabled ^= true;
-        delFile.disabled ^= true;
-        genFile.disabled ^= true;
     }
 
 </script>
