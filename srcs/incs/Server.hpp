@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <cstring>
 #include <map>
+#include <string>
 #include <Connection.hpp>
 #include <HttpRequest.hpp>
 #include <HttpResponseFactory.hpp>

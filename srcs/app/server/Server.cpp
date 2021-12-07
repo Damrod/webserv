@@ -1,7 +1,11 @@
 #include <Server.hpp>
 
-Server::Server(Server::serverSettingsMap *settings, int listen_sd, FDsets *fdSets)
-	: settings_(settings), listen_sd_(listen_sd), fdSets_(fdSets) {
+Server::Server(Server::serverSettingsMap *settings,
+				int listen_sd,
+				FDsets *fdSets) :
+				settings_(settings),
+				listen_sd_(listen_sd),
+				fdSets_(fdSets) {
 		BindListeningSocket_();
 }
 

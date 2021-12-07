@@ -42,24 +42,25 @@ void	WebServer::PopulateServers_() {
 		int listen_sd = SyscallWrap::socketWr(AF_INET, SOCK_STREAM, 0 DEBUG_INFO);
 
 		fdSets.addToReadSet(listen_sd);
-		Server	*server = new Server(BuildServerSettings_(config), listen_sd, &fdSets);
+		Server	*server =
+					new Server(BuildServerSettings_(&config), listen_sd, &fdSets);
 		servers_.insert(std::make_pair(listen_sd, server));
 	}
 }
 
 WebServer::serverSettingsMap
-	*WebServer::BuildServerSettings_(std::vector<ServerConfig> &config) {
+	*WebServer::BuildServerSettings_(std::vector<ServerConfig> *config) {
 	WebServer::serverSettingsMap *serverSettingsMap =
 									new WebServer::serverSettingsMap();
-	std::vector<ServerConfig>::iterator	it_config = config.begin();
+	std::vector<ServerConfig>::iterator	it_config = config->begin();
 	uint16_t	target_listen_port = it_config->listen_port;
 	uint16_t	target_listen_address = it_config->listen_address;
 
-	while (it_config != config.end()) {
+	while (it_config != config->end()) {
 		if (it_config->listen_address == target_listen_address
 			&& it_config->listen_port == target_listen_port) {
-			AddServerNamesToMap_(&(*it_config), *serverSettingsMap);
-			it_config = config.erase(it_config);
+			AddServerNamesToMap_(&(*it_config), serverSettingsMap);
+			it_config = config->erase(it_config);
 		} else {
 			it_config++;
 		}
@@ -69,22 +70,22 @@ WebServer::serverSettingsMap
 
 void	WebServer::AddServerNamesToMap_(
 	ServerConfig *settings,
-	WebServer::serverSettingsMap &serverSettingsMap) {
+	WebServer::serverSettingsMap *serverSettingsMap) {
 	ServerConfig *name_settings;
 	std::vector<std::string> server_name = settings->server_name;
 	std::vector<std::string>::iterator it_server_name = server_name.begin();
-	bool default_server = serverSettingsMap.empty();
+	bool default_server = serverSettingsMap->empty();
 
     if (server_name.empty()
-		&& !serverSettingsMap.count("")) {
+		&& !serverSettingsMap->count("")) {
 		name_settings = new ServerConfig(
 								settings->listen_address,
 								settings->listen_port,
 								settings->common,
 								default_server);
-		serverSettingsMap.insert(std::make_pair("", name_settings));
+		serverSettingsMap->insert(std::make_pair("", name_settings));
 	} else {
-		DeleteDuplicatedServerNames_(server_name, serverSettingsMap);
+		DeleteDuplicatedServerNames_(&server_name, *serverSettingsMap);
  	   if (!server_name.empty()) {
 		    for (; it_server_name != server_name.end(); it_server_name++) {
 		    	std::string name = it_server_name->data();
@@ -94,21 +95,21 @@ void	WebServer::AddServerNamesToMap_(
 										settings->common,
 										default_server);
 
-			   	serverSettingsMap.insert(std::make_pair(name, name_settings));
+			   	serverSettingsMap->insert(std::make_pair(name, name_settings));
 		    }
  	   }
 	}
 }
 
 void	WebServer::DeleteDuplicatedServerNames_(
-							std::vector<std::string> &server_name,
-							WebServer::serverSettingsMap &serverSettingsMap) {
-	if (!server_name.empty()) {
-		std::vector<std::string>::iterator it = server_name.begin();
+					std::vector<std::string> *server_name,
+					const WebServer::serverSettingsMap &serverSettingsMap) {
+	if (!server_name->empty()) {
+		std::vector<std::string>::iterator it = server_name->begin();
 
-		while (it != server_name.end()) {
+		while (it != server_name->end()) {
 			if (serverSettingsMap.count(it->data())) {
-				it = server_name.erase(it);
+				it = server_name->erase(it);
 			} else {
 				it++;
 			}

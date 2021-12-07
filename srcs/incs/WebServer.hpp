@@ -13,6 +13,7 @@
 #include <stdexcept>
 #include <string>
 #include <map>
+#include <vector>
 #include <csignal>
 #include <cstdlib>
 #include <Config.hpp>
@@ -40,12 +41,13 @@ class WebServer {
 		void	HandleReadSocket_(int sd);
 		void	HandleWriteSocket_(int sd);
 		typedef std::map<const std::string, ServerConfig *> serverSettingsMap;
-		serverSettingsMap *BuildServerSettings_(std::vector<ServerConfig> &config);
+		serverSettingsMap
+					*BuildServerSettings_(std::vector<ServerConfig> *config);
 		void	DeleteDuplicatedServerNames_(
-										std::vector<std::string> &server_names,
-										serverSettingsMap &serverSettingsMap);
+								std::vector<std::string> *server_names,
+								const serverSettingsMap &serverSettingsMap);
 		void	AddServerNamesToMap_(ServerConfig *settings,
-									WebServer::serverSettingsMap &serverSettings);
+									WebServer::serverSettingsMap *serverSettings);
 
 		typedef	int							Socket_;
 		typedef std::map<Socket_, Server *>	ServersMap_;

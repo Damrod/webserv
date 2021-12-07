@@ -20,56 +20,67 @@ def start_webserv():
     webserv.terminate()
 
 def test_same_port_different_server_name():
-    response = requests.get('http://example.com:8080/')
+    headers = {'Host': 'example.com'}
+    response = requests.get('http://localhost:8080/', headers=headers)
     assert response.status_code == 200
     assert response.content.decode('UTF-8') == 'web4\n'
-    response = requests.get('http://example2.com:8080/')
+    headers = {'Host': 'example2.com'}
+    response = requests.get('http://localhost:8080/', headers=headers)
     assert response.status_code == 200
     assert response.content.decode('UTF-8') == 'web5\n'
 
 def test_same_port_same_server_name():
-    response = requests.get('http://example.com:8081/')
+    headers = {'Host': 'example.com'}
+    response = requests.get('http://localhost:8081/', headers=headers)
     assert response.status_code == 200
     assert response.content.decode('UTF-8') == 'web4\n'
 
 def test_different_port_same_server_name():
-    response = requests.get('http://example.com:8082/')
+    headers = {'Host': 'example.com'}
+    response = requests.get('http://localhost:8082/', headers=headers)
     assert response.status_code == 200
     assert response.content.decode('UTF-8') == 'web4\n'
-    response = requests.get('http://example.com:8083/')
+    headers = {'Host': 'example.com'}
+    response = requests.get('http://localhost:8083/', headers=headers)
     assert response.status_code == 200
     assert response.content.decode('UTF-8') == 'web5\n'
 
 def test_no_server_name():
-    response = requests.get('http://localhost:8084/')
+    headers = {'Host': 'example.com'}
+    response = requests.get('http://localhost:8084/', headers=headers)
     assert response.status_code == 200
     assert response.content.decode('UTF-8') == 'web4\n'
 
 def test_no_server_name_same_port():
-    response = requests.get('http://localhost:8085/')
+    headers = {'Host': 'example.com'}
+    response = requests.get('http://localhost:8085/', headers=headers)
     assert response.status_code == 200
     assert response.content.decode('UTF-8') == 'web4\n'
-    response = requests.get('http://example.com:8085/')
+    response = requests.get('http://localhost:8085/', headers=headers)
     assert response.status_code == 200
     assert response.content.decode('UTF-8') == 'web4\n'
 
 def test_no_server_name_different_port():
-    response = requests.get('http://localhost:8086/')
+    headers = {'Host': 'example.com'}
+    response = requests.get('http://localhost:8086/', headers=headers)
     assert response.status_code == 200
     assert response.content.decode('UTF-8') == 'web4\n'
-    response = requests.get('http://example.com:8087/')
+    response = requests.get('http://localhost:8087/', headers=headers)
     assert response.status_code == 200
     assert response.content.decode('UTF-8') == 'web5\n'
 
 def test_wildcard_server_name():
-    response = requests.get('http://example.com:8088/')
+    headers = {'Host': 'example.com'}
+    response = requests.get('http://localhost:8088/', headers=headers)
     assert response.status_code == 200
     assert response.content.decode('UTF-8') == 'web4\n'
-    response = requests.get('http://example1.com:8087/')
+    headers = {'Host': 'example1.com'}
+    response = requests.get('http://localhost:8087/', headers=headers)
     assert response.status_code == 200
     assert response.content.decode('UTF-8') == 'web5\n'
 
 def test_default_server_name():
-    response = requests.get('http://localhost:8088/')
+    headers = {'Host': 'example.com'}
+    response = requests.get('http://localhost:8088/', headers=headers)
     assert response.status_code == 200
     assert response.content.decode('UTF-8') == 'web4\n'
