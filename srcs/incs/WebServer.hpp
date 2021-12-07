@@ -39,12 +39,12 @@ class WebServer {
 		Server	*FindServerWithCgiHandler_(int sd);
 		void	HandleReadSocket_(int sd);
 		void	HandleWriteSocket_(int sd);
-		typedef std::map<std::string, const ServerConfig &> serverSettingsMap;
-		serverSettingsMap BuildServerSettings(std::vector<ServerConfig> &config);
+		typedef std::map<const std::string, ServerConfig *> serverSettingsMap;
+		serverSettingsMap *BuildServerSettings_(std::vector<ServerConfig> &config);
 		void	DeleteDuplicatedServerNames_(
 										std::vector<std::string> &server_names,
 										serverSettingsMap &serverSettingsMap);
-		void	AddServerNamesToMap_(const ServerConfig &settings,
+		void	AddServerNamesToMap_(ServerConfig *settings,
 									WebServer::serverSettingsMap &serverSettings);
 
 		typedef	int							Socket_;

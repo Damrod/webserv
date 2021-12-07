@@ -16,10 +16,14 @@
 #include <RequestConfig.hpp>
 
 class HttpResponseFactory: public IResponseFactory {
+	private:
+		typedef  IResponse *(HttpResponseFactory::* responseCreatorMethod)();
+		typedef std::map<const std::string, ServerConfig *> serverSettingsMap;
+
 	public:
 		HttpResponseFactory(
 			HttpRequest *request,
-			const ServerConfig &server_config);
+			serverSettingsMap *server_config);
 		~HttpResponseFactory();
 		IResponse *Response();
 
@@ -30,12 +34,12 @@ class HttpResponseFactory: public IResponseFactory {
 		IResponse	*createHttpDeleteResponse_();
 		IResponse	*createHttpRedirectionResponse_();
 		IResponse	*createHttpErrorResponse_(int statusCode);
-		void	SetRequestConfig_();
+		void		SetRequestConfig_();
+		ServerConfig &GetServerNameConfig_(void);
 
-		typedef  IResponse *(HttpResponseFactory::* responseCreatorMethod)();
 		std::map<std::string, responseCreatorMethod>	concrete_responses_;
 		HttpRequest	*request_;
-		const ServerConfig &server_config_;
+		serverSettingsMap *server_config_;
 		RequestConfig	*request_config_;
 };
 

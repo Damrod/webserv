@@ -35,23 +35,22 @@ void	WebServer::PopulateServers_() {
 	std::vector<ServerConfig>	config;
 
 	config = config_.GetServersSettings();
-	std::vector<ServerConfig>::iterator	settings_it = config.begin();
+	std::vector<ServerConfig>::iterator	settings_it;
 
-	while (settings_it != config.end()) {
+	while (!config.empty()) {
+		settings_it = config.begin();
 		int listen_sd = SyscallWrap::socketWr(AF_INET, SOCK_STREAM, 0 DEBUG_INFO);
 
 		fdSets.addToReadSet(listen_sd);
-		Server	*server = new Server(*settings_it, listen_sd, &fdSets);
-		// Server	*server = new Server(buildServerSettings(config), listen_sd, &fdSets);
+		Server	*server = new Server(BuildServerSettings_(config), listen_sd, &fdSets);
 		servers_.insert(std::make_pair(listen_sd, server));
-		++settings_it;
-		// settings_it = config.begin();
 	}
 }
 
 WebServer::serverSettingsMap
-	WebServer::BuildServerSettings(std::vector<ServerConfig> &config) {
-	WebServer::serverSettingsMap 		serverSettingsMap;
+	*WebServer::BuildServerSettings_(std::vector<ServerConfig> &config) {
+	WebServer::serverSettingsMap *serverSettingsMap =
+									new WebServer::serverSettingsMap();
 	std::vector<ServerConfig>::iterator	it_config = config.begin();
 	uint16_t	target_listen_port = it_config->listen_port;
 	uint16_t	target_listen_address = it_config->listen_address;
@@ -59,7 +58,7 @@ WebServer::serverSettingsMap
 	while (it_config != config.end()) {
 		if (it_config->listen_address == target_listen_address
 			&& it_config->listen_port == target_listen_port) {
-			AddServerNamesToMap_(*it_config, serverSettingsMap);
+			AddServerNamesToMap_(&(*it_config), *serverSettingsMap);
 			it_config = config.erase(it_config);
 		} else {
 			it_config++;
@@ -69,18 +68,32 @@ WebServer::serverSettingsMap
 }
 
 void	WebServer::AddServerNamesToMap_(
-	const ServerConfig &settings,
+	ServerConfig *settings,
 	WebServer::serverSettingsMap &serverSettingsMap) {
-	// chequear cuando .empty()
-	std::vector<std::string> server_name = settings.server_name;
+	ServerConfig *name_settings;
+	std::vector<std::string> server_name = settings->server_name;
 	std::vector<std::string>::iterator it_server_name = server_name.begin();
 
-	DeleteDuplicatedServerNames_(server_name, serverSettingsMap);
-	for (; it_server_name != server_name.end(); it_server_name++) {
-		std::string name = it_server_name->data();
+    if (server_name.empty()
+		&& !serverSettingsMap.count("")) {
+		name_settings = new ServerConfig(
+								settings->listen_address,
+								settings->listen_port,
+								settings->common);
+		serverSettingsMap.insert(std::make_pair("", name_settings));
+	} else {
+		DeleteDuplicatedServerNames_(server_name, serverSettingsMap);
+ 	   if (!server_name.empty()) {
+		    for (; it_server_name != server_name.end(); it_server_name++) {
+		    	std::string name = it_server_name->data();
+				name_settings = new ServerConfig(
+										settings->listen_address,
+										settings->listen_port,
+										settings->common);
 
-		// ojo con referencias, puede no copiarse bien
-		serverSettingsMap.insert(std::make_pair(name, settings));
+			   	serverSettingsMap.insert(std::make_pair(name, name_settings));
+		    }
+ 	   }
 	}
 }
 

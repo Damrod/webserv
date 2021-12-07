@@ -17,6 +17,10 @@ struct ServerConfig {
 	std::vector<Location>		locations;
 
 	ServerConfig();
+	ServerConfig(
+		uint32_t listen_address,
+		uint16_t listen_port,
+		CommonConfig common);
 };
 
 #endif  // SRCS_INCS_SERVERCONFIG_HPP_

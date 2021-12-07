@@ -16,8 +16,15 @@
 #include <CgiHandler.hpp>
 
 class Server {
+	private:
+		typedef std::map<const std::string, ServerConfig *> serverSettingsMap;
+		typedef	int					Socket_;
+		typedef	int					Fd_;
+		typedef std::map<Fd_, CgiHandler *>	CgiHandlersMap_;
+		typedef std::map<Socket_, Fd_>		CgiSocketFdsMap_;
+
 	public:
-		Server(const ServerConfig &settings, int listen_sd, FDsets *fdSets);
+		Server(serverSettingsMap *settings, int listen_sd, FDsets *fdSets);
 		~Server();
 		void	AcceptNewConnection();
 		bool	HasConnection(int sd);
@@ -37,12 +44,7 @@ class Server {
 		void	RemoveCgiHandler_(CgiHandler *handler, int sd, int fd);
 		void	RemoveConnection_(int sd);
 
-		typedef	int					Socket_;
-		typedef	int					Fd_;
-		typedef std::map<Fd_, CgiHandler *>	CgiHandlersMap_;
-		typedef std::map<Socket_, Fd_>		CgiSocketFdsMap_;
-
-		ServerConfig				settings_;
+		serverSettingsMap			*settings_;
 		int							listen_sd_;
 		FDsets						*fdSets_;
 		CgiHandlersMap_				cgi_handlers_;

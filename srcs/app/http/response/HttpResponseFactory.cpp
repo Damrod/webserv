@@ -2,7 +2,7 @@
 
 HttpResponseFactory::HttpResponseFactory(
 		HttpRequest *request,
-		const ServerConfig &server_config):
+		HttpResponseFactory::serverSettingsMap *server_config):
 		request_(request),
 		server_config_(server_config),
 		request_config_(NULL) {
@@ -44,9 +44,25 @@ IResponse *HttpResponseFactory::Response() {
 
 void	HttpResponseFactory::SetRequestConfig_() {
 	delete request_config_;
+	const ServerConfig &serverName_config = GetServerNameConfig_();
 	request_config_ =
-				new RequestConfig(server_config_, request_->GetDecodedPath());
+				new RequestConfig(serverName_config, request_->GetDecodedPath());
 }
+
+ServerConfig &HttpResponseFactory::GetServerNameConfig_(void) {
+	std::string host_name = request_->GetHost();
+	HttpResponseFactory::serverSettingsMap::iterator it;
+
+	it = server_config_->find(host_name);
+	// Comprobar wildcard al chequear severNames petición
+	if (it != server_config_->end()) {
+		return *it->second;
+	} else {
+		return *server_config_->begin()->second;
+	}
+}
+
+
 
 IResponse *HttpResponseFactory::createHttpRedirectionResponse_() {
 	return new HttpRedirectionResponse(request_config_, request_);
