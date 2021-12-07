@@ -32,11 +32,12 @@ ssize_t	CgiHandler::ReadCgiOutput() {
 			}
 		}
 		catch (const std::exception &) {
-			cgi_complete_ = true;
 			fd_sets_->removeFd(cgi_info_.cgi_output_fd);
 			SetErrorResponse_();
-			// TODO(gbudau) Kill the CGI process if is not complete
-			//       we need the PID of the CGI process to do this
+			if (!cgi_complete_) {
+				kill(cgi_info_.pid, SIGTERM);
+			}
+			cgi_complete_ = true;
 		}
 	}
 	if (cgi_complete_ || headers_parsing_complete_) {
@@ -46,8 +47,7 @@ ssize_t	CgiHandler::ReadCgiOutput() {
 }
 
 void	CgiHandler::SetErrorResponse_() {
-	// TODO(gbudau) Look into how to use HttpErrorResponse here
-	//      we need to pass the Request and the RequestConfig to this class
+	// TODO(gbudau) Look into how to use error pages here
 	headers_.clear();
 	headers_.insert(std::make_pair("Content-Type", "text/html"));
 	data_ = HttpResponse(

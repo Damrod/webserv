@@ -1,6 +1,7 @@
 #ifndef SRCS_INCS_CGIHANDLER_HPP_
 #define SRCS_INCS_CGIHANDLER_HPP_
 #include <unistd.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <string>
