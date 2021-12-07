@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <CommonDefinitions.hpp>
 #include <FDsets.hpp>
+#include <File.hpp>
 #include <HttpResponse.hpp>
 #include <HttpStatusCodes.hpp>
 #include <Utils.hpp>
@@ -39,8 +40,15 @@ class CgiHandler {
 		bool		HasHeader_(const std::string &header_name) const;
 		std::string	GetHeaderValue_(const std::string &header_name) const;
 		void		ValidateHeaders_();
+		void		PrependHeaders_();
 		void		ParseStatus_(const std::string &status_str);
-		void		SetErrorResponse_();
+		void		SetErrorResponse_(const std::size_t &error_code);
+		std::string	GetErrorPagePath_(const std::size_t &error_code);
+		void		DefaultStatusResponse_(const std::size_t &error_code);
+		void		Serve_(const File &file, const std::size_t &error_code);
+		void		SetResponse_(const int &code,
+								const HttpResponse::HeadersMap &headers,
+								const std::string &body);
 		FDsets		*fd_sets_;
 		int			socket_;
 		CgiInfo		cgi_info_;

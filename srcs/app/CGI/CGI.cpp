@@ -96,7 +96,9 @@ CgiInfo CGI::ExecuteCGI(void) {
 	}
 	CloseAssign_(&fds_[1]);
 	int cgi_output_fd = SyscallWrap::dupWr(fds_[0] DEBUG_INFO);
-	return CgiInfo(pid, cgi_output_fd, requestConfig_->GetErrorPages());
+	return CgiInfo(pid, cgi_output_fd,
+			requestConfig_->GetErrorPages(),
+			requestConfig_->GetRoot());
 }
 
 void	CGI::CloseAssign_(int *fd) {

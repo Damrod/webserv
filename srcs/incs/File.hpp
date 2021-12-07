@@ -16,7 +16,7 @@ class File {
 		std::string	GetPathExtension() const;
 		std::string	GetPath() const;
 		std::string	GetMimeType() const;
-		std::string	GetContent();
+		std::string	GetContent() const;
 		std::string	GetDirectoryContent();
 		void	SetSubpath(const std::string &subpath);
 		bool	IsRegularFile() const;

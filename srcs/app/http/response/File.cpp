@@ -19,7 +19,7 @@ std::string	File::GetMimeType() const {
 	return MimeTypes::GetMimeType(path_extension_);
 }
 
-std::string	File::GetContent() {
+std::string	File::GetContent() const {
 	std::ifstream ifs(file_path_.c_str(), std::ios::in | std::ios::binary);
 	if (!ifs) {
 		ThrowPathError_();

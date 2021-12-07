@@ -33,7 +33,7 @@ ssize_t	CgiHandler::ReadCgiOutput() {
 		}
 		catch (const std::exception &) {
 			fd_sets_->removeFd(cgi_info_.cgi_output_fd);
-			SetErrorResponse_();
+			SetErrorResponse_(500);
 			if (!cgi_complete_) {
 				kill(cgi_info_.pid, SIGTERM);
 			}
@@ -46,16 +46,21 @@ ssize_t	CgiHandler::ReadCgiOutput() {
 	return nbytes;
 }
 
-void	CgiHandler::SetErrorResponse_() {
-	// TODO(gbudau) Look into how to use error pages here
-	headers_.clear();
-	headers_.insert(std::make_pair("Content-Type", "text/html"));
-	data_ = HttpResponse(
-											500,
-											headers_,
-											"",
-											false,
-											false).RawContent();
+void	CgiHandler::SetErrorResponse_(const std::size_t &error_code) {
+	HttpResponse::HeadersMap headers;
+	headers.insert(std::make_pair("Content-Type", "text/html"));
+	const std::string error_page_path = GetErrorPagePath_(error_code);
+		if (error_page_path.empty()) {
+			DefaultStatusResponse_(error_code);
+		} else {
+			try {
+				File file(error_page_path);
+
+				Serve_(file, error_code);
+			} catch (File::Error &e) {
+				DefaultStatusResponse_(error_code);
+			}
+		}
 }
 
 ssize_t	CgiHandler::SendCgiOutput() {
@@ -104,15 +109,8 @@ void	CgiHandler::TryParseHeaders_() {
 		offset = header_end + 2;
 	}
 	ValidateHeaders_();
+	PrependHeaders_();
 	headers_parsing_complete_ = true;
-	headers_.clear();
-	const std::string raw_response_headers = HttpResponse(
-											status_,
-											headers_,
-											"",
-											false,
-											true).RawContent();
-	data_ = raw_response_headers + data_;
 }
 
 void	CgiHandler::ValidateHeaders_() {
@@ -122,6 +120,16 @@ void	CgiHandler::ValidateHeaders_() {
 	if (HasHeader_("Status")) {
 		ParseStatus_(GetHeaderValue_("Status"));
 	}
+}
+
+void	CgiHandler::PrependHeaders_() {
+	const std::string raw_response_headers = HttpResponse(
+											status_,
+											HttpResponse::HeadersMap(),
+											"",
+											false,
+											true).RawContent();
+	data_ = raw_response_headers + data_;
 }
 
 void	CgiHandler::ParseHeader_(const std::string &header) {
@@ -207,4 +215,36 @@ void	CgiHandler::ParseStatus_(const std::string &status_str) {
 	if (errno || *endptr != '\0' || !HttpStatusCodes::IsValid(status_)) {
 		throw std::runtime_error("Invalid header");
 	}
+}
+std::string	CgiHandler::GetErrorPagePath_(const std::size_t &error_code) {
+	if (cgi_info_.error_pages.count(error_code)) {
+		return cgi_info_.root_path + cgi_info_.error_pages[error_code];
+	}
+	return "";
+}
+
+void	CgiHandler::DefaultStatusResponse_(const std::size_t &error_code) {
+	HttpResponse::HeadersMap headers;
+	headers.insert(std::make_pair("Content-Type", "text/html"));
+
+	SetResponse_(error_code, headers, "");
+}
+
+void	CgiHandler::Serve_(const File &file, const std::size_t &error_code) {
+	HttpResponse::HeadersMap headers;
+	std::string body;
+
+	headers.insert(std::make_pair("Content-Type", file.GetMimeType()));
+	body = file.GetContent();
+	SetResponse_(error_code, headers, body);
+}
+
+void	CgiHandler::SetResponse_(const int &code,
+								const HttpResponse::HeadersMap &headers,
+								const std::string &body) {
+	data_ = HttpResponse(code,
+						headers,
+						body,
+						false,
+						false).RawContent();
 }
