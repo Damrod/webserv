@@ -36,6 +36,8 @@ class HttpResponseFactory: public IResponseFactory {
 		IResponse	*createHttpErrorResponse_(int statusCode);
 		void		SetRequestConfig_();
 		ServerConfig &GetServerNameConfig_(void);
+ 		serverSettingsMap::iterator FindWildcardServerName_(
+			 										std::string host_name);
 
 		std::map<std::string, responseCreatorMethod>	concrete_responses_;
 		HttpRequest	*request_;
