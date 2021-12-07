@@ -95,3 +95,13 @@ def test_file_upload_path_traversal(tmp_webserv_dir, random_filename):
     response = requests.post(url, files=files)
     assert not os.path.exists('/tmp/webserv/' + random_filename)
     assert response.status_code == 400
+    
+def test_post_upload_non_existing_path(random_filename):
+    url =  'http://localhost:8084/send'
+    mime_type = 'text/plain'
+    files = {'file': (random_filename, 'random text\n', mime_type)}
+    response = requests.post(url, files=files)
+    filepath = TMP_UPLOAD_DIR + random_filename
+    assert os.path.exists(filepath)
+    os.remove(filepath)
+    assert response.status_code == 200

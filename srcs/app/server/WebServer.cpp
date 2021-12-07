@@ -74,27 +74,19 @@ void	WebServer::AddServerNamesToMap_(
 	ServerConfig *name_settings;
 	std::vector<std::string> server_name = settings->server_name;
 	std::vector<std::string>::iterator it_server_name = server_name.begin();
-	bool default_server = serverSettingsMap->empty();
 
     if (server_name.empty()
 		&& !serverSettingsMap->count("")) {
-		name_settings = new ServerConfig(
-								settings->listen_address,
-								settings->listen_port,
-								settings->common,
-								default_server);
+		name_settings = new ServerConfig(*settings);
+		name_settings->default_server = serverSettingsMap->empty();
 		serverSettingsMap->insert(std::make_pair("", name_settings));
 	} else {
 		DeleteDuplicatedServerNames_(&server_name, *serverSettingsMap);
  	   if (!server_name.empty()) {
 		    for (; it_server_name != server_name.end(); it_server_name++) {
 		    	std::string name = it_server_name->data();
-				name_settings = new ServerConfig(
-										settings->listen_address,
-										settings->listen_port,
-										settings->common,
-										default_server);
-
+				name_settings = new ServerConfig(*settings);
+				name_settings->default_server = serverSettingsMap->empty();
 			   	serverSettingsMap->insert(std::make_pair(name, name_settings));
 		    }
  	   }

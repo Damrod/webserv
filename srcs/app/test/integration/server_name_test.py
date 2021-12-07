@@ -14,6 +14,7 @@ PROJ_DIR = str(Path(__file__).parents[4])
 
 @pytest.fixture(scope='module', autouse=True)
 def start_webserv():
+    time.sleep(1)
     webserv = subprocess.Popen(['./webserv', PROJ_DIR + '/config/server_name_test.conf'], cwd=PROJ_DIR)
     time.sleep(2)
     yield webserv

@@ -76,16 +76,6 @@ def test_get_index_cgi_query_string_200():
     assert "hello" in response.text
     assert "world" in response.text
 
-def test_post_upload_non_existing_path(random_filename):
-    url =  'http://localhost:8084/send'
-    mime_type = 'text/plain'
-    files = {'file': (random_filename, 'random text\n', mime_type)}
-    response = requests.post(url, files=files)
-    filepath = TMP_UPLOAD_DIR + random_filename
-    assert os.path.exists(filepath)
-    os.remove(filepath)
-    assert response.status_code == 200
-
 async def async_get_request(session, url):
     async with session.get(url) as resp:
         return resp.status
