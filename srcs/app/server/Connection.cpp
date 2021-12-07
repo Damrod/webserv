@@ -60,6 +60,6 @@ SendResponseStatus::Type	Connection::SendResponse() {
 	return SendResponseStatus::kSuccess;
 }
 
-int	Connection::GetCgiOutputFd() const {
-	return response_->GetCgiOutputFd();
+CgiInfo	Connection::GetCgiInfo() const {
+	return response_->GetCgiInfo();
 }

@@ -62,7 +62,7 @@ void	Server::SendResponse(int sd) {
 				status == SendResponseStatus::kCompleteClose) {
 		RemoveConnection_(sd);
 	} else if (status == SendResponseStatus::kHandleCgi) {
-		AddCgiHandler_(sd, it->second->GetCgiOutputFd());
+		AddCgiHandler_(sd, it->second->GetCgiInfo());
 	}
 }
 
@@ -109,10 +109,12 @@ void	Server::RemoveConnection_(int sd) {
 	connections_.erase(sd);
 }
 
-void	Server::AddCgiHandler_(int sd, int cgi_output_fd) {
+void	Server::AddCgiHandler_(int sd, const CgiInfo &cgi_info) {
 	int socket_copy = SyscallWrap::dupWr(sd DEBUG_INFO);
 
-	CgiHandler *handler = new CgiHandler(fdSets_, socket_copy, cgi_output_fd);
+	int cgi_output_fd = cgi_info.cgi_output_fd;
+	CgiHandler *handler =
+		new CgiHandler(fdSets_, socket_copy, cgi_info);
 	cgi_handlers_.insert(std::make_pair(cgi_output_fd, handler));
 	cgi_fds_.insert(std::make_pair(socket_copy, cgi_output_fd));
 	RemoveConnection_(sd);

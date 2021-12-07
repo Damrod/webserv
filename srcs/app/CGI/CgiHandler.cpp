@@ -1,27 +1,27 @@
 #include <CgiHandler.hpp>
 
-CgiHandler::CgiHandler(FDsets *fd_sets, int socket, int cgi_output)
-	: fd_sets_(fd_sets), socket_(socket), cgi_output_(cgi_output),
+CgiHandler::CgiHandler(FDsets *fd_sets, int socket, const CgiInfo &cgi_info)
+	: fd_sets_(fd_sets), socket_(socket), cgi_info_(cgi_info),
 	cgi_complete_(false), headers_parsing_complete_(false), status_(200) {
-	fd_sets_->addToReadSet(cgi_output);
+	fd_sets_->addToReadSet(cgi_info_.cgi_output_fd);
 }
 
 CgiHandler::~CgiHandler() {
 	fd_sets_->removeFd(socket_);
-	fd_sets_->removeFd(cgi_output_);
+	fd_sets_->removeFd(cgi_info_.cgi_output_fd);
 	SyscallWrap::closeWr(socket_ DEBUG_INFO);
-	SyscallWrap::closeWr(cgi_output_ DEBUG_INFO);
+	SyscallWrap::closeWr(cgi_info_.cgi_output_fd DEBUG_INFO);
 }
 
 ssize_t	CgiHandler::ReadCgiOutput() {
 	char	buffer[4096];
 
-	ssize_t nbytes = read(cgi_output_, buffer, sizeof(buffer));
+	ssize_t nbytes = read(cgi_info_.cgi_output_fd, buffer, sizeof(buffer));
 	if (nbytes > 0) {
 		data_.append(&buffer[0], &buffer[nbytes]);
 	} else if (nbytes == 0) {
 		cgi_complete_ = true;
-		fd_sets_->removeFd(cgi_output_);
+		fd_sets_->removeFd(cgi_info_.cgi_output_fd);
 	}
 	// TODO(gbudau) Refactor
 	if (!headers_parsing_complete_) {
@@ -33,7 +33,7 @@ ssize_t	CgiHandler::ReadCgiOutput() {
 		}
 		catch (const std::exception &) {
 			cgi_complete_ = true;
-			fd_sets_->removeFd(cgi_output_);
+			fd_sets_->removeFd(cgi_info_.cgi_output_fd);
 			SetErrorResponse_();
 			// TODO(gbudau) Kill the CGI process if is not complete
 			//       we need the PID of the CGI process to do this
@@ -74,7 +74,7 @@ int		CgiHandler::GetSocket() const {
 }
 
 int		CgiHandler::GetCgiOutFd() const {
-	return cgi_output_;
+	return cgi_info_.cgi_output_fd;
 }
 
 bool	CgiHandler::IsComplete() const {

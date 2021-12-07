@@ -11,10 +11,11 @@
 #include <HttpStatusCodes.hpp>
 #include <Utils.hpp>
 #include <SyscallWrap.hpp>
+#include <CgiInfo.hpp>
 
 class CgiHandler {
 	public:
-		CgiHandler(FDsets *fd_sets, int socket, int cgi_output);
+		CgiHandler(FDsets *fd_sets, int socket, const CgiInfo &cgi_info);
 		~CgiHandler();
 		ssize_t	ReadCgiOutput();
 		ssize_t	SendCgiOutput();
@@ -41,7 +42,7 @@ class CgiHandler {
 		void		SetErrorResponse_();
 		FDsets		*fd_sets_;
 		int			socket_;
-		int			cgi_output_;
+		CgiInfo		cgi_info_;
 		bool		cgi_complete_;
 		bool		headers_parsing_complete_;
 		std::size_t	status_;
