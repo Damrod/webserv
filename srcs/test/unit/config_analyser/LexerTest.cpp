@@ -36,7 +36,7 @@ TEST_CASE("Testing the tokenizer AKA lexer", "[parser]") {
 								"}\n");
 	std::ostringstream result;
 	try {
-		std::string path = "srcs/app/test/unit/config_analyser/"
+		std::string path = "srcs/test/unit/config_analyser/"
 			"nginx_docker/vol/http.d/default.conf";
 		Preprocessor file(path);
 		Lexer lexed(file.GetFileBuffer());
