@@ -11,7 +11,7 @@ struct CgiInfo {
 	typedef std::map<ErrorPageCode, ErrorPageUri>		ErrorPagesMap;
 
 	CgiInfo();
-	CgiInfo(const pid_t &new_pid, const int &new_cgi_output_fd,
+	CgiInfo(const pid_t new_pid, const int new_cgi_output_fd,
 			const ErrorPagesMap &new_error_pages, const std::string &new_root_path);
 	pid_t			pid;
 	int				cgi_output_fd;
