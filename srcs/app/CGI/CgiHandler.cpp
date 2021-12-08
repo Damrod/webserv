@@ -32,22 +32,6 @@ ssize_t	CgiHandler::ReadCgiOutput() {
 	return nbytes;
 }
 
-void	CgiHandler::SetErrorResponse_(const std::size_t &error_code) {
-	const std::string error_page_path = GetErrorPagePath_(error_code);
-
-	if (error_page_path.empty()) {
-		DefaultStatusResponse_(error_code);
-	} else {
-		try {
-			File file(error_page_path);
-
-			Serve_(file, error_code);
-		} catch (File::Error &e) {
-			DefaultStatusResponse_(error_code);
-		}
-	}
-}
-
 ssize_t	CgiHandler::SendCgiOutput() {
 	ssize_t nbytes = send(socket_, data_.c_str(), data_.size(), 0);
 	if (nbytes > 0) {
@@ -218,6 +202,23 @@ void	CgiHandler::ParseStatus_(const std::string &status_str) {
 		throw std::runtime_error("Invalid header");
 	}
 }
+
+void	CgiHandler::SetErrorResponse_(const std::size_t &error_code) {
+	const std::string error_page_path = GetErrorPagePath_(error_code);
+
+	if (error_page_path.empty()) {
+		DefaultStatusResponse_(error_code);
+	} else {
+		try {
+			File file(error_page_path);
+
+			Serve_(file, error_code);
+		} catch (File::Error &e) {
+			DefaultStatusResponse_(error_code);
+		}
+	}
+}
+
 std::string	CgiHandler::GetErrorPagePath_(const std::size_t &error_code) {
 	if (cgi_info_.error_pages.count(error_code)) {
 		return cgi_info_.root_path + cgi_info_.error_pages[error_code];
