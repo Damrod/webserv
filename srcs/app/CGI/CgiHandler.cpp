@@ -66,7 +66,7 @@ void	CgiHandler::TryParseHeaders_() {
 		fd_sets_->removeFd(cgi_info_.cgi_output_fd);
 		SetErrorResponse_(500);
 		if (!cgi_complete_) {
-			kill(cgi_info_.pid, SIGTERM);
+			kill(cgi_info_.pid, SIGKILL);
 		}
 		cgi_complete_ = true;
 	}
