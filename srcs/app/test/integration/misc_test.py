@@ -58,8 +58,8 @@ def test_invalid_headers_cgi_script_500():
     response = requests.get(url, timeout=5)
     process_is_running = False
     for process in psutil.process_iter():
-        cmdline = '/usr/bin/python2.7 html/web6/invalid_headers.py'
-        if cmdline in process.cmdline():
+        arg = 'html/web6/invalid_headers.py'
+        if arg in process.cmdline():
             process_is_running = True
     assert not process_is_running
     assert response.status_code == 500

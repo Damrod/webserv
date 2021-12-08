@@ -31,6 +31,7 @@ class CgiHandler {
 		CgiHandler &operator=(const CgiHandler &);
 
 		void		TryParseHeaders_();
+		void		ParseHeaders_();
 		void		ParseHeader_(const std::string &header);
 		std::string	ParseHeaderName_(const std::string &header) const;
 		std::string	ParseHeaderValue_(const std::string &header) const;

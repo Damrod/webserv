@@ -23,22 +23,8 @@ ssize_t	CgiHandler::ReadCgiOutput() {
 		cgi_complete_ = true;
 		fd_sets_->removeFd(cgi_info_.cgi_output_fd);
 	}
-	// TODO(gbudau) Refactor
 	if (!headers_parsing_complete_) {
-		try {
-			TryParseHeaders_();
-			if (cgi_complete_ && !headers_parsing_complete_) {
-				throw std::runtime_error("Invalid header");
-			}
-		}
-		catch (const std::exception &) {
-			fd_sets_->removeFd(cgi_info_.cgi_output_fd);
-			SetErrorResponse_(500);
-			if (!cgi_complete_) {
-				kill(cgi_info_.pid, SIGTERM);
-			}
-			cgi_complete_ = true;
-		}
+		TryParseHeaders_();
 	}
 	if (cgi_complete_ || headers_parsing_complete_) {
 		fd_sets_->addToWriteSet(socket_);
@@ -47,20 +33,19 @@ ssize_t	CgiHandler::ReadCgiOutput() {
 }
 
 void	CgiHandler::SetErrorResponse_(const std::size_t &error_code) {
-	HttpResponse::HeadersMap headers;
-	headers.insert(std::make_pair("Content-Type", "text/html"));
 	const std::string error_page_path = GetErrorPagePath_(error_code);
-		if (error_page_path.empty()) {
-			DefaultStatusResponse_(error_code);
-		} else {
-			try {
-				File file(error_page_path);
 
-				Serve_(file, error_code);
-			} catch (File::Error &e) {
-				DefaultStatusResponse_(error_code);
-			}
+	if (error_page_path.empty()) {
+		DefaultStatusResponse_(error_code);
+	} else {
+		try {
+			File file(error_page_path);
+
+			Serve_(file, error_code);
+		} catch (File::Error &e) {
+			DefaultStatusResponse_(error_code);
 		}
+	}
 }
 
 ssize_t	CgiHandler::SendCgiOutput() {
@@ -87,6 +72,23 @@ bool	CgiHandler::IsComplete() const {
 }
 
 void	CgiHandler::TryParseHeaders_() {
+	try {
+		ParseHeaders_();
+		if (cgi_complete_ && !headers_parsing_complete_) {
+			throw std::runtime_error("Invalid header");
+		}
+	}
+	catch (const std::exception &) {
+		fd_sets_->removeFd(cgi_info_.cgi_output_fd);
+		SetErrorResponse_(500);
+		if (!cgi_complete_) {
+			kill(cgi_info_.pid, SIGTERM);
+		}
+		cgi_complete_ = true;
+	}
+}
+
+void	CgiHandler::ParseHeaders_() {
 	const std::string delimiter =
 							std::string(Constants::kCRLF_) + Constants::kCRLF_;
 	const std::size_t headers_end = data_.find(delimiter);
