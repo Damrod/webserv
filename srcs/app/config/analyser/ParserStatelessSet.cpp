@@ -82,9 +82,8 @@ t_parsing_state Parser::StatelessSet::SyntaxFailer(
 	throw SyntaxError(str.str(), LINE);
 }
 
-t_parsing_state Parser::StatelessSet::ExpKwHandlerClose
-												(const StatefulSet &data) const {
-	(void)data;
+t_parsing_state Parser::StatelessSet::ExpKwHandlerClose(
+	__attribute__((unused)) const StatefulSet &data) const {
 	parser_->PopContext();
 	return Parser::State::K_EXIT;
 }

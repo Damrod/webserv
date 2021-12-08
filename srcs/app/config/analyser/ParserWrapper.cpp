@@ -4,16 +4,6 @@ Parser::Wrapper::Wrapper(std::vector<ServerConfig> *server_settings) :
 	servers_settings_(server_settings) {
 }
 
-bool Parser::Wrapper::CanAddServer_(uint32_t address, uint16_t port) const {
-	std::vector<ServerConfig>::const_iterator it = servers_settings_->begin();
-	for (; it != servers_settings_->end() - 1; ++it) {
-		if (it->listen_address == address && it->listen_port == port) {
-			return false;
-		}
-	}
-	return true;
-}
-
 bool Parser::Wrapper::CanAddLocation_(const std::string &path) const {
 	std::vector<Location>::const_iterator it = servers_settings_->
 	back().locations.begin();
@@ -31,12 +21,8 @@ t_parsing_state ctx, size_t line) {
 	if (ctx != Parser::State::K_SERVER) {
 		throw SyntaxError("Invalid context for `listen_address'", line);
 	}
-	if (CanAddServer_(address, port)) {
-		servers_settings_->back().listen_address = address;
-		servers_settings_->back().listen_port = port;
-	} else {
-		throw SyntaxError("Duplicate default `listen_address'", line);
-	}
+	servers_settings_->back().listen_address = address;
+	servers_settings_->back().listen_port = port;
 }
 
 void Parser::Wrapper::AddServerName(const std::vector<std::string> &args,

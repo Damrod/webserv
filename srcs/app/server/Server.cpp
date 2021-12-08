@@ -1,7 +1,11 @@
 #include <Server.hpp>
 
-Server::Server(const ServerConfig &settings, int listen_sd, FDsets *fdSets)
-	: settings_(settings), listen_sd_(listen_sd), fdSets_(fdSets) {
+Server::Server(Server::serverSettingsMap *settings,
+				int listen_sd,
+				FDsets *fdSets) :
+				settings_(settings),
+				listen_sd_(listen_sd),
+				fdSets_(fdSets) {
 		BindListeningSocket_();
 }
 
@@ -16,6 +20,7 @@ Server::~Server() {
 		delete h_it->second;
 	}
 	SyscallWrap::closeWr(listen_sd_ DEBUG_INFO);
+	delete settings_;
 }
 
 void	Server::AcceptNewConnection() {
@@ -78,11 +83,12 @@ void Server::HandleCgiSend(int sd) {
 
 void	Server::BindListeningSocket_() const {
 	SyscallWrap::fcntlWr(listen_sd_, F_SETFL, O_NONBLOCK DEBUG_INFO);
+	Server::serverSettingsMap::iterator it = settings_->begin();
 
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;  // IPv4
-	addr.sin_port = htons(settings_.listen_port);
-	addr.sin_addr.s_addr = htonl(settings_.listen_address);
+	addr.sin_port = htons(it->second->listen_port);
+	addr.sin_addr.s_addr = htonl(it->second->listen_address);
 	std::memset(addr.sin_zero, 0, sizeof(addr.sin_zero));
 
 	int on = 1;

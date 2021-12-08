@@ -47,7 +47,6 @@ std::map<T, U>map, const std::string &key, const std::string &value) {
 class Wrapper : public Analyser {
  private:
 	std::vector<ServerConfig>	*servers_settings_;
-	bool CanAddServer_(uint32_t address, uint16_t port) const;
 	bool CanAddLocation_(const std::string &path) const;
 
  public:
