@@ -1,18 +1,4 @@
-from pathlib import Path
-import pytest
 import requests
-import subprocess
-import time
-
-PROJ_DIR = str(Path(__file__).parents[4])
-
-@pytest.fixture(scope='module', autouse=True)
-def start_webserv():
-    time.sleep(1)
-    webserv = subprocess.Popen('./webserv', cwd=PROJ_DIR)
-    time.sleep(2)
-    yield webserv
-    webserv.terminate()
 
 def test_same_port_different_server_name():
     headers = {'Host': 'example.com'}

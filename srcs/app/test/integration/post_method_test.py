@@ -1,41 +1,8 @@
+from conftest import TMP_TEST_DIR
+from conftest import TMP_WEBSERV_DIR
 import filecmp
 import os
-import uuid
-from pathlib import Path
-import pytest
 import requests
-import shutil
-import subprocess
-import tempfile
-import time
-
-TMP_WEBSERV_DIR = '/tmp/webserv/'
-PROJ_DIR = str(Path(__file__).parents[4])
-TMP_UPLOAD_DIR = PROJ_DIR + '/html/web3/test/'
-
-@pytest.fixture(scope='module', autouse=True)
-def start_webserv():
-    webserv = subprocess.Popen('./webserv', cwd=PROJ_DIR)
-    time.sleep(2)
-    yield webserv
-    webserv.terminate()
-
-@pytest.fixture(scope='module')
-def tmp_webserv_dir():
-    if not os.path.exists(TMP_WEBSERV_DIR):
-        os.mkdir(TMP_WEBSERV_DIR)
-    yield
-    shutil.rmtree(TMP_WEBSERV_DIR)
-
-@pytest.fixture(scope='module')
-def tmp_file():
-    with tempfile.NamedTemporaryFile() as fp:
-        fp.write(os.urandom(90000000))
-        yield fp
-
-@pytest.fixture(scope='function')
-def random_filename():
-    return str(uuid.uuid4())
 
 # POST
 def test_post_cgi_200():
@@ -69,7 +36,7 @@ def test_post_upload_200(tmp_file):
     files = {'filename': (filename, open(tmp_file.name, 'rb'), mime_type)}
     response = requests.post(url, files=files)
     assert response.status_code == 200
-    filepath = TMP_UPLOAD_DIR + filename
+    filepath = TMP_TEST_DIR + filename
     assert filecmp.cmp(filepath, tmp_file.name)
     os.remove(filepath)
 
@@ -79,8 +46,8 @@ def test_percent_encoding():
     mime_type = 'text/plain'
     files = {'file': (filename, 'random text\n', mime_type)}
     upload_response = requests.post(upload_url, files=files)
-    filepath = TMP_UPLOAD_DIR + filename
-    assert os.path.exists(TMP_UPLOAD_DIR + filename)
+    filepath = TMP_TEST_DIR + filename
+    assert os.path.exists(TMP_TEST_DIR + filename)
     url = 'http://localhost:8084/test/filename+containing%20space.txt'
     response = requests.get(url)
     os.remove(filepath)
@@ -101,7 +68,7 @@ def test_post_upload_non_existing_path(random_filename):
     mime_type = 'text/plain'
     files = {'file': (random_filename, 'random text\n', mime_type)}
     response = requests.post(url, files=files)
-    filepath = TMP_UPLOAD_DIR + random_filename
+    filepath = TMP_TEST_DIR + random_filename
     assert os.path.exists(filepath)
     os.remove(filepath)
     assert response.status_code == 200
