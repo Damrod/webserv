@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import psutil
 import pytest
 import requests
 import shutil
@@ -46,3 +47,19 @@ def test_cgi_redirect_301():
     response = requests.get(url, allow_redirects=False)
     assert response.status_code == 301
     assert response.headers['Location'] == redirect_url
+
+def test_invalid_no_output_cgi_script_500():
+    url = 'http://localhost:8094/no_output.py'
+    response = requests.get(url)
+    assert response.status_code == 500
+
+def test_invalid_headers_cgi_script_500():
+    url = 'http://localhost:8094/invalid_headers.py'
+    response = requests.get(url, timeout=5)
+    process_is_running = False
+    for process in psutil.process_iter():
+        cmdline = '/usr/bin/python2.7 html/web6/invalid_headers.py'
+        if cmdline in process.cmdline():
+            process_is_running = True
+    assert not process_is_running
+    assert response.status_code == 500
