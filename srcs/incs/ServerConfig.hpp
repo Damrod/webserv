@@ -12,6 +12,7 @@ struct ServerConfig {
 	uint16_t					listen_port;
 	std::vector<std::string>	server_name;
 	CommonConfig				common;
+	bool						default_server;
 
 	// A server can have multiple locations
 	std::vector<Location>		locations;

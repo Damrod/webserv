@@ -92,7 +92,7 @@ def test_delete_forbidden_resource_403():
     assert response.status_code == 403
 
 def test_delete_not_allowed_path_405():
-    url =  'http://localhost:8084/test/'
+    url =  'http://localhost:8084/images/'
     response = requests.delete(url)
     assert response.status_code == 405
 
