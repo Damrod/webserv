@@ -36,6 +36,13 @@ def test_method_not_implemented_501():
     assert response.status_code == 501
 
 def test_invalid_cgi_binary_500():
-    url = 'http://localhost:8085/info.php'
+    url = 'http://localhost:8094/info.php'
     response = requests.get(url)
     assert response.status_code == 500
+
+def test_cgi_redirect_301():
+    url = 'http://localhost:8094/redirect.py'
+    redirect_url = "https://www.google.com"
+    response = requests.get(url, allow_redirects=False)
+    assert response.status_code == 301
+    assert response.headers['Location'] == redirect_url
