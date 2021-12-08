@@ -1,5 +1,5 @@
 NAME = webserv
-CXX ?= clang++
+CXX = clang++
 DBG ?=
 export CXX
 export DBG
