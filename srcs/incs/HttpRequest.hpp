@@ -82,7 +82,7 @@ class HttpRequest : public IRequest {
 		std::size_t                         port_;
 		std::string                         body_;
 		std::size_t                         content_length_;
-		HttpHeaders							*headers_;
+		HttpHeaders							headers_;
 		QueriesMap							queries_;
 
 		// This is an index into the raw_request string

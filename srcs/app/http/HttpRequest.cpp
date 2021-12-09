@@ -3,13 +3,11 @@
 const std::size_t	HttpRequest::kPortMax_ = 65535;
 
 HttpRequest::HttpRequest()
-	: port_(80), content_length_(0), headers_(NULL), offset_(0),
+	: port_(80), content_length_(0), offset_(0),
 	parse_state_(kParseRequestLine), state_(RequestState::kPartial) {
 }
 
-HttpRequest::~HttpRequest() {
-	delete headers_;
-}
+HttpRequest::~HttpRequest() {}
 
 void	HttpRequest::SetContent(const std::string &raw_request) {
 	offset_ = 0;
@@ -69,12 +67,12 @@ std::string	HttpRequest::GetHttpVersion() const {
 }
 
 HttpRequest::HeadersMap	HttpRequest::GetHeaders() const {
-	return headers_ ? headers_->GetHeaders() : HttpRequest::HeadersMap();
+	return headers_.GetHeaders();
 }
 
 std::string
 	HttpRequest::GetHeaderValue(const std::string &header_name) const {
-	return headers_ ? headers_->GetHeaderValue(header_name) : "";
+	return headers_.GetHeaderValue(header_name);
 }
 
 std::string	HttpRequest::GetHost() const {
@@ -94,7 +92,7 @@ std::size_t	HttpRequest::ParsedOffset() const {
 }
 
 bool	HttpRequest::HasHeader(const std::string &header_name) const {
-	return headers_ && headers_->HasHeader(header_name);
+	return headers_.HasHeader(header_name);
 }
 
 void	HttpRequest::ParseRequestLine_(const std::string &raw_request) {
@@ -251,8 +249,7 @@ void	HttpRequest::ParseHeaders_(const std::string &raw_request) {
 	const std::string raw_headers =
 			raw_request.substr(headers_start, headers_end - headers_start + 2);
 	try {
-		delete headers_;
-		headers_ = new HttpHeaders(raw_headers);
+		headers_.ParseRawString(raw_headers);
 	}
 	catch (const std::exception &) {
 		state_ = RequestState::kInvalid;
@@ -269,7 +266,7 @@ void	HttpRequest::ParseHeaders_(const std::string &raw_request) {
 // Parse the Host header into a host and optional port number
 // Host = uri-host [ ":" port ]
 void	HttpRequest::ParseHost_() {
-	std::string host = headers_->GetHeaderValue("Host");
+	std::string host = headers_.GetHeaderValue("Host");
 	if (host.empty()) {
 		state_ = RequestState::kInvalid;
 		return;
@@ -306,12 +303,12 @@ void	HttpRequest::ParsePort_(const std::string &port_str) {
 
 void	HttpRequest::ParseContentLength_() {
 	const std::string valid_chars = "0123456789";
-	if (!headers_->HasHeader("Content-Length")) {
+	if (!headers_.HasHeader("Content-Length")) {
 		return;
 	}
 	errno = 0;
 	char *endptr;
-	const std::string s = headers_->GetHeaderValue("Content-Length");
+	const std::string s = headers_.GetHeaderValue("Content-Length");
 	content_length_ = std::strtoul(s.c_str(), &endptr, 10);
 	if (errno || *endptr != '\0' ||
 			s.find_first_not_of(valid_chars) != std::string::npos) {
@@ -343,8 +340,7 @@ void	HttpRequest::Reset() {
 	path_.clear();
 	queries_.clear();
 	http_version_.clear();
-	delete headers_;
-	headers_ = NULL;
+	headers_.Clear();
 	port_ = 80;
 	body_.clear();
 	content_length_ = 0;
