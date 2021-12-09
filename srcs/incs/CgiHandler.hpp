@@ -6,14 +6,15 @@
 #include <sys/socket.h>
 #include <string>
 #include <stdexcept>
+#include <CgiInfo.hpp>
 #include <CommonDefinitions.hpp>
 #include <FDsets.hpp>
 #include <File.hpp>
+#include <HttpHeaders.hpp>
 #include <HttpResponse.hpp>
 #include <HttpStatusCodes.hpp>
 #include <Utils.hpp>
 #include <SyscallWrap.hpp>
-#include <CgiInfo.hpp>
 
 class CgiHandler {
 	public:
@@ -32,14 +33,6 @@ class CgiHandler {
 
 		void		TryParseHeaders_();
 		void		ParseHeaders_();
-		void		ParseHeader_(const std::string &header);
-		std::string	ParseHeaderName_(const std::string &header) const;
-		std::string	ParseHeaderValue_(const std::string &header) const;
-		bool		IsValidHeaderName_(const std::string &header_name) const;
-		bool		IsValidHeaderValue_(const std::string &header_value) const;
-		bool		ContainOnlyVisibleChars_(const std::string &str) const;
-		bool		HasHeader_(const std::string &header_name) const;
-		std::string	GetHeaderValue_(const std::string &header_name) const;
 		void		ValidateHeaders_();
 		void		PrependHeaders_();
 		void		ParseStatus_(const std::string &status_str);
@@ -48,7 +41,7 @@ class CgiHandler {
 		void		DefaultStatusResponse_(const std::size_t &error_code);
 		void		Serve_(const File &file, const std::size_t &error_code);
 		void		SetResponse_(const int &code,
-								const HttpResponse::HeadersMap &headers,
+								const HttpHeaders::HeadersMap &headers,
 								const std::string &body);
 		FDsets		*fd_sets_;
 		int			socket_;
@@ -56,8 +49,7 @@ class CgiHandler {
 		bool		cgi_complete_;
 		bool		headers_parsing_complete_;
 		std::size_t	status_;
-		HttpResponse::HeadersMap
-					headers_;
+		HttpHeaders	*headers_;
 		std::string	data_;
 };
 
