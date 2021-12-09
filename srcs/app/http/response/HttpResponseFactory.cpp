@@ -2,7 +2,7 @@
 
 HttpResponseFactory::HttpResponseFactory(
 		HttpRequest *request,
-		const ServerConfig &server_config):
+		HttpResponseFactory::serverSettingsMap *server_config):
 		request_(request),
 		server_config_(server_config),
 		request_config_(NULL) {
@@ -44,9 +44,56 @@ IResponse *HttpResponseFactory::Response() {
 
 void	HttpResponseFactory::SetRequestConfig_() {
 	delete request_config_;
+	const ServerConfig &serverName_config = GetServerNameConfig_();
 	request_config_ =
-				new RequestConfig(server_config_, request_->GetDecodedPath());
+				new RequestConfig(serverName_config, request_->GetDecodedPath());
 }
+
+ServerConfig &HttpResponseFactory::GetServerNameConfig_(void) {
+	std::string host_name = request_->GetHost();
+	HttpResponseFactory::serverSettingsMap::iterator it;
+
+	it = server_config_->find(host_name);
+	if (it != server_config_->end()) {
+		return *it->second;
+	}
+	it = FindWildcardServerName_(host_name);
+	if (it != server_config_->end()) {
+		return *it->second;
+	}
+	for (it = server_config_->begin(); it != server_config_->end(); it++) {
+		if (it->second->default_server) {
+			return *it->second;
+		}
+	}
+	return *server_config_->begin()->second;
+}
+
+ HttpResponseFactory::serverSettingsMap::iterator
+ 	HttpResponseFactory::FindWildcardServerName_(std::string host_name) {
+	HttpResponseFactory::serverSettingsMap::iterator it;
+
+	for (it = server_config_->begin(); it != server_config_->end(); it++) {
+		if (it->first[0] == '*') {
+			break;
+		}
+	}
+	if (it == server_config_->end()) {
+		return it;
+	}
+	std::string wildcard = it->first;
+	std::string cropped_wildcard = wildcard.substr(1, wildcard.length());
+	std::string cropped_host_name =
+					host_name.substr(
+							host_name.length() - cropped_wildcard.length(),
+							host_name.length());
+
+	if (cropped_host_name == cropped_wildcard) {
+		return it;
+	}
+	return server_config_->end();
+}
+
 
 IResponse *HttpResponseFactory::createHttpRedirectionResponse_() {
 	return new HttpRedirectionResponse(request_config_, request_);
