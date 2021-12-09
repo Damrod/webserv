@@ -7,9 +7,10 @@
         <button id="gen">CREATE FILE NAMED:</button>
         <input id="genFile" value="testfile.txt"></input>
         <button id="del">DELETE:</button>
-        <input id="delFile" value="upload/"></input>
+        <input id="delFile" value="testfile.txt"></input>
     </div>
     <div id="res"></div>
+    <embed type="text/html" src="/test/" width="640" height="480">
 </body>
 <script>
     const PORT = 8084;
@@ -38,15 +39,17 @@
             } else {
                 resMessage.innerHTML = `<b>Response:</b> ${response.status} ${response.statusText}`
             }
+            location.reload();
         })
     }
 
     function deleteFile() {
-        fetch(`http://localhost:${PORT}/${delFile.value}`, {
+        fetch(`http://localhost:${PORT}/test/${delFile.value}`, {
             method: 'DELETE',
         })
         .then(response => {
             resMessage.innerHTML = `<b>Response:</b> ${response.status} ${response.statusText}`
+            location.reload();
         })
     }
 
