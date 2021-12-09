@@ -107,14 +107,19 @@ void	CgiHandler::PrependHeaders_() {
 }
 
 void	CgiHandler::ParseStatus_(const std::string &status_str) {
+	const std::size_t delimiter = status_str.find(' ');
+	if (delimiter == std::string::npos) {
+		throw std::runtime_error("Invalid header");
+	}
+	const std::string status_code = status_str.substr(0, delimiter);
 	const std::string valid_chars = "0123456789";
-	if (status_str.empty() ||
-			status_str.find_first_not_of(valid_chars) != std::string::npos) {
+	if (status_code.empty() ||
+			status_code.find_first_not_of(valid_chars) != std::string::npos) {
 		throw std::runtime_error("Invalid header");
 	}
 	errno = 0;
 	char *endptr;
-	status_ = std::strtoul(status_str.c_str(), &endptr, 10);
+	status_ = std::strtoul(status_code.c_str(), &endptr, 10);
 	if (errno || *endptr != '\0' || !HttpStatusCodes::IsValid(status_)) {
 		throw std::runtime_error("Invalid header");
 	}
