@@ -1,7 +1,10 @@
 #ifndef SRCS_INCS_HTTPHEADERS_HPP_
 #define SRCS_INCS_HTTPHEADERS_HPP_
+#include <cctype>
 #include <map>
 #include <string>
+#include <CommonDefinitions.hpp>
+#include <Utils.hpp>
 
 class HttpHeaders {
 	private:
