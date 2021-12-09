@@ -3,7 +3,7 @@
 #include <CommonDefinitions.hpp>
 #include <Utils.hpp>
 
-HttpHeaders::HttpHeaders(const std::string &raw_headers) {
+void	HttpHeaders::ParseRawString(const std::string &raw_headers) {
 	ParseHeaders_(raw_headers);
 }
 
@@ -28,6 +28,10 @@ bool	HttpHeaders::HasHeader(const std::string &header_name) const {
 void
 HttpHeaders::AddHeader(const std::string &name, const std::string &value) {
 	headers_.insert(std::make_pair(name, value));
+}
+
+void	HttpHeaders::Clear() {
+	headers_.clear();
 }
 
 void	HttpHeaders::ParseHeaders_(const std::string &raw_headers) {

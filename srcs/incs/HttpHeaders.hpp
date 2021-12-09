@@ -11,11 +11,12 @@ class HttpHeaders {
 	public:
 		typedef	std::map<HeaderName, HeaderValue>	HeadersMap;
 
-		explicit	HttpHeaders(const std::string &raw_headers);
+		void		ParseRawString(const std::string &raw_headers);
 		HeadersMap	GetHeaders() const;
 		std::string	GetHeaderValue(const std::string &header_name) const;
 		bool		HasHeader(const std::string &header_name) const;
 		void		AddHeader(const std::string &name, const std::string &val);
+		void		Clear();
 
 	private:
 		void		ParseHeaders_(const std::string &raw_headers);
