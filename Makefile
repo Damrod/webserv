@@ -21,6 +21,7 @@ INC_DIR = $(SRC_DIR)/incs
 DIRS = . utils config config/analyser server CGI http http/response \
 	http/response/get http/response/post http/response/delete
 
+NAME_TEST = $(BLD_DIR)/utest_app
 UTEST_DIR = test/unit
 UT_DIRS = $(UTEST_DIR) $(UTEST_DIR)/http $(UTEST_DIR)/utils \
           	$(UTEST_DIR)/config_analyser
@@ -97,7 +98,7 @@ endef
 
 $(call generateBundle, $(OBJS), OBJS, $(INC_PARAMS), $(CXXFLAGS))
 
-$(call generateBundle, $(UT_OBJS), UT_OBJS, $(INC_PARAMS) -Isrcs/incs/test, \
+$(call generateBundle, $(UT_OBJS), UT_OBJS, $(INC_PARAMS) -I$(SRC_DIR)/incs/test, \
 	$(filter-out -std=c++98,$(CXXFLAGS)) -std=c++11)
 
 # Generate rules to create the dirs that will contain the .o files
@@ -107,21 +108,27 @@ $(foreach targetdir, $(OBJ_DIRS), $(eval $(call generateDirs, $(targetdir))))
 $(foreach targetdir, $(UT_OBJ_DIRS), $(eval $(call generateDirs, $(targetdir))))
 
 # Here I just changed the name of the OBJ_DIR since we now have several
-$(NAME):  $(OBJ_DIRS) $(OBJS)
-	$(QUIET)$(CXX) $(CXXFLAGS) $(INC_PARAMS) -o $(NAME) $(OBJS)
+$(NAME): $(OBJS)
 	$(QUIET)printf "[100%%] \033[0;32mLinking CXX executable $@\033[0;0m\n"
+	$(QUIET)$(CXX) $(CXXFLAGS) $(INC_PARAMS) -o $(NAME) $(OBJS)
 
 # take a look at what does a .d file look like to understand this directive
 -include $(DEPS)
 -include $(UT_DEPS)
 
-.PHONY: unit_test
-unit_test:  $(UT_OBJ_DIRS) $(OBJ_DIRS) | $(OBJS) $(UT_OBJS)
+$(OBJS): | $(OBJ_DIRS)
+
+$(UT_OBJS): | $(UT_OBJ_DIRS)
+
+$(NAME_TEST): $(OBJS) $(UT_OBJS)
+	$(QUIET)printf "[100%%] \033[0;32mLinking CXX executable $(NAME_TEST)\033[0;0m\n"
 	$(QUIET)$(CXX) $(filter-out -std=c++98,$(CXXFLAGS)) -std=c++11 $(INC_PARAMS) \
 	-I$(SRC_DIR)/incs/test -o $(BLD_DIR)/utest_app $(filter-out \
 	$(BLD_DIR)/./main.o, $(OBJS)) $(UT_OBJS) -MMD
-	$(QUIET)printf "[100%%] \033[0;32mLinking CXX executable utest_app\033[0;0m\n"
-	$(BLD_DIR)/utest_app
+
+.PHONY: unit_test
+unit_test: $(NAME_TEST)
+	$(NAME_TEST)
 
 .PHONY: integration_test
 integration_test: all
