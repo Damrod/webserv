@@ -2,8 +2,7 @@
 
 CgiHandler::CgiHandler(FDsets *fd_sets, int socket, const CgiInfo &cgi_info)
 	: fd_sets_(fd_sets), socket_(socket), cgi_info_(cgi_info),
-	cgi_complete_(false), headers_parsing_complete_(false), status_(200),
-	headers_(NULL) {
+	cgi_complete_(false), headers_parsing_complete_(false), status_(200) {
 	fd_sets_->addToReadSet(cgi_info_.cgi_output_fd);
 }
 
@@ -12,7 +11,6 @@ CgiHandler::~CgiHandler() {
 	fd_sets_->removeFd(cgi_info_.cgi_output_fd);
 	SyscallWrap::closeWr(socket_ DEBUG_INFO);
 	SyscallWrap::closeWr(cgi_info_.cgi_output_fd DEBUG_INFO);
-	delete headers_;
 }
 
 ssize_t	CgiHandler::ReadCgiOutput() {
@@ -82,20 +80,19 @@ void	CgiHandler::ParseHeaders_() {
 		return;
 	}
 	const std::string raw_headers = data_.substr(0, headers_end + 2);
-	headers_ = new HttpHeaders(raw_headers);
+	headers_.ParseRawString(raw_headers);
 	ValidateHeaders_();
 	PrependHeaders_();
 	headers_parsing_complete_ = true;
-	delete headers_;
-	headers_ = NULL;
+	headers_.Clear();
 }
 
 void	CgiHandler::ValidateHeaders_() {
-	if (!headers_->HasHeader("Content-Type")) {
+	if (!headers_.HasHeader("Content-Type")) {
 		throw std::runtime_error("Invalid header");
 	}
-	if (headers_->HasHeader("Status")) {
-		ParseStatus_(headers_->GetHeaderValue("Status"));
+	if (headers_.HasHeader("Status")) {
+		ParseStatus_(headers_.GetHeaderValue("Status"));
 	}
 }
 

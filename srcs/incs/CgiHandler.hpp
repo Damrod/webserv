@@ -49,7 +49,7 @@ class CgiHandler {
 		bool		cgi_complete_;
 		bool		headers_parsing_complete_;
 		std::size_t	status_;
-		HttpHeaders	*headers_;
+		HttpHeaders	headers_;
 		std::string	data_;
 };
 
