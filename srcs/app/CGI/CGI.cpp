@@ -48,7 +48,7 @@ std::map<std::string, std::string> CGI::MakeEnv_(void) {
 	env_.insert(std::make_pair("SERVER_SOFTWARE", "webserv/1.0"));
 	env_.insert(std::make_pair("SERVER_PORT",
 											ValueToString(request_.GetPort())));
-	env_.insert(std::make_pair("SERVER_NAME", request_.GetHeaderValue("Host")));
+	env_.insert(std::make_pair("SERVER_NAME", request_.GetHost()));
 	env_.insert(std::make_pair("QUERY_STRING", request_.GetQueryString()));
 	env_.insert(std::make_pair("SCRIPT_FILENAME", arg_path_));
 	env_.insert(std::make_pair("SCRIPT_NAME", requestConfig_->GetRequestPath()));
