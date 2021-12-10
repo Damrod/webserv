@@ -150,7 +150,7 @@ nocommit/*
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
-srcs/app/test/integration/__pycache__/
+srcs/test/integration/__pycache__/
 .pytest_cache
 
 ## Generated test files ##
