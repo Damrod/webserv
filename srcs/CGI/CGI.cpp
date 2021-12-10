@@ -38,6 +38,7 @@ std::map<std::string, std::string> CGI::MakeEnv_(void) {
 	env_.insert(std::make_pair("REDIRECT_STATUS", "200"));
 	env_.insert(std::make_pair("GATEWAY_INTERFACE", "CGI/1.1"));
 	env_.insert(std::make_pair("REQUEST_METHOD", request_.GetMethod()));
+	env_.insert(std::make_pair("REQUEST_URI", request_.GetRequestTarget()));
 	env_.insert(std::make_pair("CONTENT_LENGTH",
 									request_.GetHeaderValue("Content-Length")));
 	env_.insert(std::make_pair("CONTENT_TYPE",
@@ -46,8 +47,18 @@ std::map<std::string, std::string> CGI::MakeEnv_(void) {
 	env_.insert(std::make_pair("SERVER_SOFTWARE", "webserv/1.0"));
 	env_.insert(std::make_pair("SERVER_PORT",
 											ValueToString(request_.GetPort())));
+	env_.insert(std::make_pair("SERVER_NAME", request_.GetHeaderValue("Host")));
 	env_.insert(std::make_pair("QUERY_STRING", request_.GetQueryString()));
 	env_.insert(std::make_pair("SCRIPT_FILENAME", arg_path_));
+	env_.insert(std::make_pair("SCRIPT_NAME", request_.GetDecodedPath()));
+
+	env_.insert(std::make_pair("HTTP_ACCEPT",
+										request_.GetHeaderValue("Accept")));
+	env_.insert(std::make_pair("HTTP_HOST", request_.GetHeaderValue("Host")));
+	env_.insert(std::make_pair("HTTP_COOKIE",
+										request_.GetHeaderValue("Cookie")));
+	env_.insert(std::make_pair("HTTP_USER_AGENT",
+										request_.GetHeaderValue("User-Agent")));
 	return env_;
 }
 
