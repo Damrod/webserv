@@ -20,6 +20,10 @@ Server::~Server() {
 		delete h_it->second;
 	}
 	SyscallWrap::closeWr(listen_sd_ DEBUG_INFO);
+	Server::serverSettingsMap::iterator s_it;
+	for (; s_it != settings_->end(); ++s_it) {
+		delete s_it->second;
+	}
 	delete settings_;
 }
 
