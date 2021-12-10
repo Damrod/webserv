@@ -53,8 +53,12 @@ std::map<std::string, std::string> CGI::MakeEnv_(void) {
 	env_.insert(std::make_pair("SCRIPT_FILENAME", arg_path_));
 	env_.insert(std::make_pair("SCRIPT_NAME", requestConfig_->GetRequestPath()));
 	env_.insert(std::make_pair("PATH_INFO", requestConfig_->GetRequestPathInfo()));
-	env_.insert(std::make_pair("PATH_TRANSLATED",
+	if (requestConfig_->GetRequestPathInfo().empty()) {
+		env_.insert(std::make_pair("PATH_TRANSLATED", ""));
+	} else {
+		env_.insert(std::make_pair("PATH_TRANSLATED",
 			requestConfig_->GetRoot() + requestConfig_->GetRequestPathInfo()));
+	}
 	env_.insert(std::make_pair("REMOTE_ADDR", GetClientAddress_()));
 	env_.insert(std::make_pair("REMOTE_HOST", GetClientAddress_()));
 
