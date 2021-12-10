@@ -13,7 +13,7 @@ class RequestConfig {
 	public:
 		RequestConfig(const ServerConfig &server_config,
 						const std::string &request_path);
-		std::string	GetPath() const;
+		std::string	GetLocationPath() const;
 		bool Limits(std::string const &method) const;
 		std::string	GetRoot() const;
 		uint32_t	GetClientMaxBodySize() const;
@@ -25,6 +25,8 @@ class RequestConfig {
 		bool	HasCGI(std::string extension) const;
 		std::string	GetErrorPagePath(std::size_t errCode) const;
 		CommonConfig::BinaryHandlerPath GetCGIBin(std::string extension) const;
+		std::string	GetRequestPath() const;
+		std::string GetRequestPathInfo() const;
 
 	private:
 		RequestConfig();
@@ -37,10 +39,12 @@ class RequestConfig {
 			const;
 
 		void SetRedirectionConfig_(const ServerConfig &server_config);
+		std::string FindRequestPath_(const std::string &request_path);
+		std::string FindRequestPathInfo_(const std::string &request_path);
 
 		const Location	*location_;
 		const CommonConfig	&common_;
-		const std::string	*path_;
+		const std::string	*location_path_;
 		const std::vector<std::string>	*limit_except_;
 		std::string	root_;
 		uint32_t	client_max_body_size_;
@@ -51,6 +55,8 @@ class RequestConfig {
 		uint16_t	return_status_;
 		std::string	return_url_;
 		CommonConfig::CgiAssignMap	cgi_assign_;
+		std::string	request_path_;
+		std::string	request_path_info_;
 };
 
 #endif  // SRCS_INCS_REQUESTCONFIG_HPP_
