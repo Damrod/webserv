@@ -7,7 +7,7 @@ import tempfile
 import time
 import uuid
 
-PROJ_DIR = str(Path(__file__).parents[4])
+PROJ_DIR = str(Path(__file__).parents[3])
 TMP_UPLOAD_DIR = PROJ_DIR + '/html/web3/upload/'
 TMP_TEST_DIR = PROJ_DIR + '/html/web3/test/'
 TMP_WEBSERV_DIR = '/tmp/webserv/'
