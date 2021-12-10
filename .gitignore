@@ -145,6 +145,7 @@ nocommit/*
 
 ### ides
 .vscode/
+.idea/
 
 
 ### Python ###

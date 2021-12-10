@@ -7,7 +7,7 @@ import subprocess
 import tempfile
 import time
 
-PROJ_DIR = str(Path(__file__).parents[4])
+PROJ_DIR = str(Path(__file__).parents[3])
 TMP_UPLOAD_DIR = PROJ_DIR + '/html/web3/upload/'
 
 @pytest.fixture(scope='module', autouse=True)
