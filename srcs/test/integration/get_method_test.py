@@ -1,26 +1,8 @@
 import aiohttp
 import asyncio
 import os
-from pathlib import Path
-import pytest
 import requests
-import subprocess
 import time
-import uuid
-
-PROJ_DIR = str(Path(__file__).parents[4])
-TMP_UPLOAD_DIR = PROJ_DIR + '/html/web3/test/'
-
-@pytest.fixture(scope='module', autouse=True)
-def start_webserv():
-    webserv = subprocess.Popen('./webserv', cwd=PROJ_DIR)
-    time.sleep(2)
-    yield webserv
-    webserv.terminate()
-
-@pytest.fixture(scope='function')
-def random_filename():
-    return str(uuid.uuid4())
 
 def test_get_autoindex_200():
     url = 'http://localhost:8080'
