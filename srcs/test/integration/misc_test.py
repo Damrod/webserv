@@ -1,3 +1,4 @@
+import psutil
 import requests
 
 # MISC
