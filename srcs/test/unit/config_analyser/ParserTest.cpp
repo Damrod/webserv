@@ -161,7 +161,7 @@ TEST_CASE("Testing the parser", "[parser]") {
 							"binary handler path:/usr/bin/python2\n";
 	std::ostringstream result;
 	try {
-		ParserManager tst("srcs/app/test/unit/config_analyser/nginx_docker/vol/"
+		ParserManager tst("srcs/test/unit/config_analyser/nginx_docker/vol/"
 						  "http.d/AGVTest.conf");
 		std::vector<ServerConfig> cnf = tst.GetServersSettings();
 		result << cnf;
@@ -177,7 +177,7 @@ TEST_CASE("Testing the parser", "[parser]") {
 
 TEST_CASE("Test bad context : location", "[parser]") {
 	try {
-		ParserManager tst("srcs/app/test/unit/config_analyser/nginx_docker/"
+		ParserManager tst("srcs/test/unit/config_analyser/nginx_docker/"
 						  "vol/http.d/failing/bad_ctx_location.conf");
 		std::ostringstream result;
 		std::vector<ServerConfig> cnf = tst.GetServersSettings();
@@ -191,7 +191,7 @@ TEST_CASE("Test bad context : location", "[parser]") {
 
 TEST_CASE("Test bad context : location2", "[parser]") {
 	try {
-		ParserManager tst("srcs/app/test/unit/config_analyser/nginx_docker/"
+		ParserManager tst("srcs/test/unit/config_analyser/nginx_docker/"
 				  "vol/http.d/failing/bad_ctx_location2.conf");
 		std::ostringstream result;
 		std::vector<ServerConfig> cnf = tst.GetServersSettings();
@@ -206,7 +206,7 @@ TEST_CASE("Test bad context : location2", "[parser]") {
 
 TEST_CASE("Test bad context : server", "[parser]") {
 	try {
-		ParserManager tst("srcs/app/test/unit/config_analyser/nginx_docker/"
+		ParserManager tst("srcs/test/unit/config_analyser/nginx_docker/"
 						  "vol/http.d/failing/bad_ctx_server.conf");
 		std::ostringstream result;
 		std::vector<ServerConfig> cnf = tst.GetServersSettings();
@@ -220,7 +220,7 @@ TEST_CASE("Test bad context : server", "[parser]") {
 
 TEST_CASE("Test bad context : limit_except", "[parser]") {
 	try {
-		ParserManager tst("srcs/app/test/unit/config_analyser/"
+		ParserManager tst("srcs/test/unit/config_analyser/"
 			"nginx_docker/vol/http.d/failing/bad_ctx_limit_exc.conf");
 		std::ostringstream result;
 		std::vector<ServerConfig> cnf = tst.GetServersSettings();
@@ -235,7 +235,7 @@ TEST_CASE("Test bad context : limit_except", "[parser]") {
 
 TEST_CASE("Test bad context : server_name", "[parser]") {
 	try {
-		ParserManager tst("srcs/app/test/unit/config_analyser/nginx_docker/"
+		ParserManager tst("srcs/test/unit/config_analyser/nginx_docker/"
 						  "vol/http.d/failing/bad_ctx_server_name.conf");
 		std::ostringstream result;
 		std::vector<ServerConfig> cnf = tst.GetServersSettings();
@@ -250,7 +250,7 @@ TEST_CASE("Test bad context : server_name", "[parser]") {
 
 TEST_CASE("Test bad context : listen", "[parser]") {
 	try {
-		ParserManager tst("srcs/app/test/unit/config_analyser/nginx_docker/"
+		ParserManager tst("srcs/test/unit/config_analyser/nginx_docker/"
 						  "vol/http.d/failing/bad_ctx_listen.conf");
 		std::ostringstream result;
 		std::vector<ServerConfig> cnf = tst.GetServersSettings();

@@ -4,7 +4,7 @@ import requests
 import subprocess
 import time
 
-PROJ_DIR = str(Path(__file__).parents[4])
+PROJ_DIR = str(Path(__file__).parents[3])
 
 @pytest.fixture(scope='module', autouse=True)
 def start_webserv():
