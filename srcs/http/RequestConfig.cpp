@@ -79,7 +79,7 @@ std::string	RequestConfig::GetErrorPagePath(std::size_t errCode) const {
 }
 
 CommonConfig::BinaryHandlerPath
-	RequestConfig::GetCGIBin(std::string extension) const {
+	RequestConfig::GetCGIBin(const std::string &extension) const {
 	return cgi_assign_.find(extension)->second;
 }
 
@@ -88,7 +88,7 @@ RequestConfig::GetErrorPages() const {
 	return error_pages_;
 }
 
-bool RequestConfig::HasCGI(std::string extension) const {
+bool RequestConfig::HasCGI(const std::string &extension) const {
 	return cgi_assign_.count(extension) > 0;
 }
 

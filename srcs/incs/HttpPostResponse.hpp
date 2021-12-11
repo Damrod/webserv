@@ -33,7 +33,6 @@ class HttpPostResponse: public HttpBaseResponse {
 		void	SetErrorRawResponse_(const int error_code);
 		void	Upload_(const File &file);
 		void	HandleCGI_(const File &file);
-		void	HandleUpload_(const File &file);
 		std::string	ConstructFullPath_();
 };
 
