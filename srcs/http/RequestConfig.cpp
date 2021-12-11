@@ -81,6 +81,11 @@ CommonConfig::BinaryHandlerPath
 	return cgi_assign_.find(extension)->second;
 }
 
+CommonConfig::ErrorPagesMap
+RequestConfig::GetErrorPages() const {
+	return error_pages_;
+}
+
 bool RequestConfig::HasCGI(std::string extension) const {
 	return cgi_assign_.count(extension) > 0;
 }
