@@ -1,0 +1,44 @@
+version: "3"
+services:
+  db:
+    image: mariadb:10.6.5
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    #environment:
+    #  MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+    #  MARIADB_DATABASE: ${MARIADB_DATABASE}
+    #  MARIADB_USER: ${MARIADB_USER}
+    #  MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+
+  webserv-wordpress:
+    depends_on:
+      - db
+    build: .
+    volumes:
+      - wordpress_data:/webserv/html/wordpress
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+      - "8082:8082"
+      - "8083:8083"
+      - "8084:8084"
+      - "8085:8085"
+      - "8086:8086"
+      - "8087:8087"
+      - "8088:8088"
+      - "8089:8089"
+      - "8090:8090"
+      - "8091:8091"
+      - "8092:8092"
+      - "8093:8093"
+      - "9000:9000"
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      #WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+      #WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      #WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+volumes:
+  db_data: {}
+  wordpress_data: {}
