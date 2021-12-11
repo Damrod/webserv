@@ -8,6 +8,7 @@
 #include <cerrno>
 #include <cstdlib>
 #include <CommonDefinitions.hpp>
+#include <HttpHeaders.hpp>
 #include <IRequest.hpp>
 #include <RequestState.hpp>
 #include <Utils.hpp>
@@ -57,10 +58,6 @@ class HttpRequest : public IRequest {
 		void		AddQuery_(const std::string &name, const std::string &val);
 		void		ParseHttpVersion_(const std::string &request_line);
 		void		ParseHeaders_(const std::string &raw_request);
-		bool		ParseHeader_(const std::string &header);
-		std::string	ParseHeaderName_(const std::string &raw_request);
-		std::string	ParseHeaderValue_(const std::string &raw_request);
-		void		AddHeader_(const std::string &name, const std::string &val);
 		void		ParseHost_();
 		void		ParsePort_(const std::string &port_str);
 		void		ParseContentLength_();
@@ -68,9 +65,6 @@ class HttpRequest : public IRequest {
 		bool		IsValidPath_(const std::string &path) const;
 		bool		IsValidDecodedPath_(const std::string &decoded_path) const;
 		bool		IsValidHttpVersion_(const std::string &http_version) const;
-		bool		IsValidHeaderName_(const std::string &header_name) const;
-		bool		IsValidHeaderValue_(const std::string &header_value) const;
-		bool		ContainOnlyVisibleChars_(const std::string &str) const;
 
 		enum ParseState_ {
 			kParseRequestLine,
@@ -88,7 +82,7 @@ class HttpRequest : public IRequest {
 		std::size_t                         port_;
 		std::string                         body_;
 		std::size_t                         content_length_;
-		HeadersMap							headers_;
+		HttpHeaders							headers_;
 		QueriesMap							queries_;
 
 		// This is an index into the raw_request string

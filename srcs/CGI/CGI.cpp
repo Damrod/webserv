@@ -73,7 +73,7 @@ char **CGI::MakeCEnv_(void) {
 	return env_;
 }
 
-int CGI::ExecuteCGI(void) {
+CgiInfo CGI::ExecuteCGI(void) {
 	FILE *fp = std::tmpfile();
 	if (!fp) {
 		throw std::runtime_error(std::strerror(errno));;
@@ -82,9 +82,6 @@ int CGI::ExecuteCGI(void) {
 	std::fwrite(body.c_str(), 1, body.size(), fp);
 	std::rewind(fp);
 	SyscallWrap::pipeWr(fds_ DEBUG_INFO);
-	if (!IsExecutable(exec_path_)) {
-		throw std::runtime_error(std::strerror(errno));;
-	}
 	pid_t pid = SyscallWrap::forkWr(__FILE__, __FUNCTION__, __LINE__);
 	if (pid == 0) {
 		std::signal(SIGCHLD, SIG_IGN);
@@ -110,7 +107,9 @@ int CGI::ExecuteCGI(void) {
 	}
 	CloseAssign_(&fds_[1]);
 	int cgi_output_fd = SyscallWrap::dupWr(fds_[0] DEBUG_INFO);
-	return cgi_output_fd;
+	return CgiInfo(pid, cgi_output_fd,
+			requestConfig_->GetErrorPages(),
+			requestConfig_->GetRoot());
 }
 
 void	CGI::CloseAssign_(int *fd) {

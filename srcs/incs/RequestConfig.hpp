@@ -25,6 +25,7 @@ class RequestConfig {
 		bool	HasCGI(std::string extension) const;
 		std::string	GetErrorPagePath(std::size_t errCode) const;
 		CommonConfig::BinaryHandlerPath GetCGIBin(std::string extension) const;
+		CommonConfig::ErrorPagesMap GetErrorPages() const;
 
 	private:
 		RequestConfig();

@@ -18,7 +18,7 @@ class HttpBaseResponse: public IResponse {
 		std::string	Content() const;
 		bool	KeepAlive() const;
 		bool	IsCgi() const;
-		int		GetCgiOutputFd() const;
+		CgiInfo	GetCgiInfo() const;
 
 	protected:
 		void	ExecuteCGI_(File file);
@@ -35,7 +35,7 @@ class HttpBaseResponse: public IResponse {
 		std::string raw_response_;
 		RequestConfig *request_config_;
 		HttpRequest *request_;
-		int cgi_output_fd_;
+		CgiInfo cgi_info_;
 };
 
 #include <HttpErrorResponse.hpp>
