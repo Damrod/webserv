@@ -14,7 +14,6 @@ std::string	TrimString(const std::string &str, const std::string &trim_chars);
 std::string	ToLowerString(std::string str);
 char		*DuplicateString(const std::string &str);
 std::string	DecodeUrl(const std::string &encoded_url);
-bool		IsExecutable(const std::string &path);
 std::string	PathExtension(const std::string &path);
 
 template <typename T>

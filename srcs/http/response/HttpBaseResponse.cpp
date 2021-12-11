@@ -4,8 +4,7 @@ HttpBaseResponse::HttpBaseResponse(
 	RequestConfig *request_config,
 	HttpRequest *request):
 	request_config_(request_config),
-	request_(request),
-	cgi_output_fd_(-1) {
+	request_(request) {
 	SetKeepAlive_();
 	if (request_config_->Limits(request_->GetMethod())) {
 		error_code_ = 405;
@@ -40,10 +39,7 @@ void	HttpBaseResponse::ExecuteCGI_(File file) {
 	keep_alive_ = false;
 	try {
 		CGI engine(*request_, *request_config_, file);
-		cgi_output_fd_ = engine.ExecuteCGI();
-		HttpResponse::HeadersMap headers;
-		std::string body;
-		SetRawResponse_(200, headers, body);
+		cgi_info_ = engine.ExecuteCGI();
 	}
 	catch (const std::exception &) {
 		raw_response_ = HttpErrorResponse(
@@ -73,11 +69,11 @@ void	HttpBaseResponse::SetRawResponse_(
 }
 
 bool	HttpBaseResponse::IsCgi() const {
-	return cgi_output_fd_ != -1;
+	return cgi_info_.cgi_output_fd != -1;
 }
 
-int		HttpBaseResponse::GetCgiOutputFd() const {
-	return cgi_output_fd_;
+CgiInfo	HttpBaseResponse::GetCgiInfo() const {
+	return cgi_info_;
 }
 
 void	HttpBaseResponse::SetKeepAlive_() {
