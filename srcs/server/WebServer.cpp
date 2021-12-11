@@ -41,12 +41,22 @@ void	WebServer::PopulateServers_() {
 
 		fdSets.addToReadSet(listen_sd);
 		Server *server = NULL;
+		WebServer::serverSettingsMap *serverSettingsMap = NULL;
 		try {
-			server =
-				new Server(BuildServerSettings_(&config), listen_sd, &fdSets);
+			serverSettingsMap = BuildServerSettings_(&config);
+			server = new Server(serverSettingsMap, listen_sd, &fdSets);
 		} catch (const std::exception &e) {
 			delete server;
-			throw e;
+			if (serverSettingsMap) {
+				for (WebServer::serverSettingsMap::iterator it =
+					serverSettingsMap->begin();
+				it != serverSettingsMap->end();
+				++it) {
+					delete it->second;
+				}
+			}
+			delete serverSettingsMap;
+			throw std::runtime_error(e.what());
 		}
 		servers_.insert(std::make_pair(listen_sd, server));
 	}
