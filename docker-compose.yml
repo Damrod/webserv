@@ -5,11 +5,7 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     restart: always
-    #environment:
-    #  MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
-    #  MARIADB_DATABASE: ${MARIADB_DATABASE}
-    #  MARIADB_USER: ${MARIADB_USER}
-    #  MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+    env_file: .env
 
   webserv-wordpress:
     depends_on:
@@ -32,13 +28,10 @@ services:
       - "8091:8091"
       - "8092:8092"
       - "8093:8093"
+      - "8094:8094"
       - "9000:9000"
     restart: always
-    environment:
-      WORDPRESS_DB_HOST: db:3306
-      #WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
-      #WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
-      #WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+    env_file: .env
 volumes:
   db_data: {}
   wordpress_data: {}

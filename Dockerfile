@@ -1,4 +1,4 @@
-FROM php:8.1.0-cli-bullseye
+FROM debian:bullseye-slim
 COPY . /webserv/
 RUN apt-get update \
  && apt-get install -y \
@@ -7,8 +7,24 @@ RUN apt-get update \
  wget \
  bc \
  python2.7 \
- && make -j12 -C /webserv/ \
- && ln -sf /usr/local/bin/php-cgi /usr/bin/php-cgi \
+ php7.4-fpm \
+ php7.4-common \
+ php7.4-mbstring \
+ php7.4-xmlrpc \
+ php7.4-soap \
+ php7.4-intl \
+ php7.4-mysql \
+ php7.4-cli \
+ php7.4-ldap \
+ php7.4-zip \
+ php7.4-curl \
+ php7.4-json \
+ php7.4-opcache \
+ php7.4-readline \
+ php7.4-xml \
+ php7.4-gd \
+ php7.4-cgi \
+ && make CXX=g++ -j12 -C /webserv/ \
  && wget -q https://wordpress.org/latest.tar.gz -P /tmp/ \
  && tar xzf /tmp/latest.tar.gz -C /tmp/ \
  && cp -r /tmp/wordpress/* /webserv/html/wordpress/ \
@@ -32,6 +48,7 @@ EXPOSE 8090
 EXPOSE 8091
 EXPOSE 8092
 EXPOSE 8093
+EXPOSE 8094
 EXPOSE 9000
 RUN chmod +x /webserv/docker-entrypoint.sh
 ENTRYPOINT ["./webserv/docker-entrypoint.sh"]
