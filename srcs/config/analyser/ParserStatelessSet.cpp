@@ -23,6 +23,7 @@ bool Parser::StatelessSet::ParseIpAddressPort_(const std::string &input,
 										 std::string *errorThrow,
 										 uint16_t *outPort,
 										 uint32_t *outAddress) const {
+	struct in_addr addr = {};
 	const char * addressStr = input.c_str();
 	std::string addTmp;  // we need this object's lifetime to last for the
 						 // entire function
@@ -34,7 +35,7 @@ bool Parser::StatelessSet::ParseIpAddressPort_(const std::string &input,
 			*errorThrow = "`listen' directive port number invalid";
 			return EXIT_FAILURE;
 		}
-		*outAddress = 0;
+		*outAddress = INADDR_ANY;
 		*outPort = static_cast<uint16_t>(port);
 		return EXIT_SUCCESS;
 	}
@@ -49,12 +50,12 @@ bool Parser::StatelessSet::ParseIpAddressPort_(const std::string &input,
 		}
 		addressStr = addTmp.c_str();
 	}
-	const in_addr_t address = inet_addr(addressStr);
-	if (address == static_cast<in_addr_t>(-1)) {
+	int ret = inet_pton(AF_INET, addressStr, &addr);
+	if (errno || ret != 1) {
 		*errorThrow = "`listen' directive IP invalid";
 		return EXIT_FAILURE;
 	}
-	*outAddress = ntohl(address);
+	*outAddress = ntohl(addr.s_addr);
 	*outPort = static_cast<uint16_t>(port);
 	return EXIT_SUCCESS;
 }

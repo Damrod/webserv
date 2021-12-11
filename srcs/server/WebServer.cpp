@@ -58,7 +58,7 @@ WebServer::serverSettingsMap
 									new WebServer::serverSettingsMap();
 	std::vector<ServerConfig>::iterator	it_config = config->begin();
 	uint16_t	target_listen_port = it_config->listen_port;
-	uint16_t	target_listen_address = it_config->listen_address;
+	uint32_t	target_listen_address = it_config->listen_address;
 
 	while (it_config != config->end()) {
 		if (it_config->listen_address == target_listen_address
