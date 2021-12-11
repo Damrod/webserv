@@ -5,6 +5,3 @@ ServerConfig::ServerConfig() :
 	listen_port(8080),
 	common(),
 	default_server(false) {}
-
-	/*
-	 * */

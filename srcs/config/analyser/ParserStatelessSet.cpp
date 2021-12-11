@@ -50,6 +50,7 @@ bool Parser::StatelessSet::ParseIpAddressPort_(const std::string &input,
 		}
 		addressStr = addTmp.c_str();
 	}
+	errno = 0;
 	int ret = inet_pton(AF_INET, addressStr, &addr);
 	if (errno || ret != 1) {
 		*errorThrow = "`listen' directive IP invalid";
