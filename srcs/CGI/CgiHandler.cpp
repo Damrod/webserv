@@ -79,32 +79,20 @@ void	CgiHandler::ParseHeaders_() {
 	if (headers_end == std::string::npos) {
 		return;
 	}
-	std::size_t offset = 0;
-	while (offset < headers_end) {
-		const std::size_t header_start = offset;
-		const std::size_t header_end = data_.find(Constants::kCRLF_, offset);
-		if (header_end == std::string::npos) {
-			throw std::runtime_error("Invalid header");
-		}
-		if (header_end - offset == 0) {
-			break;
-		}
-		const std::string header =
-					data_.substr(header_start, header_end - header_start);
-		ParseHeader_(header);
-		offset = header_end + 2;
-	}
+	const std::string raw_headers = data_.substr(0, headers_end + 2);
+	headers_.ParseRawString(raw_headers);
 	ValidateHeaders_();
 	PrependHeaders_();
 	headers_parsing_complete_ = true;
+	headers_.Clear();
 }
 
 void	CgiHandler::ValidateHeaders_() {
-	if (!HasHeader_("Content-Type")) {
+	if (!headers_.HasHeader("Content-Type")) {
 		throw std::runtime_error("Invalid header");
 	}
-	if (HasHeader_("Status")) {
-		ParseStatus_(GetHeaderValue_("Status"));
+	if (headers_.HasHeader("Status")) {
+		ParseStatus_(headers_.GetHeaderValue("Status"));
 	}
 }
 
@@ -116,77 +104,6 @@ void	CgiHandler::PrependHeaders_() {
 											false,
 											true).RawContent();
 	data_ = raw_response_headers + data_;
-}
-
-void	CgiHandler::ParseHeader_(const std::string &header) {
-	std::string name = ParseHeaderName_(header);
-	std::string value = ParseHeaderValue_(header);
-	if (name.empty() || value.empty()) {
-		throw std::runtime_error("Invalid header");
-	}
-	headers_.insert(std::make_pair(name, value));
-}
-
-std::string CgiHandler::ParseHeaderName_(const std::string &header) const {
-	const std::size_t name_end = header.find(':');
-	if (name_end == std::string::npos) {
-		return "";
-	}
-	std::string	name = header.substr(0, name_end);
-	if (!IsValidHeaderName_(name)) {
-		return "";
-	}
-	name = ToLowerString(name);
-	return name;
-}
-
-std::string CgiHandler::ParseHeaderValue_(const std::string &header) const {
-	const std::size_t value_start = header.find(':') + 1;
-	std::string value = header.substr(value_start);
-	value = TrimString(value, Constants::kWhitespace_);
-	if (!IsValidHeaderValue_(value)) {
-		return "";
-	}
-	return value;
-}
-
-// https://datatracker.ietf.org/doc/html/rfc7230#section-3.2.6
-bool	CgiHandler::IsValidHeaderName_(const std::string &name) const {
-	const std::string valid_chars = "!#$%&'*+-.^_`|~"
-								"0123456789"
-								"abcdefghijklmnopqrstuvwxyz"
-								"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-	return !name.empty() &&
-		name.find_first_not_of(valid_chars) == std::string::npos;
-}
-
-bool	CgiHandler::IsValidHeaderValue_(const std::string &value) const {
-	return !value.empty() && ContainOnlyVisibleChars_(value);
-}
-
-bool	CgiHandler::ContainOnlyVisibleChars_(const std::string &str) const {
-	for (std::size_t i = 0; i < str.size(); ++i) {
-		if (!::isprint(str[i])) {
-			return false;
-		}
-	}
-	return true;
-}
-
-bool	CgiHandler::HasHeader_(const std::string &header_name) const {
-	return headers_.count(ToLowerString(header_name)) > 0;
-}
-
-std::string
-		CgiHandler::GetHeaderValue_(const std::string &header_name) const {
-	const std::string header_name_lc = ToLowerString(header_name);
-	HttpResponse::HeadersMap::const_iterator map_it =
-												headers_.find(header_name_lc);
-	if (map_it != headers_.end()) {
-		return map_it->second;
-	}
-	return "";
 }
 
 void	CgiHandler::ParseStatus_(const std::string &status_str) {
@@ -232,7 +149,7 @@ std::string	CgiHandler::GetErrorPagePath_(const std::size_t &error_code) {
 }
 
 void	CgiHandler::DefaultStatusResponse_(const std::size_t &error_code) {
-	HttpResponse::HeadersMap headers;
+	HttpHeaders::HeadersMap headers;
 	headers.insert(std::make_pair("Content-Type", "text/html"));
 
 	SetResponse_(error_code, headers, "");
@@ -248,7 +165,7 @@ void	CgiHandler::Serve_(const File &file, const std::size_t &error_code) {
 }
 
 void	CgiHandler::SetResponse_(const int &code,
-								const HttpResponse::HeadersMap &headers,
+								const HttpHeaders::HeadersMap &headers,
 								const std::string &body) {
 	data_ = HttpResponse(code,
 						headers,
