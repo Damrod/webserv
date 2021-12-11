@@ -53,14 +53,7 @@ void	Server::HandleCgiRead(int fd) {
 	ssize_t nbytes = handler->ReadCgiOutput();
 	int handler_socket = handler->GetSocket();
 
-	fdSets_->addToWriteSet(handler_socket);
-	if (nbytes == 0) {
-		// The cgi program has exited
-		fdSets_->removeFd(fd);
-	} else if (nbytes < 0) {
-		// There was an error while reading
-		fdSets_->removeFd(fd);
-		fdSets_->removeFd(handler_socket);
+	if (nbytes < 0) {
 		RemoveCgiHandler_(handler, handler_socket, fd);
 	}
 }
@@ -74,7 +67,7 @@ void	Server::SendResponse(int sd) {
 				status == SendResponseStatus::kCompleteClose) {
 		RemoveConnection_(sd);
 	} else if (status == SendResponseStatus::kHandleCgi) {
-		AddCgiHandler_(sd, it->second->GetCgiOutputFd());
+		AddCgiHandler_(sd, it->second->GetCgiInfo());
 	}
 }
 
@@ -83,15 +76,8 @@ void Server::HandleCgiSend(int sd) {
 	CgiHandler *handler = cgi_handlers_[cgi_output_fd];
 	ssize_t nbytes = handler->SendCgiOutput();
 
-	if (nbytes <= 0) {
-		fdSets_->removeFd(sd);
-		fdSets_->removeFd(cgi_output_fd);
+	if (nbytes <= 0 || handler->IsComplete()) {
 		RemoveCgiHandler_(handler, sd, cgi_output_fd);
-	} else if (!handler->HasDataAvailable()) {
-		fdSets_->removeFd(sd);
-		if (handler->IsCgiComplete()) {
-			RemoveCgiHandler_(handler, sd, cgi_output_fd);
-		}
 	}
 }
 
@@ -129,12 +115,12 @@ void	Server::RemoveConnection_(int sd) {
 	connections_.erase(sd);
 }
 
-void	Server::AddCgiHandler_(int sd, int cgi_output_fd) {
-	fdSets_->addToReadSet(cgi_output_fd);
-
+void	Server::AddCgiHandler_(int sd, const CgiInfo &cgi_info) {
 	int socket_copy = SyscallWrap::dupWr(sd DEBUG_INFO);
 
-	CgiHandler *handler = new CgiHandler(socket_copy, cgi_output_fd);
+	int cgi_output_fd = cgi_info.cgi_output_fd;
+	CgiHandler *handler =
+		new CgiHandler(fdSets_, socket_copy, cgi_info);
 	cgi_handlers_.insert(std::make_pair(cgi_output_fd, handler));
 	cgi_fds_.insert(std::make_pair(socket_copy, cgi_output_fd));
 	RemoveConnection_(sd);

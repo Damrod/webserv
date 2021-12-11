@@ -44,10 +44,6 @@ std::string	DecodeUrl(const std::string &encoded_url) {
 	return decoded_url;
 }
 
-bool	IsExecutable(const std::string &path) {
-	return access(path.c_str(), X_OK) == 0;
-}
-
 std::string	PathExtension(const std::string &path) {
 	const std::size_t extension_position = path.rfind(".");
 	if (extension_position == std::string::npos || extension_position < 2) {

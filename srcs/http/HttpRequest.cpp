@@ -3,7 +3,7 @@
 const std::size_t	HttpRequest::kPortMax_ = 65535;
 
 HttpRequest::HttpRequest(int socket)
-	: socket_(socket), port_(80), content_length_(0),
+	: socket_(socket), port_(80), content_length_(0), offset_(0),
 	parse_state_(kParseRequestLine), state_(RequestState::kPartial) {
 }
 
@@ -71,17 +71,12 @@ std::string	HttpRequest::GetHttpVersion() const {
 }
 
 HttpRequest::HeadersMap	HttpRequest::GetHeaders() const {
-	return headers_;
+	return headers_.GetHeaders();
 }
 
 std::string
 	HttpRequest::GetHeaderValue(const std::string &header_name) const {
-	const std::string			header_name_lc = ToLowerString(header_name);
-	HeadersMap::const_iterator	map_it = headers_.find(header_name_lc);
-	if (map_it != headers_.end()) {
-		return map_it->second;
-	}
-	return "";
+	return headers_.GetHeaderValue(header_name);
 }
 
 std::string	HttpRequest::GetHost() const {
@@ -101,7 +96,7 @@ std::size_t	HttpRequest::ParsedOffset() const {
 }
 
 bool	HttpRequest::HasHeader(const std::string &header_name) const {
-	return headers_.count(ToLowerString(header_name)) > 0;
+	return headers_.HasHeader(header_name);
 }
 
 void	HttpRequest::ParseRequestLine_(const std::string &raw_request) {
@@ -255,26 +250,16 @@ void	HttpRequest::ParseHeaders_(const std::string &raw_request) {
 	if (headers_end == std::string::npos) {
 		return;
 	}
-	offset_ = headers_start;
-	while (offset_ < headers_end) {
-		const std::size_t header_start = offset_;
-		const std::size_t header_end = raw_request.find(Constants::kCRLF_, offset_);
-		if (header_end == std::string::npos) {
-			state_ = RequestState::kInvalid;
-			return;
-		}
-		if (header_end - offset_ == 0) {
-			break;
-		}
-		const std::string header =
-					raw_request.substr(header_start, header_end - header_start);
-		if (!ParseHeader_(header)) {
-			state_ = RequestState::kInvalid;
-			return;
-		}
-		offset_ = header_end + 2;
+	const std::string raw_headers =
+			raw_request.substr(headers_start, headers_end - headers_start + 2);
+	try {
+		headers_.ParseRawString(raw_headers);
 	}
-	offset_ += 2;
+	catch (const std::exception &) {
+		state_ = RequestState::kInvalid;
+		return;
+	}
+	offset_ = headers_end + delimiter.size();
 	ParseHost_();
 	ParseContentLength_();
 	if (state_ == RequestState::kPartial) {
@@ -282,72 +267,10 @@ void	HttpRequest::ParseHeaders_(const std::string &raw_request) {
 	}
 }
 
-bool	HttpRequest::ParseHeader_(const std::string &header) {
-	std::string name = ParseHeaderName_(header);
-	std::string value = ParseHeaderValue_(header);
-	if (name.empty() || value.empty()) {
-		return false;
-	}
-	AddHeader_(name, value);
-	return true;
-}
-
-std::string HttpRequest::ParseHeaderName_(const std::string &header) {
-	const std::size_t name_end = header.find(':');
-	if (name_end == std::string::npos) {
-		return "";
-	}
-	std::string	name = header.substr(0, name_end);
-	if (!IsValidHeaderName_(name)) {
-		return "";
-	}
-	name = ToLowerString(name);
-	return name;
-}
-
-std::string HttpRequest::ParseHeaderValue_(const std::string &header) {
-	const std::size_t value_start = header.find(':') + 1;
-	std::string value = header.substr(value_start);
-	value = TrimString(value, Constants::kWhitespace_);
-	if (!IsValidHeaderValue_(value)) {
-		return "";
-	}
-	return value;
-}
-
-void	HttpRequest::AddHeader_(
-		const std::string &name, const std::string &value) {
-	headers_.insert(std::make_pair(name, value));
-}
-
-// https://datatracker.ietf.org/doc/html/rfc7230#section-3.2.6
-bool	HttpRequest::IsValidHeaderName_(const std::string &name) const {
-	const std::string valid_chars = "!#$%&'*+-.^_`|~"
-								"0123456789"
-								"abcdefghijklmnopqrstuvwxyz"
-								"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-	return !name.empty() &&
-		name.find_first_not_of(valid_chars) == std::string::npos;
-}
-
-bool	HttpRequest::IsValidHeaderValue_(const std::string &value) const {
-	return !value.empty() && ContainOnlyVisibleChars_(value);
-}
-
-bool	HttpRequest::ContainOnlyVisibleChars_(const std::string &str) const {
-	for (std::size_t i = 0; i < str.size(); ++i) {
-		if (!::isprint(str[i])) {
-			return false;
-		}
-	}
-	return true;
-}
-
 // Parse the Host header into a host and optional port number
 // Host = uri-host [ ":" port ]
 void	HttpRequest::ParseHost_() {
-	std::string host = GetHeaderValue("Host");
+	std::string host = headers_.GetHeaderValue("Host");
 	if (host.empty()) {
 		state_ = RequestState::kInvalid;
 		return;
@@ -384,12 +307,12 @@ void	HttpRequest::ParsePort_(const std::string &port_str) {
 
 void	HttpRequest::ParseContentLength_() {
 	const std::string valid_chars = "0123456789";
-	if (!HasHeader("Content-Length")) {
+	if (!headers_.HasHeader("Content-Length")) {
 		return;
 	}
 	errno = 0;
 	char *endptr;
-	const std::string s = GetHeaderValue("Content-Length");
+	const std::string s = headers_.GetHeaderValue("Content-Length");
 	content_length_ = std::strtoul(s.c_str(), &endptr, 10);
 	if (errno || *endptr != '\0' ||
 			s.find_first_not_of(valid_chars) != std::string::npos) {
@@ -421,7 +344,7 @@ void	HttpRequest::Reset() {
 	path_.clear();
 	queries_.clear();
 	http_version_.clear();
-	headers_.clear();
+	headers_.Clear();
 	port_ = 80;
 	body_.clear();
 	content_length_ = 0;

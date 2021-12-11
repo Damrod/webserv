@@ -27,6 +27,7 @@ class RequestConfig {
 		CommonConfig::BinaryHandlerPath GetCGIBin(std::string extension) const;
 		std::string	GetRequestPath() const;
 		std::string GetRequestPathInfo() const;
+		CommonConfig::ErrorPagesMap GetErrorPages() const;
 
 	private:
 		RequestConfig();

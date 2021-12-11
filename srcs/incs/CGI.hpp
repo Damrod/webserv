@@ -21,13 +21,14 @@
 #include <SyscallWrap.hpp>
 #include <Utils.hpp>
 #include <File.hpp>
+#include <CgiInfo.hpp>
 
 class CGI {
  public:
 	CGI(const HttpRequest &request, const RequestConfig &location,
 		const File &file);
 	virtual ~CGI(void);
-	int ExecuteCGI(void);
+	CgiInfo ExecuteCGI(void);
 
  private:
 	CGI();
