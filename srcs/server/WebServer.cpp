@@ -42,8 +42,14 @@ void	WebServer::PopulateServers_() {
 		int listen_sd = SyscallWrap::socketWr(AF_INET, SOCK_STREAM, 0 DEBUG_INFO);
 
 		fdSets.addToReadSet(listen_sd);
-		Server	*server =
-					new Server(BuildServerSettings_(&config), listen_sd, &fdSets);
+		Server *server = NULL;
+		try {
+			server =
+				new Server(BuildServerSettings_(&config), listen_sd, &fdSets);
+		} catch (const std::exception &e) {
+			delete server;
+			throw e;
+		}
 		servers_.insert(std::make_pair(listen_sd, server));
 	}
 }

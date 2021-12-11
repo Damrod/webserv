@@ -34,7 +34,6 @@ std::string	HttpPostResponse::ConstructFullPath_() {
 		SetErrorRawResponse_(404);
 		return "";
 	}
-	return "";
 }
 
 void	HttpPostResponse::HandleCGI_(const File &file) {
@@ -46,14 +45,6 @@ void	HttpPostResponse::HandleCGI_(const File &file) {
 		}
 	} else {
 		SetErrorRawResponse_(501);
-	}
-}
-
-void	HttpPostResponse::HandleUpload_(const File &file) {
-	if (IsUploadEnabled_() && IsValidUploadPath_(request_->GetDecodedPath())) {
-		Upload_(file);
-	} else {
-		SetErrorRawResponse_(404);
 	}
 }
 

@@ -22,9 +22,9 @@ class RequestConfig {
 		std::string	GetUploadStore() const;
 		uint16_t	GetReturnStatus() const;
 		std::string	GetReturnUrl() const;
-		bool	HasCGI(std::string extension) const;
+		bool	HasCGI(const std::string &extension) const;
 		std::string	GetErrorPagePath(std::size_t errCode) const;
-		CommonConfig::BinaryHandlerPath GetCGIBin(std::string extension) const;
+		CommonConfig::BinaryHandlerPath GetCGIBin(const std::string &extension) const;
 
 	private:
 		RequestConfig();

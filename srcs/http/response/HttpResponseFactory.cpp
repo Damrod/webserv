@@ -70,7 +70,7 @@ ServerConfig &HttpResponseFactory::GetServerNameConfig_(void) {
 }
 
  HttpResponseFactory::serverSettingsMap::iterator
- 	HttpResponseFactory::FindWildcardServerName_(std::string host_name) {
+ 	HttpResponseFactory::FindWildcardServerName_(const std::string &host_name) {
 	HttpResponseFactory::serverSettingsMap::iterator it;
 
 	for (it = server_config_->begin(); it != server_config_->end(); it++) {
