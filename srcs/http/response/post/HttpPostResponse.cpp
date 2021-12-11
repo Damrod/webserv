@@ -25,10 +25,10 @@ HttpPostResponse::HttpPostResponse(
 }
 
 std::string	HttpPostResponse::ConstructFullPath_() {
-	const std::string decoded_path = request_->GetDecodedPath();
-	if (request_config_->HasCGI(PathExtension(decoded_path))) {
-		return request_config_->GetRoot() + decoded_path;
-	} else if (IsUploadEnabled_() && IsValidUploadPath_(decoded_path)) {
+	const std::string request_path = request_config_->GetRequestPath();
+	if (request_config_->HasCGI(PathExtension(request_path))) {
+		return request_config_->GetRoot() + request_path;
+	} else if (IsUploadEnabled_() && IsValidUploadPath_(request_path)) {
 		return request_config_->GetUploadStore();
 	} else {
 		SetErrorRawResponse_(404);
@@ -62,7 +62,7 @@ bool	HttpPostResponse::IsUploadEnabled_() const {
 }
 
 bool	HttpPostResponse::IsValidUploadPath_(const std::string &path) const {
-	return path == request_config_->GetPath();
+	return path == request_config_->GetLocationPath();
 }
 
 void	HttpPostResponse::Upload_(const File &file) {
