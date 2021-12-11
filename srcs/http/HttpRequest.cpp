@@ -2,8 +2,8 @@
 
 const std::size_t	HttpRequest::kPortMax_ = 65535;
 
-HttpRequest::HttpRequest()
-	: port_(80), content_length_(0), offset_(0),
+HttpRequest::HttpRequest(int socket)
+	: socket_(socket), port_(80), content_length_(0), offset_(0),
 	parse_state_(kParseRequestLine), state_(RequestState::kPartial) {
 }
 
@@ -14,6 +14,10 @@ void	HttpRequest::SetContent(const std::string &raw_request) {
 	ParseRequestLine_(raw_request);
 	ParseHeaders_(raw_request);
 	ParseBody_(raw_request);
+}
+
+int		HttpRequest::GetSocket() const {
+	return socket_;
 }
 
 std::string	HttpRequest::GetMethod() const {

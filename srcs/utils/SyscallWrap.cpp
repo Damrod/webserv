@@ -147,6 +147,27 @@ int SyscallWrap::listenWr(int sockfd,
 	return ret;
 }
 
+int SyscallWrap::getpeernameWr(int sockfd,
+							   struct sockaddr *addr,
+							   socklen_t *addrlen DEBUG_ARGS) {
+	int ret;
+	if ((ret = getpeername(sockfd, addr, addrlen) == -1)) {
+		ThrowException_("getpeername" DEBUG_ARGS_NAMES);
+	}
+	return ret;
+}
+
+const char *	SyscallWrap::inet_ntopWr(int af,
+										 const void *src,
+										 char *dst,
+										 socklen_t size DEBUG_ARGS) {
+	const char *ret = inet_ntop(af, src, dst, size DEBUG_ARGS_NAMES);
+	if (ret == NULL) {
+		ThrowException_("inet_ntop" DEBUG_ARGS_NAMES);
+	}
+	return ret;
+}
+
 void SyscallWrap::ThrowException_(const std::string &sys_call_name DEBUG_ARGS) {
 	std::ostringstream ss;
 	ss << sys_call_name << ": " << std::strerror(errno);

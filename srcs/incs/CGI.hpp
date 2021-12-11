@@ -1,6 +1,10 @@
 #ifndef SRCS_INCS_CGI_HPP_
 #define SRCS_INCS_CGI_HPP_
 
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
+#include <sys/socket.h>
 #include <unistd.h>
 #include <cerrno>
 #include <csignal>
@@ -35,9 +39,12 @@ class CGI {
 	std::map<std::string, std::string> MakeEnv_(void);
 	char **MakeCEnv_(void);
 	void CloseAssign_(int *fd);
+	std::string MakeClientAddress_();
+	std::string GetClientAddress_() const;
 	const HttpRequest &request_;
 	const RequestConfig *requestConfig_;
 	const File &file_;
+	std::string client_address_;
 	const std::string arg_path_;
 	const std::string exec_path_;
 	const std::map<std::string, std::string> CGIenvMap_;
