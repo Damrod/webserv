@@ -30,10 +30,9 @@ std::string	HttpPostResponse::ConstructFullPath_() {
 		return request_config_->GetRoot() + decoded_path;
 	} else if (IsUploadEnabled_() && IsValidUploadPath_(decoded_path)) {
 		return request_config_->GetUploadStore();
-	} else {
-		SetErrorRawResponse_(404);
-		return "";
 	}
+	SetErrorRawResponse_(404);
+	return "";
 }
 
 void	HttpPostResponse::HandleCGI_(const File &file) {
