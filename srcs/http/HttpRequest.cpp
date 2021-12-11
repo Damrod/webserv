@@ -36,6 +36,14 @@ HttpRequest::QueriesMap	HttpRequest::GetQueries() const {
 	return queries_;
 }
 
+std::string	HttpRequest::GetQueryValue(const std::string &query_name) const {
+	QueriesMap::const_iterator	query_it = queries_.find(query_name);
+	if (query_it != queries_.end()) {
+		return query_it->second;
+	}
+	return "";
+}
+
 std::string HttpRequest::GetQueryString() const {
 	if (queries_.empty()) {
 		return "";
