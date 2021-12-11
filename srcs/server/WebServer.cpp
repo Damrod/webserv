@@ -56,6 +56,10 @@ void	WebServer::PopulateServers_() {
 				}
 			}
 			delete serverSettingsMap;
+			ServersMap_::iterator it = servers_.begin();
+			for (; it != servers_.end(); ++it) {
+				delete it->second;
+			}
 			throw std::runtime_error(e.what());
 		}
 		servers_.insert(std::make_pair(listen_sd, server));
