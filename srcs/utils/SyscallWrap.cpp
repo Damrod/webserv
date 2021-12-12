@@ -161,7 +161,7 @@ const char *	SyscallWrap::inet_ntopWr(int af,
 										 const void *src,
 										 char *dst,
 										 socklen_t size DEBUG_ARGS) {
-	const char *ret = inet_ntop(af, src, dst, size DEBUG_ARGS_NAMES);
+	const char *ret = inet_ntop(af, src, dst, size);
 	if (ret == NULL) {
 		ThrowException_("inet_ntop" DEBUG_ARGS_NAMES);
 	}

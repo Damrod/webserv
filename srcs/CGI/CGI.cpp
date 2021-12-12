@@ -135,9 +135,10 @@ std::string	CGI::MakeClientAddress_() {
 
 	len = sizeof(addr);
 	SyscallWrap::getpeernameWr(request_.GetSocket(),
-												(struct sockaddr *)&addr, &len);
+							(struct sockaddr *)&addr, &len DEBUG_INFO);
 	struct sockaddr_in *src = (struct sockaddr_in *)&addr;
-	SyscallWrap::inet_ntopWr(AF_INET, &src->sin_addr, ipstr, sizeof(ipstr));
+	SyscallWrap::inet_ntopWr(AF_INET, &src->sin_addr, ipstr, sizeof(ipstr)
+	DEBUG_INFO);
 	return ipstr;
 }
 

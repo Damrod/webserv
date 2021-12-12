@@ -6,10 +6,7 @@ WebServer::WebServer(const std::string &pathname) {
 }
 
 WebServer::~WebServer() {
-	ServersMap_::iterator it = servers_.begin();
-	for (; it != servers_.end(); ++it) {
-		delete it->second;
-	}
+	DeallocationHelper_(NULL, NULL);
 }
 
 void	WebServer::Run() {
@@ -41,12 +38,13 @@ void	WebServer::PopulateServers_() {
 
 		fdSets.addToReadSet(listen_sd);
 		Server *server = NULL;
+		WebServer::serverSettingsMap *serverSettingsMap = NULL;
 		try {
-			server =
-				new Server(BuildServerSettings_(&config), listen_sd, &fdSets);
+			serverSettingsMap = BuildServerSettings_(&config);
+			server = new Server(serverSettingsMap, listen_sd, &fdSets);
 		} catch (const std::exception &e) {
-			delete server;
-			throw e;
+			DeallocationHelper_(serverSettingsMap, server);
+			throw std::runtime_error(e.what());
 		}
 		servers_.insert(std::make_pair(listen_sd, server));
 	}
@@ -163,5 +161,23 @@ void	WebServer::HandleWriteSocket_(int sd) {
 		server->SendResponse(sd);
 	} else if ((server = FindServerWithCgiHandler_(sd))) {
 		server->HandleCgiSend(sd);
+	}
+}
+
+void WebServer::DeallocationHelper_(
+	WebServer::serverSettingsMap *serverSettingsMap, Server *server) {
+	delete server;
+	if (serverSettingsMap) {
+		for (WebServer::serverSettingsMap::iterator it =
+			serverSettingsMap->begin();
+			 it != serverSettingsMap->end();
+			 ++it) {
+			delete it->second;
+		}
+	}
+	delete serverSettingsMap;
+	ServersMap_::iterator it = servers_.begin();
+	for (; it != servers_.end(); ++it) {
+		delete it->second;
 	}
 }

@@ -41,6 +41,8 @@ class WebServer {
 		void	HandleReadSocket_(int sd);
 		void	HandleWriteSocket_(int sd);
 		typedef std::map<const std::string, ServerConfig *> serverSettingsMap;
+		void	DeallocationHelper_(
+			WebServer::serverSettingsMap *serverSettingsMap, Server *server);
 		serverSettingsMap
 					*BuildServerSettings_(std::vector<ServerConfig> *config);
 		void	DeleteDuplicatedServerNames_(
