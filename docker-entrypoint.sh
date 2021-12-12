@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euxo pipefail
 
 sed -i -e "s/database_name_here/${WORDPRESS_DB_NAME}/" \
 	-e "s/username_here/${WORDPRESS_DB_USER}/" \
