@@ -33,8 +33,8 @@ CGI::~CGI(void) {
 	CloseAssign_(&fds_[1]);
 }
 
-std::map<std::string, std::string> CGI::MakeEnv_(void) {
-	std::map<std::string, std::string>	env_;
+CGI::EnvsMap_ CGI::MakeEnv_(void) {
+	EnvsMap_ env_;
 
 	env_.insert(std::make_pair("REDIRECT_STATUS", "200"));
 	env_.insert(std::make_pair("GATEWAY_INTERFACE", "CGI/1.1"));
@@ -61,15 +61,25 @@ std::map<std::string, std::string> CGI::MakeEnv_(void) {
 	}
 	env_.insert(std::make_pair("REMOTE_ADDR", GetClientAddress_()));
 	env_.insert(std::make_pair("REMOTE_HOST", GetClientAddress_()));
-
-	env_.insert(std::make_pair("HTTP_ACCEPT",
-										request_.GetHeaderValue("Accept")));
-	env_.insert(std::make_pair("HTTP_HOST", request_.GetHeaderValue("Host")));
-	env_.insert(std::make_pair("HTTP_COOKIE",
-										request_.GetHeaderValue("Cookie")));
-	env_.insert(std::make_pair("HTTP_USER_AGENT",
-										request_.GetHeaderValue("User-Agent")));
+	AddHttpEnv_(&env_);
 	return env_;
+}
+
+void CGI::AddHttpEnv_(EnvsMap_ *envs) {
+	HttpHeaders::HeadersMap headers = request_.GetHeaders();
+	HttpHeaders::HeadersMap::iterator it = headers.begin();
+	HttpHeaders::HeadersMap::iterator ite = headers.end();
+	while (it != ite) {
+		std::string header_name_upper = ToUpperString(it->first);
+		for (std::size_t i = 0; i < header_name_upper.size(); ++i) {
+			if (header_name_upper[i] == '-') {
+				header_name_upper[i] = '_';
+			}
+		}
+		const std::string env_name = "HTTP_" + header_name_upper;
+		envs->insert(std::make_pair(env_name, it->second));
+		++it;
+	}
 }
 
 char **CGI::MakeCEnv_(void) {

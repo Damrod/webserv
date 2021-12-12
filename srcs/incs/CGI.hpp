@@ -16,6 +16,7 @@
 #include <string>
 #include <sstream>
 #include <map>
+#include <HttpHeaders.hpp>
 #include <HttpRequest.hpp>
 #include <RequestConfig.hpp>
 #include <SyscallWrap.hpp>
@@ -35,8 +36,10 @@ class CGI {
 	CGI(const CGI &);
 	CGI & operator=(const CGI &);
 
+	typedef std::map<std::string, std::string> EnvsMap_;
 	std::string GetExecutable_();
 	std::map<std::string, std::string> MakeEnv_(void);
+	void AddHttpEnv_(EnvsMap_ *envs);
 	char **MakeCEnv_(void);
 	void CloseAssign_(int *fd);
 	std::string MakeClientAddress_();
@@ -47,7 +50,7 @@ class CGI {
 	std::string client_address_;
 	const std::string arg_path_;
 	const std::string exec_path_;
-	const std::map<std::string, std::string> CGIenvMap_;
+	const EnvsMap_ CGIenvMap_;
 	char * const *CGIenv_;
 	int fds_[2];
 };
