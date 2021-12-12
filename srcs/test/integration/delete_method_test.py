@@ -1,4 +1,5 @@
 import os
+import pytest
 import requests
 
 # SUCCESSFUL RESPONSES
@@ -37,6 +38,7 @@ def test_delete_non_slash_ended_dir_409(random_dir):
 # since it needs no_priviliges_folder and its content
 # needs to be owned by a different user an a group than current.
 # If encountering problems, just disable it
+@pytest.mark.skip(reason="doesn't work on campus")
 def test_delete_forbidden_resource_403():
     url =  'http://localhost:8084/no_privileges_folder/'
     response = requests.delete(url)
