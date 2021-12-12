@@ -104,7 +104,7 @@ void	Server::BindListeningSocket_() const {
 }
 
 void	Server::AddConnection_(int sd) {
-	HttpRequest *request = new HttpRequest();
+	HttpRequest *request = new HttpRequest(sd);
 	HttpResponseFactory *response_factory =
 							new HttpResponseFactory(request, settings_);
 	Connection *connection = new Connection(sd, response_factory, request);

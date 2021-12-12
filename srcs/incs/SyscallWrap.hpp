@@ -1,5 +1,6 @@
 #ifndef SRCS_INCS_SYSCALLWRAP_HPP_
 #define SRCS_INCS_SYSCALLWRAP_HPP_
+#include <arpa/inet.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/socket.h>
@@ -64,6 +65,13 @@ class SyscallWrap {
 						  socklen_t addrlen DEBUG_ARGS);
 		static int listenWr(int sockfd,
 							int backlog DEBUG_ARGS);
+		static int getpeernameWr(int sockfd,
+							   struct sockaddr *addr,
+							   socklen_t *addrlen DEBUG_ARGS);
+		static const char *inet_ntopWr(int af,
+									   const void *src,
+									   char *dst,
+									   socklen_t size DEBUG_ARGS);
 
  private:
 		static void ThrowException_(const std::string &sys_call_name

@@ -7,7 +7,7 @@ HttpDeleteResponse::HttpDeleteResponse(
 		SetErrorRawResponse_(error_code_);
 	} else {
 		const std::string full_path =
-				request_config_->GetRoot() + request_->GetDecodedPath();
+				request_config_->GetRoot() + request_config_->GetRequestPath();
 		try {
 			File file(full_path);
 

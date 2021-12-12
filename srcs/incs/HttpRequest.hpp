@@ -23,8 +23,9 @@ class HttpRequest : public IRequest {
 		typedef	std::map<QueryName, QueryValue>		QueriesMap;
 
 	public:
-		HttpRequest();
+		explicit HttpRequest(int socket);
 		~HttpRequest();
+		int			GetSocket() const;
 		std::string	GetMethod() const;
 		std::string	GetRequestTarget() const;
 		std::string	GetPath() const;
@@ -72,6 +73,7 @@ class HttpRequest : public IRequest {
 			kParseBody
 		};
 
+		int									socket_;
 		static const std::size_t	        kPortMax_;
 		std::string                         method_;
 		std::string                         request_target_;

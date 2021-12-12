@@ -35,15 +35,19 @@ void	WebServer::PopulateServers_() {
 	std::vector<ServerConfig>	config;
 
 	config = config_.GetServersSettings();
-	std::vector<ServerConfig>::iterator	settings_it;
 
 	while (!config.empty()) {
-		settings_it = config.begin();
 		int listen_sd = SyscallWrap::socketWr(AF_INET, SOCK_STREAM, 0 DEBUG_INFO);
 
 		fdSets.addToReadSet(listen_sd);
-		Server	*server =
-					new Server(BuildServerSettings_(&config), listen_sd, &fdSets);
+		Server *server = NULL;
+		try {
+			server =
+				new Server(BuildServerSettings_(&config), listen_sd, &fdSets);
+		} catch (const std::exception &e) {
+			delete server;
+			throw e;
+		}
 		servers_.insert(std::make_pair(listen_sd, server));
 	}
 }
@@ -54,7 +58,7 @@ WebServer::serverSettingsMap
 									new WebServer::serverSettingsMap();
 	std::vector<ServerConfig>::iterator	it_config = config->begin();
 	uint16_t	target_listen_port = it_config->listen_port;
-	uint16_t	target_listen_address = it_config->listen_address;
+	uint32_t	target_listen_address = it_config->listen_address;
 
 	while (it_config != config->end()) {
 		if (it_config->listen_address == target_listen_address

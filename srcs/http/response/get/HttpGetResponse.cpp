@@ -8,7 +8,7 @@ HttpGetResponse::HttpGetResponse(
 		SetErrorRawResponse_(error_code_);
 	} else {
 		const std::string full_path =
-				request_config_->GetRoot() + request_->GetDecodedPath();
+				request_config_->GetRoot() + request_config_->GetRequestPath();
 		try {
 			File file(full_path);
 
@@ -79,7 +79,7 @@ void	HttpGetResponse::HandleRegularFile_(File file) {
 
 void	HttpGetResponse::HandleSlashEndedFile_(File file) {
 	if (request_config_->HasAutoindex()) {
-		ListDirectory_(file, request_->GetDecodedPath());
+		ListDirectory_(file, request_config_->GetRequestPath());
 	} else {
 		file.SetSubpath(request_config_->GetIndex());
 		if (file.IsRegularFile()) {

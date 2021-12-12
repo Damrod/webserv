@@ -15,6 +15,7 @@ CGI::CGI(const HttpRequest &request, const RequestConfig &location,
 	request_(request),
 	requestConfig_(&location),
 	file_(file),
+	client_address_(MakeClientAddress_()),
 	arg_path_(file_.GetPath()),
 	exec_path_(GetExecutable_()),
 	CGIenvMap_(MakeEnv_()),
@@ -47,10 +48,19 @@ std::map<std::string, std::string> CGI::MakeEnv_(void) {
 	env_.insert(std::make_pair("SERVER_SOFTWARE", "webserv/1.0"));
 	env_.insert(std::make_pair("SERVER_PORT",
 											ValueToString(request_.GetPort())));
-	env_.insert(std::make_pair("SERVER_NAME", request_.GetHeaderValue("Host")));
+	env_.insert(std::make_pair("SERVER_NAME", request_.GetHost()));
 	env_.insert(std::make_pair("QUERY_STRING", request_.GetQueryString()));
 	env_.insert(std::make_pair("SCRIPT_FILENAME", arg_path_));
-	env_.insert(std::make_pair("SCRIPT_NAME", request_.GetDecodedPath()));
+	env_.insert(std::make_pair("SCRIPT_NAME", requestConfig_->GetRequestPath()));
+	env_.insert(std::make_pair("PATH_INFO", requestConfig_->GetRequestPathInfo()));
+	if (requestConfig_->GetRequestPathInfo().empty()) {
+		env_.insert(std::make_pair("PATH_TRANSLATED", ""));
+	} else {
+		env_.insert(std::make_pair("PATH_TRANSLATED",
+			requestConfig_->GetRoot() + requestConfig_->GetRequestPathInfo()));
+	}
+	env_.insert(std::make_pair("REMOTE_ADDR", GetClientAddress_()));
+	env_.insert(std::make_pair("REMOTE_HOST", GetClientAddress_()));
 
 	env_.insert(std::make_pair("HTTP_ACCEPT",
 										request_.GetHeaderValue("Accept")));
@@ -116,4 +126,21 @@ void	CGI::CloseAssign_(int *fd) {
 		SyscallWrap::closeWr(*fd DEBUG_INFO);
 		*fd = -1;
 	}
+}
+
+std::string	CGI::MakeClientAddress_() {
+	socklen_t len;
+	struct sockaddr_storage addr;
+	char ipstr[INET6_ADDRSTRLEN];
+
+	len = sizeof(addr);
+	SyscallWrap::getpeernameWr(request_.GetSocket(),
+												(struct sockaddr *)&addr, &len);
+	struct sockaddr_in *src = (struct sockaddr_in *)&addr;
+	SyscallWrap::inet_ntopWr(AF_INET, &src->sin_addr, ipstr, sizeof(ipstr));
+	return ipstr;
+}
+
+std::string CGI::GetClientAddress_() const {
+	return client_address_;
 }

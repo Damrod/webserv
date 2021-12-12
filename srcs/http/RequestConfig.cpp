@@ -4,7 +4,7 @@ RequestConfig::RequestConfig(const ServerConfig &server_config,
 		const std::string &request_path) :
 	location_(FindLocation_(server_config, request_path)),
 	common_(location_ ? location_->common : server_config.common),
-	path_(location_ ? &location_->path : NULL),
+	location_path_(location_ ? &location_->path : NULL),
 	limit_except_(location_ ? &location_->limit_except : NULL),
 	root_(common_.root),
 	client_max_body_size_(common_.client_max_body_size),
@@ -12,7 +12,9 @@ RequestConfig::RequestConfig(const ServerConfig &server_config,
 	index_(common_.index),
 	error_pages_(common_.error_pages),
 	upload_store_(common_.upload_store),
-	cgi_assign_(common_.cgi_assign) {
+	cgi_assign_(common_.cgi_assign),
+	request_path_(FindRequestPath_(request_path)),
+	request_path_info_(FindRequestPathInfo_(request_path)) {
 		SetRedirectionConfig_(server_config);
 }
 
@@ -38,8 +40,8 @@ bool RequestConfig::Limits(std::string const &method) const {
 	return false;
 }
 
-std::string	RequestConfig::GetPath() const {
-	return location_ ? *path_ : "/";
+std::string	RequestConfig::GetLocationPath() const {
+	return location_ ? *location_path_ : "/";
 }
 
 std::string	RequestConfig::GetRoot() const {
@@ -77,7 +79,7 @@ std::string	RequestConfig::GetErrorPagePath(std::size_t errCode) const {
 }
 
 CommonConfig::BinaryHandlerPath
-	RequestConfig::GetCGIBin(std::string extension) const {
+	RequestConfig::GetCGIBin(const std::string &extension) const {
 	return cgi_assign_.find(extension)->second;
 }
 
@@ -86,8 +88,16 @@ RequestConfig::GetErrorPages() const {
 	return error_pages_;
 }
 
-bool RequestConfig::HasCGI(std::string extension) const {
+bool RequestConfig::HasCGI(const std::string &extension) const {
 	return cgi_assign_.count(extension) > 0;
+}
+
+std::string	RequestConfig::GetRequestPath() const {
+	return request_path_;
+}
+
+std::string RequestConfig::GetRequestPathInfo() const {
+	return request_path_info_;
 }
 
 const Location* RequestConfig::FindLocation_(
@@ -109,4 +119,27 @@ const Location* RequestConfig::FindLocation_(
 		}
 	}
 	return best_match_idx == -1 ? NULL : &locations[best_match_idx];
+}
+
+std::string	RequestConfig::FindRequestPath_(const std::string &request_path) {
+	CommonConfig::CgiAssignMap::const_iterator it = cgi_assign_.begin();
+	CommonConfig::CgiAssignMap::const_iterator ite = cgi_assign_.end();
+	while (it != ite) {
+		const std::string delimiter = "." + it->first + "/";
+		const std::size_t offset = request_path.find(delimiter);
+		if (offset != std::string::npos) {
+			return request_path.substr(0, offset + it->first.size() + 1);
+		}
+		++it;
+	}
+	return request_path;
+}
+
+// https://datatracker.ietf.org/doc/html/rfc3875#section-4.1.5
+std::string
+RequestConfig::FindRequestPathInfo_(const std::string &request_path) {
+	if (request_path_.size() < request_path.size()) {
+		return request_path.substr(request_path_.size());
+	}
+	return "";
 }
