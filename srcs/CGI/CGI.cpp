@@ -94,7 +94,6 @@ CgiInfo CGI::ExecuteCGI(void) {
 	SyscallWrap::pipeWr(fds_ DEBUG_INFO);
 	pid_t pid = SyscallWrap::forkWr(__FILE__, __FUNCTION__, __LINE__);
 	if (pid == 0) {
-		std::signal(SIGCHLD, SIG_IGN);
 		std::signal(SIGPIPE, SIG_DFL);
 		try {
 			CloseAssign_(&fds_[0]);

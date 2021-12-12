@@ -1,6 +1,7 @@
 #include <WebServer.hpp>
 
 int main(int argc, char *argv[]) {
+	std::signal(SIGCHLD, SIG_IGN);
 	std::signal(SIGPIPE, SIG_IGN);
 	std::string	config_path = "config/default.conf";
 

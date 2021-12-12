@@ -1,0 +1,13 @@
+# Ignore everything
+**
+
+# Allow files and directory
+!Makefile
+!srcs/**
+!html/**
+!config/**
+!CPPLINT.cfg
+!docker-entrypoint.sh
+
+# Ignore unnecessary files inside allowed directories
+srcs/test/integration/__pycache__/**
