@@ -14,6 +14,11 @@ std::string	ToLowerString(std::string str) {
 	return str;
 }
 
+std::string	ToUpperString(std::string str) {
+	std::transform(str.begin(), str.end(), str.begin(), ::toupper);
+	return str;
+}
+
 char *DuplicateString(const std::string &str) {
 	char *element = new char[str.size() + 1];
 	std::memcpy(element, str.c_str(), str.size() + 1);
