@@ -1,7 +1,9 @@
 NAME = webserv
 CXX = clang++
-DBG ?=
 CXXFLAGS = -Wall -Werror -Wextra -std=c++98 -g3
+ifdef DBG
+	CXXFLAGS += -DDBG
+endif
 LINT = cpplint
 LINTFLAGS = --recursive --exclude=srcs/incs/test/catch2.hpp \
 		--exclude=nocommit/ --exclude=*.nocommit
@@ -34,7 +36,7 @@ $(1): $$(basename $$(subst $(BLD_DIR),$(SRC_DIR),$(1))).cpp
 	$(shell \
 	echo "100000 * $(2) / ( $(3) * 1000 ) " | \
 	bc )
-	$(QUIET)$(CXX) -c $(DBG) $(6) $(5) -o $$@ $$< -MMD && \
+	$(QUIET)$(CXX) -c $(6) $(5) -o $$@ $$< -MMD && \
 	if [ $(2) = $(3) ] ; then \
 		printf "[100%%] \033[01;32mBuilt target %s\033[0;0m\n" $(4); \
 	fi
