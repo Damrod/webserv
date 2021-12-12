@@ -27,7 +27,7 @@ RUN apt-get update \
  && make CXX=g++ -j12 -C /webserv/ \
  && wget -q https://wordpress.org/latest.tar.gz -P /tmp/ \
  && tar xzf /tmp/latest.tar.gz -C /tmp/ \
- && cp -r /tmp/wordpress/* /webserv/html/wordpress/ \
+ && mv /tmp/wordpress/ /webserv/html/wordpress/ \
  && cd /webserv/html/wordpress/ \
  && wget -q https://api.wordpress.org/secret-key/1.1/salt/ -O salt \
  && csplit -s wp-config-sample.php '/AUTH_KEY/' '/NONCE_SALT/+1' \
