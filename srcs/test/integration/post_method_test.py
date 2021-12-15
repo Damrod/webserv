@@ -72,3 +72,10 @@ def test_post_upload_non_existing_path(random_filename):
     assert os.path.exists(filepath)
     os.remove(filepath)
     assert response.status_code == 200
+
+def test_post_upload_non_enabled(random_filename):
+    url =  'http://localhost:8084/images/'
+    mime_type = 'text/plain'
+    files = {'file': (random_filename, 'random text\n', mime_type)}
+    response = requests.post(url, files=files)
+    assert response.status_code == 403
