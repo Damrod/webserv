@@ -73,7 +73,7 @@ void	HttpGetResponse::HandleRegularFile_(File file) {
 			SetErrorRawResponse_(500);
 		}
 	} else {
-		Serve_(file);
+		Serve_(file, 200);
 	}
 }
 

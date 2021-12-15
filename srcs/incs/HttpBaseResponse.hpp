@@ -22,7 +22,7 @@ class HttpBaseResponse: public IResponse {
 
 	protected:
 		void	ExecuteCGI_(File file);
-		void	Serve_(File file);
+		void	Serve_(File file, int code);
 		void	DefaultStatusResponse_(int code);
 		void	SetRawResponse_(
 								int code,

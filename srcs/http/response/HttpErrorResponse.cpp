@@ -15,7 +15,7 @@ HttpErrorResponse::HttpErrorResponse(
 			try {
 				File file(error_page_path);
 
-				Serve_(file);
+				Serve_(file, error_code_);
 			} catch (File::Error &e ) {
 				DefaultStatusResponse_(error_code_);
 			}

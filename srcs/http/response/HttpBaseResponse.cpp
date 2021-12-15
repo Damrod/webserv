@@ -26,13 +26,13 @@ std::string	 HttpBaseResponse::Content() const {
 	return raw_response_;
 }
 
-void	HttpBaseResponse::Serve_(File file) {
+void	HttpBaseResponse::Serve_(File file, int error_code_) {
 	HttpResponse::HeadersMap headers;
 	std::string body;
 
 	headers.insert(std::make_pair("Content-Type", file.GetMimeType()));
 	body = file.GetContent();
-	SetRawResponse_(200, headers, body);
+	SetRawResponse_(error_code_, headers, body);
 }
 
 void	HttpBaseResponse::ExecuteCGI_(File file) {
