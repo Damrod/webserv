@@ -4,8 +4,8 @@ HttpGetResponse::HttpGetResponse(
 	RequestConfig *request_config,
 	HttpRequest *request) :
 	HttpBaseResponse(request_config, request) {
-	if (error_code_) {
-		SetErrorRawResponse_(error_code_);
+	if (status_code_ != 200) {
+		SetErrorRawResponse_(status_code_);
 	} else {
 		const std::string full_path =
 				request_config_->GetRoot() + request_config_->GetRequestPath();
@@ -90,9 +90,9 @@ void	HttpGetResponse::HandleSlashEndedFile_(File file) {
 	}
 }
 
-void	HttpGetResponse::SetErrorRawResponse_(int error_code) {
+void	HttpGetResponse::SetErrorRawResponse_(int status_code) {
 	raw_response_ = HttpErrorResponse(
-									error_code,
+									status_code,
 									request_config_,
 									request_).Content();
 }

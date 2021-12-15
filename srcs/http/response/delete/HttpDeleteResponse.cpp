@@ -3,8 +3,8 @@
 HttpDeleteResponse::HttpDeleteResponse(
 	RequestConfig *requestConfig,
 	HttpRequest *request) : HttpBaseResponse(requestConfig, request) {
-	if (error_code_) {
-		SetErrorRawResponse_(error_code_);
+	if (status_code_ != 200) {
+		SetErrorRawResponse_(status_code_);
 	} else {
 		const std::string full_path =
 				request_config_->GetRoot() + request_config_->GetRequestPath();
@@ -53,9 +53,9 @@ void	HttpDeleteResponse::BuildResponse_(int return_status) {
 	}
 }
 
-void	HttpDeleteResponse::SetErrorRawResponse_(int error_code) {
+void	HttpDeleteResponse::SetErrorRawResponse_(int status_code) {
 	raw_response_ = HttpErrorResponse(
-									error_code,
+									status_code,
 									request_config_,
 									request_).Content();
 }

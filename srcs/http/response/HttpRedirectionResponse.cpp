@@ -3,9 +3,9 @@
 HttpRedirectionResponse::HttpRedirectionResponse(
 	RequestConfig *requestConfig,
 	HttpRequest *request) : HttpBaseResponse(requestConfig, request) {
-	if (error_code_) {
+	if (status_code_ != 200) {
 		raw_response_ = HttpErrorResponse(
-										error_code_,
+										status_code_,
 										request_config_,
 										request_).Content();
 	} else {
