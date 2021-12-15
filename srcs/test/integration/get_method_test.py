@@ -90,3 +90,9 @@ def test_url_path_traversal():
     prep.url = url
     response = session.send(prep)
     assert response.status_code == 400
+
+def test_custom_error_page_404():
+    url = 'http://localhost:8082/invalidpath'
+    response = requests.get(url)
+    assert response.status_code == 404
+    assert "main.css" in response.text
