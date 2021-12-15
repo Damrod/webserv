@@ -31,7 +31,7 @@ std::string	HttpPostResponse::ConstructFullPath_() {
 	} else if (IsUploadEnabled_() && IsValidUploadPath_(request_path)) {
 		return request_config_->GetUploadStore();
 	}
-	SetErrorRawResponse_(404);
+	SetErrorRawResponse_(403);
 	return "";
 }
 
