@@ -7,14 +7,14 @@ HttpBaseResponse::HttpBaseResponse(
 	request_(request) {
 	SetKeepAlive_();
 	if (request_config_->Limits(request_->GetMethod())) {
-		error_code_ = 405;
+		status_code_ = 405;
 	} else if (request_->GetBody().size() >
 							request_config_->GetClientMaxBodySize()) {
-		error_code_ = 413;
+		status_code_ = 413;
 	} else if (request_->HasHeader("Content-Encoding")) {
-		error_code_ = 415;
+		status_code_ = 415;
 	} else {
-		error_code_ = 0;
+		status_code_ = 200;
 	}
 }
 
@@ -32,7 +32,7 @@ void	HttpBaseResponse::Serve_(File file) {
 
 	headers.insert(std::make_pair("Content-Type", file.GetMimeType()));
 	body = file.GetContent();
-	SetRawResponse_(200, headers, body);
+	SetRawResponse_(status_code_, headers, body);
 }
 
 void	HttpBaseResponse::ExecuteCGI_(File file) {

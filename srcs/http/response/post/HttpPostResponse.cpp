@@ -4,8 +4,8 @@ HttpPostResponse::HttpPostResponse(
 	RequestConfig *request_config,
 	HttpRequest *request) :
 	HttpBaseResponse(request_config, request) {
-	if (error_code_) {
-		SetErrorRawResponse_(error_code_);
+	if (status_code_ != 200) {
+		SetErrorRawResponse_(status_code_);
 	} else {
 		const std::string full_path = ConstructFullPath_();
 		if (!full_path.empty()) {
@@ -69,9 +69,9 @@ void	HttpPostResponse::Upload_(const File &file) {
 	}
 }
 
-void	HttpPostResponse::SetErrorRawResponse_(const int error_code) {
+void	HttpPostResponse::SetErrorRawResponse_(const int status_code) {
 	raw_response_ = HttpErrorResponse(
-									error_code,
+									status_code,
 									request_config_,
 									request_).Content();
 }

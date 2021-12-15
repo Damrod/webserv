@@ -31,7 +31,7 @@ class HttpBaseResponse: public IResponse {
 		void	SetKeepAlive_();
 
 		int keep_alive_;
-		int error_code_;
+		int status_code_;
 		std::string raw_response_;
 		RequestConfig *request_config_;
 		HttpRequest *request_;
