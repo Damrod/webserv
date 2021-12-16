@@ -1,0 +1,3 @@
+[submodule "srcs/incs/test"]
+	path = srcs/incs/test
+	url = https://github.com/Damrod/catch2
