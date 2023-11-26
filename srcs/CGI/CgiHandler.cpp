@@ -125,7 +125,7 @@ void	CgiHandler::ParseStatus_(const std::string &status_str) {
 	}
 }
 
-void	CgiHandler::SetErrorResponse_(const std::size_t &error_code) {
+void	CgiHandler::SetErrorResponse_(std::size_t error_code) {
 	const std::string error_page_path = GetErrorPagePath_(error_code);
 
 	if (error_page_path.empty()) {
@@ -141,21 +141,21 @@ void	CgiHandler::SetErrorResponse_(const std::size_t &error_code) {
 	}
 }
 
-std::string	CgiHandler::GetErrorPagePath_(const std::size_t &error_code) {
+std::string	CgiHandler::GetErrorPagePath_(std::size_t error_code) {
 	if (cgi_info_.error_pages.count(error_code)) {
 		return cgi_info_.root_path + cgi_info_.error_pages[error_code];
 	}
 	return "";
 }
 
-void	CgiHandler::DefaultStatusResponse_(const std::size_t &error_code) {
+void	CgiHandler::DefaultStatusResponse_(std::size_t error_code) {
 	HttpHeaders::HeadersMap headers;
 	headers.insert(std::make_pair("Content-Type", "text/html"));
 
 	SetResponse_(error_code, headers, "");
 }
 
-void	CgiHandler::Serve_(const File &file, const std::size_t &error_code) {
+void	CgiHandler::Serve_(const File &file, std::size_t error_code) {
 	HttpResponse::HeadersMap headers;
 	std::string body;
 
@@ -164,7 +164,7 @@ void	CgiHandler::Serve_(const File &file, const std::size_t &error_code) {
 	SetResponse_(error_code, headers, body);
 }
 
-void	CgiHandler::SetResponse_(const int &code,
+void	CgiHandler::SetResponse_(std::size_t code,
 								const HttpHeaders::HeadersMap &headers,
 								const std::string &body) {
 	data_ = HttpResponse(code,

@@ -36,11 +36,11 @@ class CgiHandler {
 		void		ValidateHeaders_();
 		void		PrependHeaders_();
 		void		ParseStatus_(const std::string &status_str);
-		void		SetErrorResponse_(const std::size_t &error_code);
-		std::string	GetErrorPagePath_(const std::size_t &error_code);
-		void		DefaultStatusResponse_(const std::size_t &error_code);
-		void		Serve_(const File &file, const std::size_t &error_code);
-		void		SetResponse_(const int &code,
+		void		SetErrorResponse_(std::size_t error_code);
+		std::string	GetErrorPagePath_(std::size_t error_code);
+		void		DefaultStatusResponse_(std::size_t error_code);
+		void		Serve_(const File &file, std::size_t error_code);
+		void		SetResponse_(std::size_t code,
 								const HttpHeaders::HeadersMap &headers,
 								const std::string &body);
 		FDsets		*fd_sets_;
