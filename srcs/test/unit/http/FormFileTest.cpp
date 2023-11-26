@@ -1,6 +1,6 @@
 #include <FormFile.hpp>
 #include <HttpRequest.hpp>
-#include <catch2.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("ValidFormFile", "[http]") {
 	const std::string raw_request =

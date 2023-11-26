@@ -1,6 +1,6 @@
 #include <string>
 #include <MimeTypes.hpp>
-#include <catch2.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("MimeTypes", "[http]") {
 	REQUIRE("text/html" == MimeTypes::GetMimeType("html"));

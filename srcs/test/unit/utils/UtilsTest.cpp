@@ -1,6 +1,6 @@
 #include <string>
 #include <Utils.hpp>
-#include <catch2.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("TrimStringSameChars", "[utils]") {
 	const std::string	str = "abcdcbaabcdcba";

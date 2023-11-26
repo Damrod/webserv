@@ -1,9 +1,6 @@
 #include <string>
 #include <sstream>
-#include <Utils.hpp>
-#include <catch2.hpp>
-#include <parser/Lexer.hpp>
-#include <parser/Token.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <parser/Preprocessor.hpp>
 #include <parser/ParserManager.hpp>
 

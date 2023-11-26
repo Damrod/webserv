@@ -1,7 +1,7 @@
 #include <sstream>
 #include <string>
 #include <HttpResponse.hpp>
-#include <catch2.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 std::string	GetCurrentDate() {
 	char				buffer[100];

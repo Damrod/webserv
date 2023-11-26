@@ -146,6 +146,7 @@ nocommit/*
 ### ides
 .vscode/
 .idea/
+cmake-build-webserv
 
 
 ### Python ###
